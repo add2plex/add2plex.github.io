@@ -66,9 +66,37 @@
             }
         });
 
-        // Detect popup windows and refresh iframe when they close
         const iframe = document.getElementById('embedFrame');
         let loginPopup = null;
+        
+        // Listen for postMessage from popup or iframe
+        window.addEventListener('message', function(event) {
+            // Verify origin for security (adjust if needed)
+            if (event.origin !== 'https://search.add2plex.com') {
+                return;
+            }
+            
+            // Handle authentication success message
+            if (event.data && event.data.type === 'auth_success') {
+                console.log('Authentication successful, refreshing iframe...');
+                iframe.src = iframe.src;
+            }
+            
+            // Handle login complete message
+            if (event.data && event.data.type === 'login_complete') {
+                console.log('Login complete, refreshing iframe...');
+                setTimeout(function() {
+                    iframe.src = iframe.src;
+                }, 500);
+            }
+            
+            // Handle any auth token if provided
+            if (event.data && event.data.token) {
+                console.log('Received auth token, storing and refreshing...');
+                localStorage.setItem('auth_token', event.data.token);
+                iframe.src = iframe.src;
+            }
+        });
         
         // Monitor for popup windows
         const originalWindowOpen = window.open;
@@ -80,27 +108,45 @@
                 const popupChecker = setInterval(function() {
                     if (loginPopup.closed) {
                         clearInterval(popupChecker);
+                        console.log('Popup closed, refreshing iframe...');
                         // Wait a moment for cookies to settle, then refresh iframe
                         setTimeout(function() {
                             iframe.src = iframe.src;
                         }, 500);
                     }
                 }, 500);
+                
+                // Try to send a message to the popup requesting auth status
+                setTimeout(function() {
+                    try {
+                        loginPopup.postMessage({ type: 'request_auth' }, 'https://search.add2plex.com');
+                    } catch (e) {
+                        console.log('Could not post message to popup');
+                    }
+                }, 1000);
             }
             
             return loginPopup;
         };
 
-        // Also listen for focus events (when user clicks back to main window)
+        // Also listen for focus events
         window.addEventListener('focus', function() {
-            // Small delay to allow any authentication to complete
             setTimeout(function() {
-                // Check if we should refresh (simple heuristic: if page has been visible for a bit)
                 if (document.hasFocus()) {
+                    console.log('Window focused, refreshing iframe...');
                     iframe.src = iframe.src;
                 }
             }, 1000);
         });
+
+        // Send message to iframe periodically to check auth status
+        setInterval(function() {
+            try {
+                iframe.contentWindow.postMessage({ type: 'check_auth' }, 'https://search.add2plex.com');
+            } catch (e) {
+                // Cross-origin restrictions may prevent this
+            }
+        }, 5000);
     </script>
 </body>
 </html>
