@@ -36,7 +36,18 @@
 </head>
 <body>
     <div class="iframe-container">
-        <iframe src="https://search.add2plex.com" frameborder="0"></iframe>
+        <iframe src="https://search.add2plex.com" frameborder="0" id="embedFrame"></iframe>
     </div>
+
+    <script>
+        // Set XMLHttpRequest withCredentials for cross-origin requests
+        (function() {
+            const originalOpen = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function() {
+                originalOpen.apply(this, arguments);
+                this.withCredentials = true;
+            };
+        })();
+    </script>
 </body>
 </html>
