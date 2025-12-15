@@ -65,6 +65,42 @@
                 originalCookieDescriptor.set.call(this, val);
             }
         });
+
+        // Detect popup windows and refresh iframe when they close
+        const iframe = document.getElementById('embedFrame');
+        let loginPopup = null;
+        
+        // Monitor for popup windows
+        const originalWindowOpen = window.open;
+        window.open = function() {
+            loginPopup = originalWindowOpen.apply(this, arguments);
+            
+            if (loginPopup) {
+                // Check if popup is closed every 500ms
+                const popupChecker = setInterval(function() {
+                    if (loginPopup.closed) {
+                        clearInterval(popupChecker);
+                        // Wait a moment for cookies to settle, then refresh iframe
+                        setTimeout(function() {
+                            iframe.src = iframe.src;
+                        }, 500);
+                    }
+                }, 500);
+            }
+            
+            return loginPopup;
+        };
+
+        // Also listen for focus events (when user clicks back to main window)
+        window.addEventListener('focus', function() {
+            // Small delay to allow any authentication to complete
+            setTimeout(function() {
+                // Check if we should refresh (simple heuristic: if page has been visible for a bit)
+                if (document.hasFocus()) {
+                    iframe.src = iframe.src;
+                }
+            }, 1000);
+        });
     </script>
 </body>
 </html>
