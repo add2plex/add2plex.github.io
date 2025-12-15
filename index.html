@@ -36,7 +36,7 @@
 </head>
 <body>
     <div class="iframe-container">
-        <iframe src="http://192.168.1.69:5055/" frameborder="0" id="embedFrame"></iframe>
+        <iframe src="https://search.add2plex.com" frameborder="0" id="embedFrame"></iframe>
     </div>
 
     <script>
@@ -72,7 +72,7 @@
         // Listen for postMessage from popup or iframe
         window.addEventListener('message', function(event) {
             // Verify origin for security (adjust if needed)
-            if (event.origin !== 'http://192.168.1.69:5055') {
+            if (event.origin !== 'https://search.add2plex.com') {
                 return;
             }
             
@@ -119,7 +119,7 @@
                 // Try to send a message to the popup requesting auth status
                 setTimeout(function() {
                     try {
-                        loginPopup.postMessage({ type: 'request_auth' }, 'http://192.168.1.69:5055');
+                        loginPopup.postMessage({ type: 'request_auth' }, 'https://search.add2plex.com');
                     } catch (e) {
                         console.log('Could not post message to popup');
                     }
@@ -142,7 +142,7 @@
         // Send message to iframe periodically to check auth status
         setInterval(function() {
             try {
-                iframe.contentWindow.postMessage({ type: 'check_auth' }, 'http://192.168.1.69:5055');
+                iframe.contentWindow.postMessage({ type: 'check_auth' }, 'https://search.add2plex.com');
             } catch (e) {
                 // Cross-origin restrictions may prevent this
             }
