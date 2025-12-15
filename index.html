@@ -1,333 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overseer Interface</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #000428;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: Arial, sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overseer Control Panel</title>
 
-        .container {
-            width: 90%;
-            max-width: 800px;
-            background: #1a1a2e;
-            border: 2px solid #16213e;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            border-radius: 12px;
-            padding: 30px;
-            color: #eee;
-        }
+<style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
 
-        h1 {
-            margin: 0 0 20px 0;
-            color: #5b9bd5;
-            font-size: 28px;
-        }
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #000428, #004e92);
+        display: flex;
+        flex-direction: column;
+        color: #eee;
+    }
 
-        .input-group {
-            margin-bottom: 20px;
-        }
+    header {
+        background: rgba(0,0,0,0.7);
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #16213e;
+    }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #aaa;
-            font-size: 14px;
-        }
+    header h1 {
+        margin: 0;
+        font-size: 20px;
+        color: #5b9bd5;
+    }
 
-        input, select {
-            width: 100%;
-            padding: 12px;
-            background: #0f0f1e;
-            border: 1px solid #333;
-            border-radius: 6px;
-            color: #eee;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
+    header span {
+        font-size: 12px;
+        color: #aaa;
+    }
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: #5b9bd5;
-        }
+    main {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
 
-        button {
-            padding: 12px 24px;
-            background: #5b9bd5;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-size: 14px;
-            cursor: pointer;
-            margin-right: 10px;
-            transition: background 0.3s;
-        }
+    .container {
+        width: 100%;
+        max-width: 900px;
+        background: #1a1a2e;
+        border: 2px solid #16213e;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
 
-        button:hover {
-            background: #4a8bc2;
-        }
+    h2 {
+        margin-top: 0;
+        color: #5b9bd5;
+    }
 
-        button:disabled {
-            background: #555;
-            cursor: not-allowed;
-        }
+    .input-group {
+        margin-bottom: 20px;
+    }
 
-        .results {
-            margin-top: 20px;
-            padding: 15px;
-            background: #0f0f1e;
-            border: 1px solid #333;
-            border-radius: 6px;
-            max-height: 400px;
-            overflow-y: auto;
-            display: none;
-        }
+    label {
+        display: block;
+        margin-bottom: 6px;
+        color: #aaa;
+        font-size: 13px;
+    }
 
-        .results.show {
-            display: block;
-        }
+    input {
+        width: 100%;
+        padding: 12px;
+        background: #0f0f1e;
+        border: 1px solid #333;
+        border-radius: 6px;
+        color: #eee;
+    }
 
-        .movie-item {
-            padding: 12px;
-            background: #1a1a2e;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            border-left: 3px solid #5b9bd5;
-        }
+    input:focus {
+        outline: none;
+        border-color: #5b9bd5;
+    }
 
-        .movie-title {
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
+    button {
+        padding: 12px 20px;
+        background: #5b9bd5;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        cursor: pointer;
+        margin-right: 10px;
+        margin-top: 5px;
+    }
 
-        .movie-info {
-            color: #aaa;
-            font-size: 13px;
-        }
+    button:hover { background: #4a8bc2; }
 
-        .error {
-            color: #ff6b6b;
-            padding: 10px;
-            background: #2a1515;
-            border-radius: 6px;
-            margin-top: 10px;
-        }
-
-        .success {
-            color: #51cf66;
-            padding: 10px;
-            background: #1a2a1a;
-            border-radius: 6px;
-            margin-top: 10px;
-        }
-
-        .settings-saved {
-            color: #51cf66;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🎬 Overseer API Interface</h1>
+    .results {
+        margin-top: 20px;
+        padding: 15px;
+        background: #0f0f1e;
+        border-radius: 6px;
+        border: 1px solid #333;
+        max-height: 400p
         
-        <div class="input-group">
-            <label>Overseer URL (e.g., http://192.168.1.69:5055)</label>
-            <input type="text" id="apiUrl" placeholder="http://your-overseer-url:5055">
-        </div>
-
-        <div class="input-group">
-            <label>API Key</label>
-            <input type="password" id="apiKey" placeholder="Enter your Overseer API key">
-        </div>
-
-        <button onclick="saveSettings()">Save Settings</button>
-        <span id="savedIndicator" class="settings-saved" style="display:none;">✓ Saved</span>
-
-        <hr style="border: 1px solid #333; margin: 25px 0;">
-
-        <div class="input-group">
-            <label>Search for Movies/TV Shows</label>
-            <input type="text" id="searchQuery" placeholder="Enter movie or TV show name">
-        </div>
-
-        <button onclick="searchMedia()">Search</button>
-        <button onclick="getRequests()">View Requests</button>
-        <button onclick="getStatus()">Check Status</button>
-
-        <div id="results" class="results"></div>
-    </div>
-
-    <script>
-        let apiUrl = '';
-        let apiKey = '';
-
-        // Load saved settings
-        const savedUrl = localStorage.getItem('overseer_url');
-        const savedKey = localStorage.getItem('overseer_key');
-        if (savedUrl) {
-            document.getElementById('apiUrl').value = savedUrl;
-            apiUrl = savedUrl;
-        }
-        if (savedKey) {
-            document.getElementById('apiKey').value = savedKey;
-            apiKey = savedKey;
-        } else {
-            // Set default API key
-            apiKey = 'MTc0MDAyMTIwNjEyNTY3M2U3ZmQ1LWJlMDQtNGJiYy05ZjAxLWFmYmFmNGZmZmU4NA==';
-            document.getElementById('apiKey').value = apiKey;
-        }
-
-        function saveSettings() {
-            apiUrl = document.getElementById('apiUrl').value.trim();
-            apiKey = document.getElementById('apiKey').value.trim();
-            
-            if (!apiUrl || !apiKey) {
-                showError('Please enter both URL and API key');
-                return;
-            }
-
-            localStorage.setItem('overseer_url', apiUrl);
-            localStorage.setItem('overseer_key', apiKey);
-            
-            const indicator = document.getElementById('savedIndicator');
-            indicator.style.display = 'inline';
-            setTimeout(() => indicator.style.display = 'none', 2000);
-        }
-
-        async function makeRequest(endpoint, method = 'GET', body = null) {
-            if (!apiUrl || !apiKey) {
-                showError('Please save your settings first');
-                return null;
-            }
-
-            try {
-                const options = {
-                    method: method,
-                    headers: {
-                        'X-Api-Key': apiKey,
-                        'Content-Type': 'application/json'
-                    }
-                };
-
-                if (body) {
-                    options.body = JSON.stringify(body);
-                }
-
-                const response = await fetch(`${apiUrl}/api/v1${endpoint}`, options);
-                
-                if (!response.ok) {
-                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
-                }
-
-                return await response.json();
-            } catch (error) {
-                showError(error.message);
-                return null;
-            }
-        }
-
-        async function searchMedia() {
-            const query = document.getElementById('searchQuery').value.trim();
-            if (!query) {
-                showError('Please enter a search term');
-                return;
-            }
-
-            showResults('Searching...');
-            const data = await makeRequest(`/search?query=${encodeURIComponent(query)}`);
-            
-            if (data && data.results) {
-                displaySearchResults(data.results);
-            }
-        }
-
-        async function getRequests() {
-            showResults('Loading requests...');
-            const data = await makeRequest('/request');
-            
-            if (data && data.results) {
-                displayRequests(data.results);
-            }
-        }
-
-        async function getStatus() {
-            showResults('Checking status...');
-            const data = await makeRequest('/status');
-            
-            if (data) {
-                showResults(`
-                    <div class="success">
-                        <strong>Overseer Status:</strong><br>
-                        Version: ${data.version || 'Unknown'}<br>
-                        Status: ${data.status || 'Online'}
-                    </div>
-                `);
-            }
-        }
-
-        function displaySearchResults(results) {
-            if (!results.length) {
-                showResults('<div class="error">No results found</div>');
-                return;
-            }
-
-            let html = '<h3>Search Results:</h3>';
-            results.forEach(item => {
-                html += `
-                    <div class="movie-item">
-                        <div class="movie-title">${item.title || item.name}</div>
-                        <div class="movie-info">
-                            ${item.releaseDate || item.firstAirDate || 'N/A'} | 
-                            ${item.mediaType || 'movie'}
-                        </div>
-                    </div>
-                `;
-            });
-            showResults(html);
-        }
-
-        function displayRequests(requests) {
-            if (!requests.length) {
-                showResults('<div>No requests found</div>');
-                return;
-            }
-
-            let html = '<h3>Current Requests:</h3>';
-            requests.forEach(req => {
-                html += `
-                    <div class="movie-item">
-                        <div class="movie-title">${req.media.title || req.media.name}</div>
-                        <div class="movie-info">
-                            Status: ${req.status} | 
-                            Requested: ${new Date(req.createdAt).toLocaleDateString()}
-                        </div>
-                    </div>
-                `;
-            });
-            showResults(html);
-        }
-
-        function showResults(html) {
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = html;
-            resultsDiv.classList.add('show');
-        }
-
-        function showError(message) {
-            showResults(`<div class="error">Error: ${message}</div>`);
-        }
-    </script>
-</body>
-</html>
