@@ -104,5 +104,182 @@
         background: #0f0f1e;
         border-radius: 6px;
         border: 1px solid #333;
-        max-height: 400p
-        
+        max-height: 400px;
+        overflow-y: auto;
+        display: none;
+    }
+
+    .results.show { display: block; }
+
+    .movie-item {
+        background: #1a1a2e;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        border-left: 3px solid #5b9bd5;
+    }
+
+    .movie-title {
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+
+    .movie-info {
+        font-size: 12px;
+        color: #aaa;
+    }
+
+    .error {
+        background: #2a1515;
+        color: #ff6b6b;
+        padding: 10px;
+        border-radius: 6px;
+    }
+
+    .success {
+        background: #1a2a1a;
+        color: #51cf66;
+        padding: 10px;
+        border-radius: 6px;
+    }
+
+    footer {
+        text-align: center;
+        padding: 10px;
+        font-size: 12px;
+        color: #aaa;
+        background: rgba(0,0,0,0.6);
+        border-top: 1px solid #16213e;
+    }
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎬 Overseer Control Panel</h1>
+    <span>Local API Interface</span>
+</header>
+
+<main>
+<div class="container">
+
+    <h2>Connection Settings</h2>
+
+    <div class="input-group">
+        <label>Overseer URL</label>
+        <input id="apiUrl" placeholder="http://localhost:5055">
+    </div>
+
+    <div class="input-group">
+        <label>API Key</label>
+        <input id="apiKey" type="password">
+    </div>
+
+    <button onclick="saveSettings()">Save Settings</button>
+    <span id="savedIndicator" style="display:none;color:#51cf66;font-size:12px;"> ✓ Saved</span>
+
+    <hr style="border:1px solid #333; margin:25px 0;">
+
+    <h2>Actions</h2>
+
+    <div class="input-group">
+        <label>Search Media</label>
+        <input id="searchQuery" placeholder="Movie or TV show">
+    </div>
+
+    <button onclick="searchMedia()">Search</button>
+    <button onclick="getRequests()">View Requests</button>
+    <button onclick="getStatus()">Server Status</button>
+
+    <div id="results" class="results"></div>
+
+</div>
+</main>
+
+<footer>
+    Overseer Web Interface • Single-Page App
+</footer>
+
+<script>
+let apiUrl = '';
+let apiKey = '';
+
+const savedUrl = localStorage.getItem('overseer_url');
+const savedKey = localStorage.getItem('overseer_key');
+
+if (savedUrl) { apiUrl = savedUrl; apiUrlInput.value = savedUrl; }
+if (savedKey) { apiKey = savedKey; apiKeyInput.value = savedKey; }
+
+function saveSettings() {
+    apiUrl = apiUrlInput.value.trim();
+    apiKey = apiKeyInput.value.trim();
+
+    if (!apiUrl || !apiKey) return showError("Missing URL or API key");
+
+    localStorage.setItem('overseer_url', apiUrl);
+    localStorage.setItem('overseer_key', apiKey);
+
+    savedIndicator.style.display = "inline";
+    setTimeout(() => savedIndicator.style.display = "none", 2000);
+}
+
+async function makeRequest(endpoint) {
+    try {
+        const res = await fetch(`${apiUrl}/api/v1${endpoint}`, {
+            headers: { "X-Api-Key": apiKey }
+        });
+        if (!res.ok) throw new Error(res.statusText);
+        return await res.json();
+    } catch (e) {
+        showError(e.message);
+    }
+}
+
+async function searchMedia() {
+    const q = searchQuery.value.trim();
+    if (!q) return showError("Enter a search term");
+
+    showResults("Searching...");
+    const data = await makeRequest(`/search?query=${encodeURIComponent(q)}`);
+    if (!data?.results?.length) return showError("No results");
+
+    showResults(data.results.map(i => `
+        <div class="movie-item">
+            <div class="movie-title">${i.title || i.name}</div>
+            <div class="movie-info">${i.mediaType} • ${i.releaseDate || i.firstAirDate || "N/A"}</div>
+        </div>
+    `).join(""));
+}
+
+async function getRequests() {
+    showResults("Loading...");
+    const data = await makeRequest(`/request`);
+    if (!data?.results?.length) return showError("No requests");
+
+    showResults(data.results.map(r => `
+        <div class="movie-item">
+            <div class="movie-title">${r.media.title || r.media.name}</div>
+            <div class="movie-info">${r.status}</div>
+        </div>
+    `).join(""));
+}
+
+async function getStatus() {
+    const data = await makeRequest(`/status`);
+    if (!data) return;
+    showResults(`<div class="success">Online • Version ${data.version}</div>`);
+}
+
+function showResults(html) {
+    results.innerHTML = html;
+    results.classList.add("show");
+}
+
+function showError(msg) {
+    showResults(`<div class="error">${msg}</div>`);
+}
+</script>
+
+</body>
+</html>
