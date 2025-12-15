@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>Overseer Interface</title>
     <style>
         body {
             margin: 0;
@@ -13,155 +13,321 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            font-family: Arial, sans-serif;
         }
 
-        .iframe-container {
+        .container {
             width: 90%;
-            height: 90%;
-            max-width: 1200px;
-            max-height: 800px;
-            background: white;
-            border: 2px solid #333;
+            max-width: 800px;
+            background: #1a1a2e;
+            border: 2px solid #16213e;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            border-radius: 8px;
-            overflow: hidden;
+            border-radius: 12px;
+            padding: 30px;
+            color: #eee;
         }
 
-        iframe {
+        h1 {
+            margin: 0 0 20px 0;
+            color: #5b9bd5;
+            font-size: 28px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        input, select {
             width: 100%;
-            height: 100%;
+            padding: 12px;
+            background: #0f0f1e;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #eee;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #5b9bd5;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #5b9bd5;
             border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #4a8bc2;
+        }
+
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #0f0f1e;
+            border: 1px solid #333;
+            border-radius: 6px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .movie-item {
+            padding: 12px;
+            background: #1a1a2e;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #5b9bd5;
+        }
+
+        .movie-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .movie-info {
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        .error {
+            color: #ff6b6b;
+            padding: 10px;
+            background: #2a1515;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: #51cf66;
+            padding: 10px;
+            background: #1a2a1a;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .settings-saved {
+            color: #51cf66;
+            font-size: 12px;
+            margin-left: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="iframe-container">
-        <iframe src="https://search.add2plex.com" frameborder="0" id="embedFrame" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-storage-access-by-user-activation" allow="storage-access *"></iframe>
+    <div class="container">
+        <h1>🎬 Overseer API Interface</h1>
+        
+        <div class="input-group">
+            <label>Overseer URL (e.g., http://192.168.1.69:5055)</label>
+            <input type="text" id="apiUrl" placeholder="http://your-overseer-url:5055">
+        </div>
+
+        <div class="input-group">
+            <label>API Key</label>
+            <input type="password" id="apiKey" placeholder="Enter your Overseer API key">
+        </div>
+
+        <button onclick="saveSettings()">Save Settings</button>
+        <span id="savedIndicator" class="settings-saved" style="display:none;">✓ Saved</span>
+
+        <hr style="border: 1px solid #333; margin: 25px 0;">
+
+        <div class="input-group">
+            <label>Search for Movies/TV Shows</label>
+            <input type="text" id="searchQuery" placeholder="Enter movie or TV show name">
+        </div>
+
+        <button onclick="searchMedia()">Search</button>
+        <button onclick="getRequests()">View Requests</button>
+        <button onclick="getStatus()">Check Status</button>
+
+        <div id="results" class="results"></div>
     </div>
 
     <script>
-        // Set XMLHttpRequest withCredentials for cross-origin requests
-        (function() {
-            const originalOpen = XMLHttpRequest.prototype.open;
-            XMLHttpRequest.prototype.open = function() {
-                originalOpen.apply(this, arguments);
-                this.withCredentials = true;
-            };
-        })();
+        let apiUrl = '';
+        let apiKey = '';
 
-        // Set SameSite=None; Secure for cookies
-        document.cookie = "SameSite=None; Secure";
-        
-        // Override document.cookie to add SameSite=None; Secure to all cookies
-        const originalCookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie');
-        Object.defineProperty(document, 'cookie', {
-            get: function() {
-                return originalCookieDescriptor.get.call(this);
-            },
-            set: function(val) {
-                if (!val.includes('SameSite=None')) {
-                    val += '; SameSite=None; Secure';
-                }
-                originalCookieDescriptor.set.call(this, val);
-            }
-        });
+        // Load saved settings
+        const savedUrl = localStorage.getItem('overseer_url');
+        const savedKey = localStorage.getItem('overseer_key');
+        if (savedUrl) {
+            document.getElementById('apiUrl').value = savedUrl;
+            apiUrl = savedUrl;
+        }
+        if (savedKey) {
+            document.getElementById('apiKey').value = savedKey;
+            apiKey = savedKey;
+        } else {
+            // Set default API key
+            apiKey = 'MTc0MDAyMTIwNjEyNTY3M2U3ZmQ1LWJlMDQtNGJiYy05ZjAxLWFmYmFmNGZmZmU4NA==';
+            document.getElementById('apiKey').value = apiKey;
+        }
 
-        const iframe = document.getElementById('embedFrame');
-        let loginPopup = null;
-
-        // Request storage access for the iframe to receive cookies
-        iframe.addEventListener('load', function() {
-            try {
-                // Try to request storage access on behalf of the iframe
-                if (document.requestStorageAccess) {
-                    document.requestStorageAccess().then(
-                        () => console.log('Storage access granted'),
-                        () => console.log('Storage access denied')
-                    );
-                }
-            } catch (e) {
-                console.log('Storage access API not available');
-            }
-        });
-        
-        // Listen for postMessage from popup or iframe
-        window.addEventListener('message', function(event) {
-            // Verify origin for security (adjust if needed)
-            if (event.origin !== 'https://search.add2plex.com') {
+        function saveSettings() {
+            apiUrl = document.getElementById('apiUrl').value.trim();
+            apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!apiUrl || !apiKey) {
+                showError('Please enter both URL and API key');
                 return;
             }
-            
-            // Handle authentication success message
-            if (event.data && event.data.type === 'auth_success') {
-                console.log('Authentication successful, refreshing iframe...');
-                iframe.src = iframe.src;
-            }
-            
-            // Handle login complete message
-            if (event.data && event.data.type === 'login_complete') {
-                console.log('Login complete, refreshing iframe...');
-                setTimeout(function() {
-                    iframe.src = iframe.src;
-                }, 500);
-            }
-            
-            // Handle any auth token if provided
-            if (event.data && event.data.token) {
-                console.log('Received auth token, storing and refreshing...');
-                localStorage.setItem('auth_token', event.data.token);
-                iframe.src = iframe.src;
-            }
-        });
-        
-        // Monitor for popup windows
-        const originalWindowOpen = window.open;
-        window.open = function() {
-            loginPopup = originalWindowOpen.apply(this, arguments);
-            
-            if (loginPopup) {
-                // Check if popup is closed every 500ms
-                const popupChecker = setInterval(function() {
-                    if (loginPopup.closed) {
-                        clearInterval(popupChecker);
-                        console.log('Popup closed, refreshing iframe...');
-                        // Wait a moment for cookies to settle, then refresh iframe
-                        setTimeout(function() {
-                            iframe.src = iframe.src;
-                        }, 500);
-                    }
-                }, 500);
-                
-                // Try to send a message to the popup requesting auth status
-                setTimeout(function() {
-                    try {
-                        loginPopup.postMessage({ type: 'request_auth' }, 'https://search.add2plex.com');
-                    } catch (e) {
-                        console.log('Could not post message to popup');
-                    }
-                }, 1000);
-            }
-            
-            return loginPopup;
-        };
 
-        // Also listen for focus events
-        window.addEventListener('focus', function() {
-            setTimeout(function() {
-                if (document.hasFocus()) {
-                    console.log('Window focused, refreshing iframe...');
-                    iframe.src = iframe.src;
-                }
-            }, 1000);
-        });
+            localStorage.setItem('overseer_url', apiUrl);
+            localStorage.setItem('overseer_key', apiKey);
+            
+            const indicator = document.getElementById('savedIndicator');
+            indicator.style.display = 'inline';
+            setTimeout(() => indicator.style.display = 'none', 2000);
+        }
 
-        // Send message to iframe periodically to check auth status
-        setInterval(function() {
+        async function makeRequest(endpoint, method = 'GET', body = null) {
+            if (!apiUrl || !apiKey) {
+                showError('Please save your settings first');
+                return null;
+            }
+
             try {
-                iframe.contentWindow.postMessage({ type: 'check_auth' }, 'https://search.add2plex.com');
-            } catch (e) {
-                // Cross-origin restrictions may prevent this
+                const options = {
+                    method: method,
+                    headers: {
+                        'X-Api-Key': apiKey,
+                        'Content-Type': 'application/json'
+                    }
+                };
+
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+
+                const response = await fetch(`${apiUrl}/api/v1${endpoint}`, options);
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                showError(error.message);
+                return null;
             }
-        }, 5000);
+        }
+
+        async function searchMedia() {
+            const query = document.getElementById('searchQuery').value.trim();
+            if (!query) {
+                showError('Please enter a search term');
+                return;
+            }
+
+            showResults('Searching...');
+            const data = await makeRequest(`/search?query=${encodeURIComponent(query)}`);
+            
+            if (data && data.results) {
+                displaySearchResults(data.results);
+            }
+        }
+
+        async function getRequests() {
+            showResults('Loading requests...');
+            const data = await makeRequest('/request');
+            
+            if (data && data.results) {
+                displayRequests(data.results);
+            }
+        }
+
+        async function getStatus() {
+            showResults('Checking status...');
+            const data = await makeRequest('/status');
+            
+            if (data) {
+                showResults(`
+                    <div class="success">
+                        <strong>Overseer Status:</strong><br>
+                        Version: ${data.version || 'Unknown'}<br>
+                        Status: ${data.status || 'Online'}
+                    </div>
+                `);
+            }
+        }
+
+        function displaySearchResults(results) {
+            if (!results.length) {
+                showResults('<div class="error">No results found</div>');
+                return;
+            }
+
+            let html = '<h3>Search Results:</h3>';
+            results.forEach(item => {
+                html += `
+                    <div class="movie-item">
+                        <div class="movie-title">${item.title || item.name}</div>
+                        <div class="movie-info">
+                            ${item.releaseDate || item.firstAirDate || 'N/A'} | 
+                            ${item.mediaType || 'movie'}
+                        </div>
+                    </div>
+                `;
+            });
+            showResults(html);
+        }
+
+        function displayRequests(requests) {
+            if (!requests.length) {
+                showResults('<div>No requests found</div>');
+                return;
+            }
+
+            let html = '<h3>Current Requests:</h3>';
+            requests.forEach(req => {
+                html += `
+                    <div class="movie-item">
+                        <div class="movie-title">${req.media.title || req.media.name}</div>
+                        <div class="movie-info">
+                            Status: ${req.status} | 
+                            Requested: ${new Date(req.createdAt).toLocaleDateString()}
+                        </div>
+                    </div>
+                `;
+            });
+            showResults(html);
+        }
+
+        function showResults(html) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('show');
+        }
+
+        function showError(message) {
+            showResults(`<div class="error">Error: ${message}</div>`);
+        }
     </script>
 </body>
 </html>
