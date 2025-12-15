@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="description" content="Dark blue minimal website">
     <meta name="theme-color" content="#0a1628">
-    <title>Dark Blue Page</title>
     <style>
         * {
             margin: 0;
