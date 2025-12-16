@@ -104,6 +104,26 @@ html, body {
     touch-action: none;
 }
 
+.window.split-view {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 48px 1fr;
+}
+
+.window.split-view .input-bar {
+    grid-column: 1 / -1;
+}
+
+.window.split-view .iframe-wrap {
+    border-right: 1px solid #2d3c66;
+}
+
+.window.split-view .auth-iframe-wrap {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 /* Input bar */
 .input-bar {
     height: 48px;
@@ -224,6 +244,48 @@ iframe[sandbox] {
     text-align: center;
 }
 
+.auth-iframe-wrap {
+    display: none;
+    flex-direction: column;
+}
+
+.auth-iframe-wrap.active {
+    display: flex;
+}
+
+.auth-header {
+    height: 36px;
+    background: #1a1f2e;
+    border-bottom: 1px solid #2d3c66;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    color: #8fb4ff;
+    font-size: 12px;
+}
+
+.auth-close-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    border: none;
+    background: #2d3c66;
+    color: #ff6b6b;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-iframe-wrap iframe {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
 /* Resize handle */
 .resize {
     position: absolute;
@@ -274,6 +336,16 @@ function createWindow() {
                     referrerpolicy="no-referrer-when-downgrade"
                     src=""></iframe>
         </div>
+        <div class="auth-iframe-wrap">
+            <div class="auth-header">
+                <span>Login</span>
+                <button class="auth-close-btn">×</button>
+            </div>
+            <iframe allow="popups; same-origin; scripts; forms" 
+                    credentials="include" 
+                    referrerpolicy="no-referrer-when-downgrade"
+                    src=""></iframe>
+        </div>
         <div class="auth-overlay">
             <div class="auth-message">Waiting for authentication...</div>
         </div>
@@ -310,6 +382,16 @@ function createFullscreenWindow() {
             <button class="new-tab-btn">↗</button>
         </div>
         <div class="iframe-wrap">
+            <iframe allow="popups; same-origin; scripts; forms" 
+                    credentials="include" 
+                    referrerpolicy="no-referrer-when-downgrade"
+                    src=""></iframe>
+        </div>
+        <div class="auth-iframe-wrap">
+            <div class="auth-header">
+                <span>Login</span>
+                <button class="auth-close-btn">×</button>
+            </div>
             <iframe allow="popups; same-origin; scripts; forms" 
                     credentials="include" 
                     referrerpolicy="no-referrer-when-downgrade"
@@ -411,43 +493,58 @@ function enableNewTab(win) {
 }
 
 function enableAuth(win) {
-    const iframe = win.querySelector("iframe");
+    const iframe = win.querySelector(".iframe-wrap iframe");
+    const authIframeWrap = win.querySelector(".auth-iframe-wrap");
+    const authIframe = win.querySelector(".auth-iframe-wrap iframe");
+    const authCloseBtn = win.querySelector(".auth-close-btn");
     const overlay = win.querySelector(".auth-overlay");
     let authPopup = null;
 
-    // Listen for messages from authentication popup
+    // Close auth panel
+    authCloseBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        win.classList.remove("split-view");
+        authIframeWrap.classList.remove("active");
+        authIframe.src = "";
+        if (authPopup && !authPopup.closed) {
+            authPopup.close();
+        }
+    });
+
+    // Intercept popup creation
+    const originalOpen = window.open;
+    
+    // Listen for messages from authentication iframe
     window.addEventListener("message", (event) => {
-        // For production, validate event.origin against trusted domains
-        // if (!trustedOrigins.includes(event.origin)) return;
-        
         if (event.data && event.data.type === "auth-success") {
             console.log("Auth token received:", event.data.token);
             
+            win.classList.remove("split-view");
+            authIframeWrap.classList.remove("active");
             overlay.classList.remove("active");
+            authIframe.src = "";
             
             if (authPopup && !authPopup.closed) {
                 authPopup.close();
             }
             
-            // Store token in memory
             win.authToken = event.data.token;
             
-            // Try to inject token into iframe if possible
             try {
                 if (event.data.tokenType === "bearer") {
-                    // Store for fetch interceptor
                     win.bearerToken = event.data.token;
                 }
             } catch(e) {
                 console.log("Cannot access iframe directly due to CORS");
             }
             
-            // Refresh iframe with new auth
             if (iframe.src) {
                 iframe.src = iframe.src;
             }
         } else if (event.data && event.data.type === "auth-failed") {
             console.error("Authentication failed:", event.data.error);
+            win.classList.remove("split-view");
+            authIframeWrap.classList.remove("active");
             overlay.classList.remove("active");
             if (authPopup && !authPopup.closed) {
                 authPopup.close();
@@ -455,37 +552,49 @@ function enableAuth(win) {
         }
     });
 
-    // Handle iframe load errors (blocked by X-Frame-Options, CSP, etc.)
     iframe.addEventListener('error', () => {
         console.warn("Iframe failed to load - may be blocked by X-Frame-Options or CSP");
-        // Show message to user suggesting new tab option
     });
 
-    // Expose auth function for iframe to call
-    win.openAuthPopup = (authUrl, width = 500, height = 600) => {
-        const left = (screen.width - width) / 2;
-        const top = (screen.height - height) / 2;
-        
-        overlay.classList.add("active");
-        
-        authPopup = window.open(
-            authUrl,
-            "auth-popup",
-            `width=${width},height=${height},left=${left},top=${top},popup=yes`
-        );
-        
-        if (!authPopup || authPopup.closed) {
-            overlay.classList.remove("active");
-            alert("Popup blocked. Please allow popups for authentication.");
-            return;
-        }
-        
-        const checkClosed = setInterval(() => {
-            if (authPopup.closed) {
-                clearInterval(checkClosed);
-                overlay.classList.remove("active");
+    // Monitor for popup attempts from the main iframe
+    const checkForPopups = setInterval(() => {
+        try {
+            const iframeDoc = iframe.contentWindow || iframe.contentDocument;
+            if (iframeDoc && iframeDoc.document) {
+                // Override window.open in the iframe context
+                iframeDoc.open = function(url, name, features) {
+                    // Check if this looks like an auth popup
+                    if (url && (url.includes('login') || url.includes('auth') || url.includes('oauth') || 
+                        features && (features.includes('popup') || features.includes('width=') || features.includes('height=')))) {
+                        
+                        // Show in side panel instead
+                        win.classList.add("split-view");
+                        authIframeWrap.classList.add("active");
+                        authIframe.src = url;
+                        
+                        return {
+                            closed: false,
+                            close: () => {
+                                win.classList.remove("split-view");
+                                authIframeWrap.classList.remove("active");
+                                authIframe.src = "";
+                            }
+                        };
+                    }
+                    
+                    // Otherwise use original open
+                    return originalOpen.call(window, url, name, features);
+                };
             }
-        }, 500);
+        } catch(e) {
+            // CORS prevents access, which is expected for cross-origin iframes
+        }
+    }, 1000);
+
+    win.openAuthPopup = (authUrl, width = 500, height = 600) => {
+        win.classList.add("split-view");
+        authIframeWrap.classList.add("active");
+        authIframe.src = authUrl;
     };
 }
 
@@ -544,4 +653,4 @@ function enableResize(win) {
 </script>
 
 </body>
-</html>
+    </html>
