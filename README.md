@@ -80,6 +80,21 @@ html, body {
     flex-shrink: 0;
 }
 
+.refresh-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    border: none;
+    background: #2d3c66;
+    color: #8fb4ff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
 .input-bar input {
     flex: 1;
     height: 32px;
@@ -151,11 +166,12 @@ function createWindow() {
     win.innerHTML = `
         <div class="input-bar">
             <button class="close-btn">×</button>
+            <button class="refresh-btn">↻</button>
             <input type="text" placeholder="Enter URL or search term">
             <button>Go</button>
         </div>
         <div class="iframe-wrap">
-            <iframe src=""></iframe>
+            <iframe allow="popups" src=""></iframe>
         </div>
         <div class="resize"></div>
     `;
@@ -167,14 +183,16 @@ function createWindow() {
     enableResize(win);
     enableInput(win);
     enableClose(win);
+    enableRefresh(win);
 }
 
 function enableInput(win) {
     const input = win.querySelector(".input-bar input");
-    const button = win.querySelector(".input-bar button:not(.close-btn)");
+    const goButton = win.querySelector(".input-bar button:last-child");
     const iframe = win.querySelector("iframe");
 
-    function navigate() {
+    function navigate(e) {
+        if (e) e.stopPropagation();
         let value = input.value.trim();
         if (!value) return;
 
@@ -192,7 +210,8 @@ function enableInput(win) {
         iframe.src = url;
     }
 
-    button.addEventListener("click", navigate);
+    goButton.addEventListener("click", navigate);
+    goButton.addEventListener("touchend", navigate);
     input.addEventListener("keydown", e => { if(e.key === "Enter") navigate(); });
 }
 
@@ -208,13 +227,24 @@ function enableClose(win) {
     });
 }
 
+function enableRefresh(win) {
+    const refreshBtn = win.querySelector(".refresh-btn");
+    const iframe = win.querySelector("iframe");
+    refreshBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (iframe.src) {
+            iframe.src = iframe.src;
+        }
+    });
+}
+
 /* Dragging */
 function enableDrag(win) {
     const bar = win.querySelector(".input-bar");
 
     bar.onpointerdown = e => {
-        // Don't drag if clicking the close button
-        if (e.target.classList.contains('close-btn')) return;
+        // Don't drag if clicking buttons or input
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
         
         bringToFront(win);
         bar.setPointerCapture(e.pointerId);
