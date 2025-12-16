@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Floating App Windows</title>
+<title>Touch Window Launcher</title>
 
 <meta name="viewport"
-      content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      content="width=device-width, height=device-height,
+               initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <style>
 html, body {
@@ -14,27 +15,39 @@ html, body {
     margin: 0;
     background: #0b132b;
     overflow: hidden;
-    touch-action: manipulation;
+
+    /* CRITICAL for touch reliability */
+    touch-action: none;
+    overscroll-behavior: none;
     user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+
     font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Plus button */
+/* Add button */
 .add-button {
     position: fixed;
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    width: 64px;
-    height: 64px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     background: #1f2a44;
     color: #8fb4ff;
-    font-size: 36px;
+    font-size: 42px;
     font-weight: bold;
     border: none;
-    cursor: pointer;
     z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    touch-action: manipulation;
+    cursor: pointer;
 }
 
 /* Window */
@@ -43,43 +56,51 @@ html, body {
     width: 500px;
     height: 500px;
     background: #000;
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid #2d3c66;
     display: flex;
     flex-direction: column;
     box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+
+    touch-action: none;
 }
 
-/* Drag bar */
+/* Drag bar (BIG for fingers) */
 .title-bar {
-    height: 36px;
+    height: 48px;
     background: #1a1f2e;
-    cursor: move;
     border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+
+    touch-action: none;
 }
 
 /* Content */
 .iframe-wrap {
     flex: 1;
-    overflow: hidden;
+    background: black;
 }
 
 iframe {
     width: 100%;
     height: 100%;
     border: none;
-    background: white;
 }
 
-/* Resize handle */
+/* Resize handle (BIG corner) */
 .resize {
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: 36px;
+    height: 36px;
     right: 0;
     bottom: 0;
+    background:
+        linear-gradient(135deg,
+            transparent 50%,
+            #8fb4ff 50%);
     cursor: nwse-resize;
-    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+
+    touch-action: none;
 }
 </style>
 </head>
@@ -88,16 +109,16 @@ iframe {
 <button class="add-button" id="addBtn">+</button>
 
 <script>
-let zIndex = 1;
 const APP_URL = "http://192.168.1.69:3000";
+let zIndex = 1;
 
-document.getElementById("addBtn").onclick = createWindow;
+document.getElementById("addBtn").addEventListener("click", createWindow);
 
 function createWindow() {
     const win = document.createElement("div");
     win.className = "window";
-    win.style.left = "60px";
-    win.style.top = "60px";
+    win.style.left = "40px";
+    win.style.top = "40px";
     win.style.zIndex = ++zIndex;
 
     win.innerHTML = `
@@ -111,44 +132,73 @@ function createWindow() {
     document.body.appendChild(win);
     bringToFront(win);
 
-    const bar = win.querySelector(".title-bar");
-    const resize = win.querySelector(".resize");
-
-    /* Drag */
-    bar.onpointerdown = e => {
-        bringToFront(win);
-        let sx = e.clientX, sy = e.clientY;
-        let sl = win.offsetLeft, st = win.offsetTop;
-        bar.setPointerCapture(e.pointerId);
-
-        bar.onpointermove = ev => {
-            win.style.left = sl + (ev.clientX - sx) + "px";
-            win.style.top  = st + (ev.clientY - sy) + "px";
-        };
-
-        bar.onpointerup = () => bar.onpointermove = null;
-    };
-
-    /* Resize */
-    resize.onpointerdown = e => {
-        bringToFront(win);
-        let sx = e.clientX, sy = e.clientY;
-        let sw = win.offsetWidth, sh = win.offsetHeight;
-        resize.setPointerCapture(e.pointerId);
-
-        resize.onpointermove = ev => {
-            win.style.width  = Math.max(300, sw + (ev.clientX - sx)) + "px";
-            win.style.height = Math.max(200, sh + (ev.clientY - sy)) + "px";
-        };
-
-        resize.onpointerup = () => resize.onpointermove = null;
-    };
-
-    win.onpointerdown = () => bringToFront(win);
+    enableDrag(win);
+    enableResize(win);
 }
 
+/* Bring window to top */
 function bringToFront(win) {
     win.style.zIndex = ++zIndex;
+}
+
+/* DRAGGING (touch-safe) */
+function enableDrag(win) {
+    const bar = win.querySelector(".title-bar");
+
+    bar.addEventListener("pointerdown", e => {
+        bringToFront(win);
+        bar.setPointerCapture(e.pointerId);
+
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startL = win.offsetLeft;
+        const startT = win.offsetTop;
+
+        const move = ev => {
+            win.style.left = startL + (ev.clientX - startX) + "px";
+            win.style.top  = startT + (ev.clientY - startY) + "px";
+        };
+
+        const up = () => {
+            bar.releasePointerCapture(e.pointerId);
+            bar.removeEventListener("pointermove", move);
+            bar.removeEventListener("pointerup", up);
+        };
+
+        bar.addEventListener("pointermove", move);
+        bar.addEventListener("pointerup", up);
+    });
+}
+
+/* RESIZING (touch-safe) */
+function enableResize(win) {
+    const handle = win.querySelector(".resize");
+
+    handle.addEventListener("pointerdown", e => {
+        bringToFront(win);
+        handle.setPointerCapture(e.pointerId);
+
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startW = win.offsetWidth;
+        const startH = win.offsetHeight;
+
+        const move = ev => {
+            win.style.width =
+                Math.max(320, startW + (ev.clientX - startX)) + "px";
+            win.style.height =
+                Math.max(240, startH + (ev.clientY - startY)) + "px";
+        };
+
+        const up = () => {
+            handle.releasePointerCapture(e.pointerId);
+            handle.removeEventListener("pointermove", move);
+            handle.removeEventListener("pointerup", up);
+        };
+
+        handle.addEventListener("pointermove", move);
+        handle.addEventListener("pointerup", up);
+    });
 }
 </script>
 
