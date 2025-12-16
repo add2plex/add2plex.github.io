@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Touch Window Launcher</title>
+<title>Mini Chrome Browser</title>
 
 <meta name="viewport"
       content="width=device-width, height=device-height,
@@ -15,18 +15,11 @@ html, body {
     margin: 0;
     background: #0b132b;
     overflow: hidden;
-
-    /* Touch reliability */
     touch-action: none;
-    overscroll-behavior: none;
     user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-
     font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Plus button */
 .add-button {
     position: fixed;
     bottom: 24px;
@@ -41,21 +34,13 @@ html, body {
     font-weight: bold;
     border: none;
     z-index: 1000;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    touch-action: manipulation;
-    cursor: pointer;
 }
 
-/* Window */
 .window {
     position: absolute;
     width: 500px;
     height: 500px;
-    background: #000;
+    background: #111;
     border-radius: 12px;
     border: 1px solid #2d3c66;
     display: flex;
@@ -64,16 +49,38 @@ html, body {
     touch-action: none;
 }
 
-/* Drag bar */
-.title-bar {
+.toolbar {
     height: 48px;
     background: #1a1f2e;
+    display: flex;
+    align-items: center;
+    padding: 6px;
+    gap: 6px;
     border-bottom: 1px solid #2d3c66;
-    cursor: grab;
-    touch-action: none;
 }
 
-/* Content */
+.tool-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #2d3c66;
+    color: #8fb4ff;
+    font-size: 16px;
+}
+
+.address {
+    flex: 1;
+    height: 32px;
+    border-radius: 16px;
+    border: none;
+    padding: 0 14px;
+    background: #0f1320;
+    color: white;
+    font-size: 14px;
+    outline: none;
+}
+
 .iframe-wrap {
     flex: 1;
     background: black;
@@ -85,7 +92,6 @@ iframe {
     border: none;
 }
 
-/* Resize handle */
 .resize {
     position: absolute;
     width: 36px;
@@ -93,7 +99,6 @@ iframe {
     right: 0;
     bottom: 0;
     background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
-    cursor: nwse-resize;
     touch-action: none;
 }
 </style>
@@ -103,10 +108,9 @@ iframe {
 <button class="add-button" id="addBtn">+</button>
 
 <script>
-const APP_URL = "https://search.add2plex.com";
 let zIndex = 1;
 
-document.getElementById("addBtn").addEventListener("click", createWindow);
+document.getElementById("addBtn").onclick = createWindow;
 
 function createWindow() {
     const win = document.createElement("div");
@@ -116,9 +120,14 @@ function createWindow() {
     win.style.zIndex = ++zIndex;
 
     win.innerHTML = `
-        <div class="title-bar"></div>
+        <div class="toolbar">
+            <button class="tool-btn back">◀</button>
+            <button class="tool-btn forward">▶</button>
+            <button class="tool-btn reload">⟳</button>
+            <input class="address" placeholder="Search or type URL">
+        </div>
         <div class="iframe-wrap">
-            <iframe src="${APP_URL}"></iframe>
+            <iframe></iframe>
         </div>
         <div class="resize"></div>
     `;
@@ -128,70 +137,92 @@ function createWindow() {
 
     enableDrag(win);
     enableResize(win);
+    enableBrowser(win);
+}
+
+function enableBrowser(win) {
+    const iframe = win.querySelector("iframe");
+    const input = win.querySelector(".address");
+    const back = win.querySelector(".back");
+    const forward = win.querySelector(".forward");
+    const reload = win.querySelector(".reload");
+
+    let history = [];
+    let index = -1;
+
+    function navigate(value) {
+        let url;
+        if (/^https?:\/\//i.test(value)) {
+            url = value;
+        } else if (value.includes(".") && !value.includes(" ")) {
+            url = "https://" + value;
+        } else {
+            url = "https://www.google.com/search?q=" + encodeURIComponent(value);
+        }
+
+        iframe.src = url;
+        history = history.slice(0, index + 1);
+        history.push(url);
+        index++;
+        input.value = url;
+    }
+
+    input.addEventListener("keydown", e => {
+        if (e.key === "Enter") navigate(input.value);
+    });
+
+    back.onclick = () => {
+        if (index > 0) iframe.src = history[--index];
+    };
+
+    forward.onclick = () => {
+        if (index < history.length - 1) iframe.src = history[++index];
+    };
+
+    reload.onclick = () => iframe.src = iframe.src;
+}
+
+function enableDrag(win) {
+    const bar = win.querySelector(".toolbar");
+
+    bar.onpointerdown = e => {
+        if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
+        bringToFront(win);
+        bar.setPointerCapture(e.pointerId);
+
+        const sx = e.clientX, sy = e.clientY;
+        const sl = win.offsetLeft, st = win.offsetTop;
+
+        bar.onpointermove = ev => {
+            win.style.left = sl + (ev.clientX - sx) + "px";
+            win.style.top  = st + (ev.clientY - sy) + "px";
+        };
+
+        bar.onpointerup = () => bar.onpointermove = null;
+    };
+}
+
+function enableResize(win) {
+    const handle = win.querySelector(".resize");
+
+    handle.onpointerdown = e => {
+        bringToFront(win);
+        handle.setPointerCapture(e.pointerId);
+
+        const sx = e.clientX, sy = e.clientY;
+        const sw = win.offsetWidth, sh = win.offsetHeight;
+
+        handle.onpointermove = ev => {
+            win.style.width  = Math.max(320, sw + (ev.clientX - sx)) + "px";
+            win.style.height = Math.max(240, sh + (ev.clientY - sy)) + "px";
+        };
+
+        handle.onpointerup = () => handle.onpointermove = null;
+    };
 }
 
 function bringToFront(win) {
     win.style.zIndex = ++zIndex;
-}
-
-/* Dragging */
-function enableDrag(win) {
-    const bar = win.querySelector(".title-bar");
-
-    bar.addEventListener("pointerdown", e => {
-        bringToFront(win);
-        bar.setPointerCapture(e.pointerId);
-
-        const startX = e.clientX;
-        const startY = e.clientY;
-        const startL = win.offsetLeft;
-        const startT = win.offsetTop;
-
-        const move = ev => {
-            win.style.left = startL + (ev.clientX - startX) + "px";
-            win.style.top  = startT + (ev.clientY - startY) + "px";
-        };
-
-        const up = () => {
-            bar.releasePointerCapture(e.pointerId);
-            bar.removeEventListener("pointermove", move);
-            bar.removeEventListener("pointerup", up);
-        };
-
-        bar.addEventListener("pointermove", move);
-        bar.addEventListener("pointerup", up);
-    });
-}
-
-/* Resizing */
-function enableResize(win) {
-    const handle = win.querySelector(".resize");
-
-    handle.addEventListener("pointerdown", e => {
-        bringToFront(win);
-        handle.setPointerCapture(e.pointerId);
-
-        const startX = e.clientX;
-        const startY = e.clientY;
-        const startW = win.offsetWidth;
-        const startH = win.offsetHeight;
-
-        const move = ev => {
-            win.style.width =
-                Math.max(320, startW + (ev.clientX - startX)) + "px";
-            win.style.height =
-                Math.max(240, startH + (ev.clientY - startY)) + "px";
-        };
-
-        const up = () => {
-            handle.releasePointerCapture(e.pointerId);
-            handle.removeEventListener("pointermove", move);
-            handle.removeEventListener("pointerup", up);
-        };
-
-        handle.addEventListener("pointermove", move);
-        handle.addEventListener("pointerup", up);
-    });
 }
 </script>
 
