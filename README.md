@@ -16,7 +16,7 @@ html, body {
     background: #0b132b;
     overflow: hidden;
 
-    /* CRITICAL for touch reliability */
+    /* Touch reliability */
     touch-action: none;
     overscroll-behavior: none;
     user-select: none;
@@ -26,7 +26,7 @@ html, body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Add button */
+/* Plus button */
 .add-button {
     position: fixed;
     bottom: 24px;
@@ -61,17 +61,15 @@ html, body {
     display: flex;
     flex-direction: column;
     box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-
     touch-action: none;
 }
 
-/* Drag bar (BIG for fingers) */
+/* Drag bar */
 .title-bar {
     height: 48px;
     background: #1a1f2e;
     border-bottom: 1px solid #2d3c66;
     cursor: grab;
-
     touch-action: none;
 }
 
@@ -87,19 +85,15 @@ iframe {
     border: none;
 }
 
-/* Resize handle (BIG corner) */
+/* Resize handle */
 .resize {
     position: absolute;
     width: 36px;
     height: 36px;
     right: 0;
     bottom: 0;
-    background:
-        linear-gradient(135deg,
-            transparent 50%,
-            #8fb4ff 50%);
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
     cursor: nwse-resize;
-
     touch-action: none;
 }
 </style>
@@ -109,7 +103,7 @@ iframe {
 <button class="add-button" id="addBtn">+</button>
 
 <script>
-const APP_URL = "http://192.168.1.69:3000";
+const APP_URL = "https://search.add2plex.com";
 let zIndex = 1;
 
 document.getElementById("addBtn").addEventListener("click", createWindow);
@@ -136,12 +130,11 @@ function createWindow() {
     enableResize(win);
 }
 
-/* Bring window to top */
 function bringToFront(win) {
     win.style.zIndex = ++zIndex;
 }
 
-/* DRAGGING (touch-safe) */
+/* Dragging */
 function enableDrag(win) {
     const bar = win.querySelector(".title-bar");
 
@@ -170,7 +163,7 @@ function enableDrag(win) {
     });
 }
 
-/* RESIZING (touch-safe) */
+/* Resizing */
 function enableResize(win) {
     const handle = win.querySelector(".resize");
 
