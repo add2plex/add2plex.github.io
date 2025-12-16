@@ -65,6 +65,21 @@ html, body {
     align-items: center;
 }
 
+.close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    border: none;
+    background: #2d3c66;
+    color: #ff6b6b;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
 .input-bar input {
     flex: 1;
     height: 32px;
@@ -131,6 +146,7 @@ function createWindow() {
 
     win.innerHTML = `
         <div class="input-bar">
+            <button class="close-btn">×</button>
             <input type="text" placeholder="Enter URL or search term">
             <button>Go</button>
         </div>
@@ -146,6 +162,7 @@ function createWindow() {
     enableDrag(win);
     enableResize(win);
     enableInput(win);
+    enableClose(win);
 }
 
 function enableInput(win) {
@@ -177,11 +194,22 @@ function bringToFront(win) {
     win.style.zIndex = ++zIndex;
 }
 
+function enableClose(win) {
+    const closeBtn = win.querySelector(".close-btn");
+    closeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        win.remove();
+    });
+}
+
 /* Dragging */
 function enableDrag(win) {
     const bar = win.querySelector(".input-bar");
 
     bar.onpointerdown = e => {
+        // Don't drag if clicking the close button
+        if (e.target.classList.contains('close-btn')) return;
+        
         bringToFront(win);
         bar.setPointerCapture(e.pointerId);
 
