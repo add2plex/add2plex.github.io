@@ -5,6 +5,7 @@
 <title>Dynamic Windows with URL Input</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Set-Cookie" content="SameSite=None; Secure">
 
 <style>
 html, body {
@@ -176,6 +177,9 @@ iframe[sandbox] {
 <button class="add-button" id="addBtn">+</button>
 
 <script>
+// Enable third-party cookies and credentials globally
+document.cookie = "cookiesEnabled=true; SameSite=None; Secure";
+
 let zIndex = 1;
 
 document.getElementById("addBtn").addEventListener("click", createWindow);
