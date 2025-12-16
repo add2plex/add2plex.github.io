@@ -115,6 +115,10 @@ iframe {
     border: none;
 }
 
+iframe[sandbox] {
+    /* Allow forms, scripts, popups, and same-origin for authentication flows */
+}
+
 /* Resize handle */
 .resize {
     position: absolute;
@@ -151,7 +155,7 @@ function createWindow() {
             <button>Go</button>
         </div>
         <div class="iframe-wrap">
-            <iframe src=""></iframe>
+            <iframe sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" src=""></iframe>
         </div>
         <div class="resize"></div>
     `;
