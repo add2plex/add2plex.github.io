@@ -167,7 +167,7 @@ function createWindow() {
 
 function enableInput(win) {
     const input = win.querySelector(".input-bar input");
-    const button = win.querySelector(".input-bar button");
+    const button = win.querySelector(".input-bar button:not(.close-btn)");
     const iframe = win.querySelector("iframe");
 
     function navigate() {
@@ -177,6 +177,8 @@ function enableInput(win) {
         let url;
         if (/^https?:\/\//i.test(value)) {
             url = value;
+        } else if (value.startsWith("localhost") || value.startsWith("127.0.0.1") || /^localhost:/i.test(value) || /^127\.0\.0\.1:/i.test(value)) {
+            url = "http://" + value;
         } else if (value.includes(".") && !value.includes(" ")) {
             url = "https://" + value;
         } else {
