@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Zoom Button Weather Radar</title>
+<title>Radar + Clock Dashboard</title>
 
 <meta name="viewport"
       content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -17,14 +17,11 @@
         touch-action: manipulation;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
+        font-family: Arial, sans-serif;
     }
 
     .window {
         position: absolute;
-        top: 5%;
-        left: 5%;
-        width: 90%;
-        height: 85%;
         background: #000;
         border: 2px solid #1f2a44;
         border-radius: 10px;
@@ -44,11 +41,11 @@
         cursor: move;
         border-bottom: 1px solid #1f2a44;
         touch-action: none;
+        font-size: 14px;
     }
 
     .title-text {
         flex: 1;
-        font-size: 14px;
         white-space: nowrap;
     }
 
@@ -60,11 +57,6 @@
         padding: 6px 10px;
         font-size: 12px;
         cursor: pointer;
-        touch-action: manipulation;
-    }
-
-    .zoom-btn:hover {
-        background: #2d3c66;
     }
 
     .iframe-wrap {
@@ -95,8 +87,9 @@
 </head>
 <body>
 
-<div class="window" id="window">
-    <div class="title-bar" id="dragHandle">
+<!-- RADAR WINDOW -->
+<div class="window" id="radarWindow" style="top:5%; left:5%; width:70%; height:80%;">
+    <div class="title-bar">
         <div class="title-text">NOAA Weather Radar</div>
         <button class="zoom-btn" id="zoomBtn">Zoom +10%</button>
     </div>
@@ -108,77 +101,122 @@
         </iframe>
     </div>
 
-    <div class="resize-handle" id="resizeHandle"></div>
+    <div class="resize-handle"></div>
+</div>
+
+<!-- CLOCK WINDOW -->
+<div class="window" id="clockWindow" style="top:10%; left:78%; width:18%; height:20%;">
+    <div class="title-bar">
+        <div class="title-text">Central Time (CST)</div>
+    </div>
+
+    <div class="iframe-wrap">
+        <iframe srcdoc="
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {
+        margin:0;
+        background:#000;
+        color:#8fb4ff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        height:100%;
+        font-family: Arial, sans-serif;
+    }
+    #clock {
+        font-size:48px;
+        font-weight:bold;
+        letter-spacing:2px;
+    }
+</style>
+</head>
+<body>
+<div id='clock'></div>
+
+<script>
+function updateClock() {
+    const now = new Date();
+    const options = {
+        timeZone: 'America/Chicago',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    };
+    document.getElementById('clock').textContent =
+        now.toLocaleTimeString('en-US', options);
+}
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+</body>
+</html>
+"></iframe>
+    </div>
+
+    <div class="resize-handle"></div>
 </div>
 
 <script>
-const win = document.getElementById("window");
-const drag = document.getElementById("dragHandle");
-const resize = document.getElementById("resizeHandle");
-const iframe = document.getElementById("radarFrame");
+function makeMovable(win) {
+    const bar = win.querySelector(".title-bar");
+    const resize = win.querySelector(".resize-handle");
+
+    let sx, sy, sw, sh, sl, st;
+
+    bar.addEventListener("pointerdown", e => {
+        if (e.target.tagName === "BUTTON") return;
+        sx = e.clientX; sy = e.clientY;
+        sl = win.offsetLeft; st = win.offsetTop;
+        bar.setPointerCapture(e.pointerId);
+
+        const move = ev => {
+            win.style.left = sl + (ev.clientX - sx) + "px";
+            win.style.top  = st + (ev.clientY - sy) + "px";
+        };
+
+        bar.addEventListener("pointermove", move);
+        bar.addEventListener("pointerup", () => {
+            bar.removeEventListener("pointermove", move);
+        }, { once:true });
+    });
+
+    resize.addEventListener("pointerdown", e => {
+        sx = e.clientX; sy = e.clientY;
+        sw = win.offsetWidth; sh = win.offsetHeight;
+        resize.setPointerCapture(e.pointerId);
+
+        const resizeMove = ev => {
+            win.style.width  = Math.max(180, sw + (ev.clientX - sx)) + "px";
+            win.style.height = Math.max(120, sh + (ev.clientY - sy)) + "px";
+        };
+
+        resize.addEventListener("pointermove", resizeMove);
+        resize.addEventListener("pointerup", () => {
+            resize.removeEventListener("pointermove", resizeMove);
+        }, { once:true });
+    });
+}
+
+makeMovable(document.getElementById("radarWindow"));
+makeMovable(document.getElementById("clockWindow"));
+
+/* Radar zoom button */
+let zoomLevel = 0;
+const radarFrame = document.getElementById("radarFrame");
 const zoomBtn = document.getElementById("zoomBtn");
-
-let startX, startY, startW, startH, startL, startT;
-
-/* Dragging */
-drag.addEventListener("pointerdown", e => {
-    if (e.target.tagName === "BUTTON") return;
-
-    startX = e.clientX;
-    startY = e.clientY;
-    startL = win.offsetLeft;
-    startT = win.offsetTop;
-    drag.setPointerCapture(e.pointerId);
-
-    const move = ev => {
-        win.style.left = startL + (ev.clientX - startX) + "px";
-        win.style.top  = startT + (ev.clientY - startY) + "px";
-    };
-
-    drag.addEventListener("pointermove", move);
-    drag.addEventListener("pointerup", () => {
-        drag.removeEventListener("pointermove", move);
-    }, { once: true });
-});
-
-/* Resizing */
-resize.addEventListener("pointerdown", e => {
-    startX = e.clientX;
-    startY = e.clientY;
-    startW = win.offsetWidth;
-    startH = win.offsetHeight;
-    resize.setPointerCapture(e.pointerId);
-
-    const resizeMove = ev => {
-        win.style.width  = Math.max(300, startW + (ev.clientX - startX)) + "px";
-        win.style.height = Math.max(200, startH + (ev.clientY - startY)) + "px";
-    };
-
-    resize.addEventListener("pointermove", resizeMove);
-    resize.addEventListener("pointerup", () => {
-        resize.removeEventListener("pointermove", resizeMove);
-    }, { once: true });
-});
-
-/* Zoom button logic */
-let zoomLevel = 0; // 0 to 50 (percent)
 
 zoomBtn.addEventListener("click", e => {
     e.stopPropagation();
-
     zoomLevel += 10;
-
-    if (zoomLevel > 50) {
-        zoomLevel = 0;
-    }
-
-    const scale = 1 + (zoomLevel / 100);
-    iframe.style.transform = `scale(${scale})`;
-
-    zoomBtn.textContent =
-        zoomLevel === 0 ? "Zoom +10%" :
-        zoomLevel === 50 ? "Reset Zoom" :
-        `Zoom +${zoomLevel}%`;
+    if (zoomLevel > 50) zoomLevel = 0;
+    radarFrame.style.transform = `scale(${1 + zoomLevel / 100})`;
+    zoomBtn.textContent = zoomLevel === 0 ? "Zoom +10%" :
+                          zoomLevel === 50 ? "Reset Zoom" :
+                          `Zoom +${zoomLevel}%`;
 });
 </script>
 
