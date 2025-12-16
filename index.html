@@ -195,7 +195,7 @@ function createWindow() {
             <button>Go</button>
         </div>
         <div class="iframe-wrap">
-            <iframe allow="popups" src=""></iframe>
+            <iframe allow="popups" credentials="include" src=""></iframe>
         </div>
         <div class="auth-overlay">
             <div class="auth-message">Waiting for authentication...</div>
