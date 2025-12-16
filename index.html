@@ -229,6 +229,8 @@ function enableInput(win) {
             url = value;
         } else if (value.startsWith("localhost") || value.startsWith("127.0.0.1") || /^localhost:/i.test(value) || /^127\.0\.0\.1:/i.test(value)) {
             url = "http://" + value;
+        } else if (/^192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(value) || /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(value) || /^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(value)) {
+            url = "http://" + value;
         } else if (value.includes(".") && !value.includes(" ")) {
             url = "https://" + value;
         } else {
