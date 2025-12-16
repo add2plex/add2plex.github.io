@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Set-Cookie" content="SameSite=None; Secure">
+<meta name="referrer" content="no-referrer-when-downgrade">
 
 <style>
 html, body {
@@ -39,6 +40,54 @@ html, body {
     justify-content: center;
     touch-action: manipulation;
     cursor: pointer;
+}
+
+.button-group {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 16px;
+    z-index: 1000;
+}
+
+.add-button-group {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #1f2a44;
+    color: #8fb4ff;
+    font-size: 42px;
+    font-weight: bold;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    cursor: pointer;
+}
+
+.add-fullscreen-button {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    background: #1f2a44;
+    color: #8fb4ff;
+    font-size: 36px;
+    font-weight: bold;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    cursor: pointer;
+    position: relative;
+}
+
+.add-fullscreen-button::before {
+    content: '+';
+    position: absolute;
 }
 
 /* Window */
@@ -94,6 +143,22 @@ html, body {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+}
+
+.new-tab-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    border: none;
+    background: #2d3c66;
+    color: #8fb4ff;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 .input-bar input {
@@ -174,7 +239,10 @@ iframe[sandbox] {
 </head>
 <body>
 
-<button class="add-button" id="addBtn">+</button>
+<div class="button-group">
+    <button class="add-button-group" id="addBtn">+</button>
+    <button class="add-fullscreen-button" id="addFullscreenBtn"></button>
+</div>
 
 <script>
 // Enable third-party cookies and credentials globally
@@ -183,6 +251,7 @@ document.cookie = "cookiesEnabled=true; SameSite=None; Secure";
 let zIndex = 1;
 
 document.getElementById("addBtn").addEventListener("click", createWindow);
+document.getElementById("addFullscreenBtn").addEventListener("click", createFullscreenWindow);
 
 function createWindow() {
     const win = document.createElement("div");
@@ -197,9 +266,13 @@ function createWindow() {
             <button class="refresh-btn">↻</button>
             <input type="text" placeholder="Enter URL or search term">
             <button>Go</button>
+            <button class="new-tab-btn">↗</button>
         </div>
         <div class="iframe-wrap">
-            <iframe allow="popups" credentials="include" src=""></iframe>
+            <iframe allow="popups; same-origin; scripts; forms" 
+                    credentials="include" 
+                    referrerpolicy="no-referrer-when-downgrade"
+                    src=""></iframe>
         </div>
         <div class="auth-overlay">
             <div class="auth-message">Waiting for authentication...</div>
@@ -215,6 +288,48 @@ function createWindow() {
     enableInput(win);
     enableClose(win);
     enableRefresh(win);
+    enableNewTab(win);
+    enableAuth(win);
+}
+
+function createFullscreenWindow() {
+    const win = document.createElement("div");
+    win.className = "window";
+    win.style.left = "0";
+    win.style.top = "0";
+    win.style.width = "100%";
+    win.style.height = "100%";
+    win.style.zIndex = ++zIndex;
+
+    win.innerHTML = `
+        <div class="input-bar">
+            <button class="close-btn">×</button>
+            <button class="refresh-btn">↻</button>
+            <input type="text" placeholder="Enter URL or search term">
+            <button>Go</button>
+            <button class="new-tab-btn">↗</button>
+        </div>
+        <div class="iframe-wrap">
+            <iframe allow="popups; same-origin; scripts; forms" 
+                    credentials="include" 
+                    referrerpolicy="no-referrer-when-downgrade"
+                    src=""></iframe>
+        </div>
+        <div class="auth-overlay">
+            <div class="auth-message">Waiting for authentication...</div>
+        </div>
+        <div class="resize"></div>
+    `;
+
+    document.body.appendChild(win);
+    bringToFront(win);
+
+    enableDrag(win);
+    enableResize(win);
+    enableInput(win);
+    enableClose(win);
+    enableRefresh(win);
+    enableNewTab(win);
     enableAuth(win);
 }
 
@@ -241,6 +356,18 @@ function enableInput(win) {
             url = "https://www.google.com/search?q=" + encodeURIComponent(value);
         }
 
+        // Set iframe attributes for better cross-domain support
+        iframe.setAttribute('allow', 'popups; same-origin; scripts; forms');
+        iframe.setAttribute('credentials', 'include');
+        iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+        
+        // Try to set custom user agent header (limited support)
+        try {
+            iframe.contentWindow.navigator.userAgent = navigator.userAgent.replace(/iframe/gi, '');
+        } catch(e) {
+            // User agent spoofing blocked by browser
+        }
+        
         iframe.src = url;
     }
 
@@ -272,6 +399,17 @@ function enableRefresh(win) {
     });
 }
 
+function enableNewTab(win) {
+    const newTabBtn = win.querySelector(".new-tab-btn");
+    const iframe = win.querySelector("iframe");
+    newTabBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (iframe.src) {
+            window.open(iframe.src, "_blank");
+        }
+    });
+}
+
 function enableAuth(win) {
     const iframe = win.querySelector("iframe");
     const overlay = win.querySelector(".auth-overlay");
@@ -279,25 +417,32 @@ function enableAuth(win) {
 
     // Listen for messages from authentication popup
     window.addEventListener("message", (event) => {
-        // Validate message origin for security (adjust as needed)
-        // if (event.origin !== "https://your-auth-provider.com") return;
+        // For production, validate event.origin against trusted domains
+        // if (!trustedOrigins.includes(event.origin)) return;
         
         if (event.data && event.data.type === "auth-success") {
-            // Authentication successful
             console.log("Auth token received:", event.data.token);
             
-            // Hide overlay
             overlay.classList.remove("active");
             
-            // Close popup if still open
             if (authPopup && !authPopup.closed) {
                 authPopup.close();
             }
             
-            // Store token (in memory for this session)
+            // Store token in memory
             win.authToken = event.data.token;
             
-            // Refresh iframe to use new auth
+            // Try to inject token into iframe if possible
+            try {
+                if (event.data.tokenType === "bearer") {
+                    // Store for fetch interceptor
+                    win.bearerToken = event.data.token;
+                }
+            } catch(e) {
+                console.log("Cannot access iframe directly due to CORS");
+            }
+            
+            // Refresh iframe with new auth
             if (iframe.src) {
                 iframe.src = iframe.src;
             }
@@ -308,6 +453,12 @@ function enableAuth(win) {
                 authPopup.close();
             }
         }
+    });
+
+    // Handle iframe load errors (blocked by X-Frame-Options, CSP, etc.)
+    iframe.addEventListener('error', () => {
+        console.warn("Iframe failed to load - may be blocked by X-Frame-Options or CSP");
+        // Show message to user suggesting new tab option
     });
 
     // Expose auth function for iframe to call
@@ -323,14 +474,12 @@ function enableAuth(win) {
             `width=${width},height=${height},left=${left},top=${top},popup=yes`
         );
         
-        // Check if popup was blocked
         if (!authPopup || authPopup.closed) {
             overlay.classList.remove("active");
             alert("Popup blocked. Please allow popups for authentication.");
             return;
         }
         
-        // Poll to detect when popup closes
         const checkClosed = setInterval(() => {
             if (authPopup.closed) {
                 clearInterval(checkClosed);
