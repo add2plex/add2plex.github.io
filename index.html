@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Floating Browser Windows</title>
+<title>Floating App Windows</title>
 
 <meta name="viewport"
       content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -19,6 +19,7 @@ html, body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/* Plus button */
 .add-button {
     position: fixed;
     bottom: 24px;
@@ -36,6 +37,7 @@ html, body {
     z-index: 1000;
 }
 
+/* Window */
 .window {
     position: absolute;
     width: 500px;
@@ -48,38 +50,15 @@ html, body {
     box-shadow: 0 20px 40px rgba(0,0,0,0.8);
 }
 
+/* Drag bar */
 .title-bar {
-    height: 42px;
+    height: 36px;
     background: #1a1f2e;
-    display: flex;
-    align-items: center;
-    padding: 6px;
-    gap: 6px;
     cursor: move;
+    border-bottom: 1px solid #2d3c66;
 }
 
-.address {
-    flex: 1;
-    height: 30px;
-    border-radius: 15px;
-    border: none;
-    padding: 0 14px;
-    background: #0f1320;
-    color: #fff;
-    font-size: 14px;
-    outline: none;
-}
-
-.go-btn {
-    height: 30px;
-    padding: 0 14px;
-    border-radius: 15px;
-    border: none;
-    background: #2d3c66;
-    color: #8fb4ff;
-    cursor: pointer;
-}
-
+/* Content */
 .iframe-wrap {
     flex: 1;
     overflow: hidden;
@@ -92,6 +71,7 @@ iframe {
     background: white;
 }
 
+/* Resize handle */
 .resize {
     position: absolute;
     width: 20px;
@@ -109,6 +89,8 @@ iframe {
 
 <script>
 let zIndex = 1;
+const APP_URL = "http://192.168.1.69:3000";
+
 document.getElementById("addBtn").onclick = createWindow;
 
 function createWindow() {
@@ -119,12 +101,9 @@ function createWindow() {
     win.style.zIndex = ++zIndex;
 
     win.innerHTML = `
-        <div class="title-bar">
-            <input class="address" placeholder="Search Google or type a URL">
-            <button class="go-btn">Go</button>
-        </div>
+        <div class="title-bar"></div>
         <div class="iframe-wrap">
-            <iframe></iframe>
+            <iframe src="${APP_URL}"></iframe>
         </div>
         <div class="resize"></div>
     `;
@@ -134,35 +113,10 @@ function createWindow() {
 
     const bar = win.querySelector(".title-bar");
     const resize = win.querySelector(".resize");
-    const input = win.querySelector(".address");
-    const btn = win.querySelector(".go-btn");
-    const iframe = win.querySelector("iframe");
 
-    function navigate() {
-        let value = input.value.trim();
-        if (!value) return;
-
-        let url;
-
-        // Detect URL vs search
-        if (/^https?:\/\//i.test(value)) {
-            url = value;
-        } else if (value.includes(".") && !value.includes(" ")) {
-            url = "https://" + value;
-        } else {
-            url = "https://www.google.com/search?q=" + encodeURIComponent(value);
-        }
-
-        iframe.src = url;
-    }
-
-    btn.onclick = navigate;
-    input.onkeydown = e => e.key === "Enter" && navigate();
-
+    /* Drag */
     bar.onpointerdown = e => {
-        if (e.target.tagName === "INPUT") return;
         bringToFront(win);
-
         let sx = e.clientX, sy = e.clientY;
         let sl = win.offsetLeft, st = win.offsetTop;
         bar.setPointerCapture(e.pointerId);
@@ -171,9 +125,11 @@ function createWindow() {
             win.style.left = sl + (ev.clientX - sx) + "px";
             win.style.top  = st + (ev.clientY - sy) + "px";
         };
+
         bar.onpointerup = () => bar.onpointermove = null;
     };
 
+    /* Resize */
     resize.onpointerdown = e => {
         bringToFront(win);
         let sx = e.clientX, sy = e.clientY;
@@ -184,6 +140,7 @@ function createWindow() {
             win.style.width  = Math.max(300, sw + (ev.clientX - sx)) + "px";
             win.style.height = Math.max(200, sh + (ev.clientY - sy)) + "px";
         };
+
         resize.onpointerup = () => resize.onpointermove = null;
     };
 
