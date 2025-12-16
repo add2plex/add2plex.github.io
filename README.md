@@ -134,6 +134,30 @@ iframe[sandbox] {
     /* Allow forms, scripts, popups, and same-origin for authentication flows */
 }
 
+/* Auth popup overlay */
+.auth-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(11, 19, 43, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.auth-overlay.active {
+    display: flex;
+}
+
+.auth-message {
+    color: #8fb4ff;
+    font-size: 14px;
+    text-align: center;
+}
+
 /* Resize handle */
 .resize {
     position: absolute;
@@ -173,6 +197,9 @@ function createWindow() {
         <div class="iframe-wrap">
             <iframe allow="popups" src=""></iframe>
         </div>
+        <div class="auth-overlay">
+            <div class="auth-message">Waiting for authentication...</div>
+        </div>
         <div class="resize"></div>
     `;
 
@@ -184,6 +211,7 @@ function createWindow() {
     enableInput(win);
     enableClose(win);
     enableRefresh(win);
+    enableAuth(win);
 }
 
 function enableInput(win) {
@@ -236,6 +264,74 @@ function enableRefresh(win) {
             iframe.src = iframe.src;
         }
     });
+}
+
+function enableAuth(win) {
+    const iframe = win.querySelector("iframe");
+    const overlay = win.querySelector(".auth-overlay");
+    let authPopup = null;
+
+    // Listen for messages from authentication popup
+    window.addEventListener("message", (event) => {
+        // Validate message origin for security (adjust as needed)
+        // if (event.origin !== "https://your-auth-provider.com") return;
+        
+        if (event.data && event.data.type === "auth-success") {
+            // Authentication successful
+            console.log("Auth token received:", event.data.token);
+            
+            // Hide overlay
+            overlay.classList.remove("active");
+            
+            // Close popup if still open
+            if (authPopup && !authPopup.closed) {
+                authPopup.close();
+            }
+            
+            // Store token (in memory for this session)
+            win.authToken = event.data.token;
+            
+            // Refresh iframe to use new auth
+            if (iframe.src) {
+                iframe.src = iframe.src;
+            }
+        } else if (event.data && event.data.type === "auth-failed") {
+            console.error("Authentication failed:", event.data.error);
+            overlay.classList.remove("active");
+            if (authPopup && !authPopup.closed) {
+                authPopup.close();
+            }
+        }
+    });
+
+    // Expose auth function for iframe to call
+    win.openAuthPopup = (authUrl, width = 500, height = 600) => {
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        
+        overlay.classList.add("active");
+        
+        authPopup = window.open(
+            authUrl,
+            "auth-popup",
+            `width=${width},height=${height},left=${left},top=${top},popup=yes`
+        );
+        
+        // Check if popup was blocked
+        if (!authPopup || authPopup.closed) {
+            overlay.classList.remove("active");
+            alert("Popup blocked. Please allow popups for authentication.");
+            return;
+        }
+        
+        // Poll to detect when popup closes
+        const checkClosed = setInterval(() => {
+            if (authPopup.closed) {
+                clearInterval(checkClosed);
+                overlay.classList.remove("active");
+            }
+        }, 500);
+    };
 }
 
 /* Dragging */
