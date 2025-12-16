@@ -2,11 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Mini Chrome Browser</title>
+<title>Dynamic Windows with URL Input</title>
 
-<meta name="viewport"
-      content="width=device-width, height=device-height,
-               initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <style>
 html, body {
@@ -20,6 +18,7 @@ html, body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/* Plus button */
 .add-button {
     position: fixed;
     bottom: 24px;
@@ -34,13 +33,19 @@ html, body {
     font-weight: bold;
     border: none;
     z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    cursor: pointer;
 }
 
+/* Window */
 .window {
     position: absolute;
     width: 500px;
     height: 500px;
-    background: #111;
+    background: #000;
     border-radius: 12px;
     border: 1px solid #2d3c66;
     display: flex;
@@ -49,41 +54,44 @@ html, body {
     touch-action: none;
 }
 
-.toolbar {
+/* Input bar */
+.input-bar {
     height: 48px;
-    background: #1a1f2e;
     display: flex;
-    align-items: center;
     padding: 6px;
     gap: 6px;
+    background: #1a1f2e;
     border-bottom: 1px solid #2d3c66;
+    align-items: center;
 }
 
-.tool-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: none;
-    background: #2d3c66;
-    color: #8fb4ff;
-    font-size: 16px;
-}
-
-.address {
+.input-bar input {
     flex: 1;
     height: 32px;
     border-radius: 16px;
     border: none;
-    padding: 0 14px;
-    background: #0f1320;
-    color: white;
+    padding: 0 12px;
     font-size: 14px;
+    background: #0f1320;
+    color: #fff;
     outline: none;
 }
 
+.input-bar button {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 16px;
+    border: none;
+    background: #2d3c66;
+    color: #8fb4ff;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Iframe container */
 .iframe-wrap {
     flex: 1;
-    background: black;
+    overflow: hidden;
 }
 
 iframe {
@@ -92,6 +100,7 @@ iframe {
     border: none;
 }
 
+/* Resize handle */
 .resize {
     position: absolute;
     width: 36px;
@@ -99,6 +108,7 @@ iframe {
     right: 0;
     bottom: 0;
     background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
     touch-action: none;
 }
 </style>
@@ -110,7 +120,7 @@ iframe {
 <script>
 let zIndex = 1;
 
-document.getElementById("addBtn").onclick = createWindow;
+document.getElementById("addBtn").addEventListener("click", createWindow);
 
 function createWindow() {
     const win = document.createElement("div");
@@ -120,14 +130,12 @@ function createWindow() {
     win.style.zIndex = ++zIndex;
 
     win.innerHTML = `
-        <div class="toolbar">
-            <button class="tool-btn back">◀</button>
-            <button class="tool-btn forward">▶</button>
-            <button class="tool-btn reload">⟳</button>
-            <input class="address" placeholder="Search or type URL">
+        <div class="input-bar">
+            <input type="text" placeholder="Enter URL or search term">
+            <button>Go</button>
         </div>
         <div class="iframe-wrap">
-            <iframe></iframe>
+            <iframe src=""></iframe>
         </div>
         <div class="resize"></div>
     `;
@@ -137,20 +145,18 @@ function createWindow() {
 
     enableDrag(win);
     enableResize(win);
-    enableBrowser(win);
+    enableInput(win);
 }
 
-function enableBrowser(win) {
+function enableInput(win) {
+    const input = win.querySelector(".input-bar input");
+    const button = win.querySelector(".input-bar button");
     const iframe = win.querySelector("iframe");
-    const input = win.querySelector(".address");
-    const back = win.querySelector(".back");
-    const forward = win.querySelector(".forward");
-    const reload = win.querySelector(".reload");
 
-    let history = [];
-    let index = -1;
+    function navigate() {
+        let value = input.value.trim();
+        if (!value) return;
 
-    function navigate(value) {
         let url;
         if (/^https?:\/\//i.test(value)) {
             url = value;
@@ -161,47 +167,42 @@ function enableBrowser(win) {
         }
 
         iframe.src = url;
-        history = history.slice(0, index + 1);
-        history.push(url);
-        index++;
-        input.value = url;
     }
 
-    input.addEventListener("keydown", e => {
-        if (e.key === "Enter") navigate(input.value);
-    });
-
-    back.onclick = () => {
-        if (index > 0) iframe.src = history[--index];
-    };
-
-    forward.onclick = () => {
-        if (index < history.length - 1) iframe.src = history[++index];
-    };
-
-    reload.onclick = () => iframe.src = iframe.src;
+    button.addEventListener("click", navigate);
+    input.addEventListener("keydown", e => { if(e.key === "Enter") navigate(); });
 }
 
+function bringToFront(win) {
+    win.style.zIndex = ++zIndex;
+}
+
+/* Dragging */
 function enableDrag(win) {
-    const bar = win.querySelector(".toolbar");
+    const bar = win.querySelector(".input-bar");
 
     bar.onpointerdown = e => {
-        if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
         bringToFront(win);
         bar.setPointerCapture(e.pointerId);
 
-        const sx = e.clientX, sy = e.clientY;
-        const sl = win.offsetLeft, st = win.offsetTop;
+        const sx = e.clientX;
+        const sy = e.clientY;
+        const sl = win.offsetLeft;
+        const st = win.offsetTop;
 
-        bar.onpointermove = ev => {
+        const move = ev => {
             win.style.left = sl + (ev.clientX - sx) + "px";
             win.style.top  = st + (ev.clientY - sy) + "px";
         };
 
-        bar.onpointerup = () => bar.onpointermove = null;
+        const up = () => bar.onpointermove = null;
+
+        bar.onpointermove = move;
+        bar.onpointerup = up;
     };
 }
 
+/* Resizing */
 function enableResize(win) {
     const handle = win.querySelector(".resize");
 
@@ -209,20 +210,21 @@ function enableResize(win) {
         bringToFront(win);
         handle.setPointerCapture(e.pointerId);
 
-        const sx = e.clientX, sy = e.clientY;
-        const sw = win.offsetWidth, sh = win.offsetHeight;
+        const sx = e.clientX;
+        const sy = e.clientY;
+        const sw = win.offsetWidth;
+        const sh = win.offsetHeight;
 
-        handle.onpointermove = ev => {
+        const move = ev => {
             win.style.width  = Math.max(320, sw + (ev.clientX - sx)) + "px";
             win.style.height = Math.max(240, sh + (ev.clientY - sy)) + "px";
         };
 
-        handle.onpointerup = () => handle.onpointermove = null;
-    };
-}
+        const up = () => handle.onpointermove = null;
 
-function bringToFront(win) {
-    win.style.zIndex = ++zIndex;
+        handle.onpointermove = move;
+        handle.onpointerup = up;
+    };
 }
 </script>
 
