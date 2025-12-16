@@ -19,7 +19,6 @@ html, body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Plus button */
 .add-button {
     position: fixed;
     bottom: 24px;
@@ -34,10 +33,6 @@ html, body {
     font-weight: bold;
     border: none;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.7);
     z-index: 1000;
 }
 
@@ -59,8 +54,8 @@ html, body {
     display: flex;
     align-items: center;
     padding: 6px;
-    cursor: move;
     gap: 6px;
+    cursor: move;
 }
 
 .address {
@@ -75,10 +70,6 @@ html, body {
     outline: none;
 }
 
-.address::placeholder {
-    color: #888;
-}
-
 .go-btn {
     height: 30px;
     padding: 0 14px;
@@ -86,7 +77,6 @@ html, body {
     border: none;
     background: #2d3c66;
     color: #8fb4ff;
-    font-size: 13px;
     cursor: pointer;
 }
 
@@ -119,19 +109,18 @@ iframe {
 
 <script>
 let zIndex = 1;
-
-document.getElementById("addBtn").addEventListener("click", createWindow);
+document.getElementById("addBtn").onclick = createWindow;
 
 function createWindow() {
     const win = document.createElement("div");
     win.className = "window";
-    win.style.left = "50px";
-    win.style.top = "50px";
+    win.style.left = "60px";
+    win.style.top = "60px";
     win.style.zIndex = ++zIndex;
 
     win.innerHTML = `
         <div class="title-bar">
-            <input class="address" placeholder="https://example.com">
+            <input class="address" placeholder="Search Google or type a URL">
             <button class="go-btn">Go</button>
         </div>
         <div class="iframe-wrap">
@@ -149,52 +138,52 @@ function createWindow() {
     const btn = win.querySelector(".go-btn");
     const iframe = win.querySelector("iframe");
 
-    /* Load URL */
-    btn.onclick = () => loadURL();
-    input.onkeydown = e => e.key === "Enter" && loadURL();
+    function navigate() {
+        let value = input.value.trim();
+        if (!value) return;
 
-    function loadURL() {
-        let url = input.value.trim();
-        if (!url) return;
-        if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+        let url;
+
+        // Detect URL vs search
+        if (/^https?:\/\//i.test(value)) {
+            url = value;
+        } else if (value.includes(".") && !value.includes(" ")) {
+            url = "https://" + value;
+        } else {
+            url = "https://www.google.com/search?q=" + encodeURIComponent(value);
+        }
+
         iframe.src = url;
     }
 
-    /* Drag */
+    btn.onclick = navigate;
+    input.onkeydown = e => e.key === "Enter" && navigate();
+
     bar.onpointerdown = e => {
         if (e.target.tagName === "INPUT") return;
-
         bringToFront(win);
-        let startX = e.clientX;
-        let startY = e.clientY;
-        let startL = win.offsetLeft;
-        let startT = win.offsetTop;
 
+        let sx = e.clientX, sy = e.clientY;
+        let sl = win.offsetLeft, st = win.offsetTop;
         bar.setPointerCapture(e.pointerId);
 
         bar.onpointermove = ev => {
-            win.style.left = startL + (ev.clientX - startX) + "px";
-            win.style.top  = startT + (ev.clientY - startY) + "px";
+            win.style.left = sl + (ev.clientX - sx) + "px";
+            win.style.top  = st + (ev.clientY - sy) + "px";
         };
-
         bar.onpointerup = () => bar.onpointermove = null;
     };
 
-    /* Resize */
     resize.onpointerdown = e => {
         bringToFront(win);
-        let startX = e.clientX;
-        let startY = e.clientY;
-        let startW = win.offsetWidth;
-        let startH = win.offsetHeight;
-
+        let sx = e.clientX, sy = e.clientY;
+        let sw = win.offsetWidth, sh = win.offsetHeight;
         resize.setPointerCapture(e.pointerId);
 
         resize.onpointermove = ev => {
-            win.style.width  = Math.max(300, startW + (ev.clientX - startX)) + "px";
-            win.style.height = Math.max(200, startH + (ev.clientY - startY)) + "px";
+            win.style.width  = Math.max(300, sw + (ev.clientX - sx)) + "px";
+            win.style.height = Math.max(200, sh + (ev.clientY - sy)) + "px";
         };
-
         resize.onpointerup = () => resize.onpointermove = null;
     };
 
