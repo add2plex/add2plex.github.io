@@ -155,7 +155,7 @@ function createWindow() {
             <button>Go</button>
         </div>
         <div class="iframe-wrap">
-            <iframe sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" src=""></iframe>
+            <iframe src=""></iframe>
         </div>
         <div class="resize"></div>
     `;
