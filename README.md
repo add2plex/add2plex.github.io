@@ -42,52 +42,34 @@ html, body {
     cursor: pointer;
 }
 
-.button-group {
+/* Clock */
+.clock {
     position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 16px;
+    top: 24px;
+    right: 24px;
+    font-size: 48px;
+    font-weight: bold;
+    color: #ffffff;
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
     z-index: 1000;
-}
-
-.add-button-group {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    background: #1f2a44;
-    color: #8fb4ff;
-    font-size: 42px;
-    font-weight: bold;
-    border: none;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    user-select: none;
+    touch-action: none;
+    cursor: grab;
+    transition: transform 0.1s ease-out;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    touch-action: manipulation;
-    cursor: pointer;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
-.add-fullscreen-button {
-    width: 72px;
-    height: 72px;
-    border-radius: 12px;
-    background: #1f2a44;
-    color: #8fb4ff;
-    font-size: 36px;
-    font-weight: bold;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    touch-action: manipulation;
-    cursor: pointer;
-    position: relative;
+.clock-time {
+    line-height: 1;
 }
 
-.add-fullscreen-button::before {
-    content: '+';
-    position: absolute;
+.clock-date {
+    font-size: 0.3em;
+    margin-top: 4px;
+    opacity: 0.95;
 }
 
 /* Window */
@@ -102,6 +84,10 @@ html, body {
     flex-direction: column;
     box-shadow: 0 20px 40px rgba(0,0,0,0.8);
     touch-action: none;
+}
+
+.window.no-input-bar .iframe-wrap {
+    border-radius: 12px;
 }
 
 .window.split-view {
@@ -122,6 +108,30 @@ html, body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+/* Grab bar for windows without input bar */
+.grab-bar {
+    height: 24px;
+    background: #1a1f2e;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.grab-bar:active {
+    cursor: grabbing;
+}
+
+.grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
 }
 
 /* Input bar */
@@ -301,19 +311,193 @@ iframe[sandbox] {
 </head>
 <body>
 
-<div class="button-group">
-    <button class="add-button-group" id="addBtn">+</button>
-    <button class="add-fullscreen-button" id="addFullscreenBtn"></button>
+<div class="clock" id="clock"></div>
+
+<div class="weather-widget" id="weatherWidget">
+    <div class="weather-grab-bar"></div>
+    <div class="weather-iframe-wrap">
+        <iframe src="https://weatherwidget.io/w/horizontal/?id=ww_3a60b29a54f44&t=horizontal&lang=en&sl_lpl=1&ids=%5B%5D&font=Arial&sl_ics=one_a&sl_sot=fahrenheit&cl_bkg=image&cl_font=%23FFFFFF&cl_cloud=%23FFFFFF&cl_persp=%2381D4FA&cl_sun=%23FFC107&cl_moon=%23FFC107&cl_thund=%23FF5722" frameborder="0"></iframe>
+    </div>
+    <div class="weather-resize"></div>
 </div>
 
+<button class="add-button" id="addBtn">+</button>
+
+<script async src="https://app3.weatherwidget.org/js/?id=ww_3a60b29a54f44"></script>
+<script async src="https://app3.weatherwidget.org/js/?id=ww_3a60b29a54f44"></script>
 <script>
 // Enable third-party cookies and credentials globally
 document.cookie = "cookiesEnabled=true; SameSite=None; Secure";
 
 let zIndex = 1;
+let clockScale = 1;
+let initialDistance = 0;
+let initialScale = 1;
+let isDraggingClock = false;
+let clockStartX = 0;
+let clockStartY = 0;
+let clockOffsetX = 0;
+let clockOffsetY = 0;
+
+// Update clock
+function updateClock() {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = now.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 should be 12
+    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+    
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    const dayName = days[now.getDay()];
+    const monthName = months[now.getMonth()];
+    const date = now.getDate();
+    const year = now.getFullYear();
+    
+    document.getElementById('clock').innerHTML = `
+        <div class="clock-time">${hours}:${minutesStr} ${ampm}</div>
+        <div class="clock-date">${dayName}, ${monthName} ${date} ${year}</div>
+    `;
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+
+// Pinch to zoom clock
+const clockEl = document.getElementById('clock');
+
+function getDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+function isTouchingClock(touches) {
+    const rect = clockEl.getBoundingClientRect();
+    for (let touch of touches) {
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Drag clock
+clockEl.addEventListener('pointerdown', (e) => {
+    isDraggingClock = true;
+    clockEl.setPointerCapture(e.pointerId);
+    
+    const rect = clockEl.getBoundingClientRect();
+    clockStartX = e.clientX - rect.left;
+    clockStartY = e.clientY - rect.top;
+    
+    clockEl.style.cursor = 'grabbing';
+});
+
+clockEl.addEventListener('pointermove', (e) => {
+    if (isDraggingClock) {
+        e.preventDefault();
+        
+        clockOffsetX = e.clientX - clockStartX;
+        clockOffsetY = e.clientY - clockStartY;
+        
+        clockEl.style.left = clockOffsetX + 'px';
+        clockEl.style.top = clockOffsetY + 'px';
+        clockEl.style.right = 'auto';
+        
+        // Adjust text alignment based on position
+        const screenWidth = window.innerWidth;
+        const centerX = screenWidth / 2;
+        const clockCenterX = clockOffsetX + (clockEl.offsetWidth / 2);
+        
+        if (Math.abs(clockCenterX - centerX) <= 20) {
+            // Center
+            clockEl.style.alignItems = 'center';
+        } else if (clockCenterX < centerX) {
+            // Left side
+            clockEl.style.alignItems = 'flex-start';
+        } else {
+            // Right side
+            clockEl.style.alignItems = 'flex-end';
+        }
+    }
+});
+
+clockEl.addEventListener('pointerup', () => {
+    isDraggingClock = false;
+    clockEl.style.cursor = 'grab';
+});
+
+clockEl.addEventListener('pointercancel', () => {
+    isDraggingClock = false;
+    clockEl.style.cursor = 'grab';
+});
+
+clockEl.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+        e.preventDefault();
+        isDraggingClock = false;
+        initialDistance = getDistance(e.touches);
+        initialScale = clockScale;
+    }
+});
+
+clockEl.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2 && isTouchingClock(e.touches)) {
+        e.preventDefault();
+        const currentDistance = getDistance(e.touches);
+        clockScale = initialScale * (currentDistance / initialDistance);
+        clockScale = Math.max(0.5, Math.min(clockScale, 3)); // Limit between 0.5x and 3x
+        clockEl.style.transform = `scale(${clockScale})`;
+        clockEl.style.transformOrigin = 'top left';
+    }
+});
+
+// Mouse wheel zoom for desktop
+clockEl.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    clockScale += delta;
+    clockScale = Math.max(0.5, Math.min(clockScale, 3));
+    clockEl.style.transform = `scale(${clockScale})`;
+    clockEl.style.transformOrigin = 'top left';
+});
 
 document.getElementById("addBtn").addEventListener("click", createWindow);
-document.getElementById("addFullscreenBtn").addEventListener("click", createFullscreenWindow);
+
+// Create initial weather radar window
+window.addEventListener('load', () => {
+    const radarWin = document.createElement("div");
+    radarWin.className = "window no-input-bar";
+    radarWin.style.left = "100px";
+    radarWin.style.top = "100px";
+    radarWin.style.width = "800px";
+    radarWin.style.height = "600px";
+    radarWin.style.zIndex = ++zIndex;
+
+    radarWin.innerHTML = `
+        <div class="grab-bar"></div>
+        <div class="iframe-wrap">
+            <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
+                    credentials="include" 
+                    referrerpolicy="no-referrer-when-downgrade"
+                    allowfullscreen
+                    src="https://radar.weather.gov/?settings=v1_eyJhZ2VuZGEiOnsiaWQiOiJsb2NhbCIsImNlbnRlciI6Wy04NS42NTcsMzAuMTU5XSwiem9vbSI6OH0sImJhc2UiOiJzdGFuZGFyZCIsImNvdW50eSI6ZmFsc2UsImN3YSI6ZmFsc2UsInN0YXRlIjpmYWxzZSwibWVudSI6dHJ1ZSwic2hvcnRGdXNlZE9ubHkiOmZhbHNlfQ%3D%3D"></iframe>
+        </div>
+        <div class="resize"></div>
+    `;
+
+    document.body.appendChild(radarWin);
+    bringToFront(radarWin);
+
+    enableDrag(radarWin);
+    enableResize(radarWin);
+});
 
 function createWindow() {
     const win = document.createElement("div");
@@ -331,9 +515,10 @@ function createWindow() {
             <button class="new-tab-btn">↗</button>
         </div>
         <div class="iframe-wrap">
-            <iframe allow="popups; same-origin; scripts; forms" 
+            <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
                     credentials="include" 
                     referrerpolicy="no-referrer-when-downgrade"
+                    allowfullscreen
                     src=""></iframe>
         </div>
         <div class="auth-iframe-wrap">
@@ -341,9 +526,10 @@ function createWindow() {
                 <span>Login</span>
                 <button class="auth-close-btn">×</button>
             </div>
-            <iframe allow="popups; same-origin; scripts; forms" 
+            <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
                     credentials="include" 
                     referrerpolicy="no-referrer-when-downgrade"
+                    allowfullscreen
                     src=""></iframe>
         </div>
         <div class="auth-overlay">
@@ -365,6 +551,77 @@ function createWindow() {
 }
 
 function createFullscreenWindow() {
+    // Get all existing windows
+    const allWindows = document.querySelectorAll('.window');
+    const windowsWithContent = Array.from(allWindows).filter(w => {
+        const iframe = w.querySelector('.iframe-wrap iframe');
+        return iframe && iframe.src && iframe.src !== '';
+    });
+
+    // If no windows with content exist, create empty fullscreen window
+    if (windowsWithContent.length === 0) {
+        createEmptyFullscreenWindow();
+        return;
+    }
+
+    // Pick a random window
+    const randomWindow = windowsWithContent[Math.floor(Math.random() * windowsWithContent.length)];
+    const randomIframe = randomWindow.querySelector('.iframe-wrap iframe');
+    const url = randomIframe.src;
+
+    const win = document.createElement("div");
+    win.className = "window";
+    win.style.left = "0";
+    win.style.top = "0";
+    win.style.width = "100%";
+    win.style.height = "100%";
+    win.style.zIndex = ++zIndex;
+
+    win.innerHTML = `
+        <div class="input-bar">
+            <button class="close-btn">×</button>
+            <button class="refresh-btn">↻</button>
+            <input type="text" placeholder="Enter URL or search term" value="${url}">
+            <button>Go</button>
+            <button class="new-tab-btn">↗</button>
+        </div>
+        <div class="iframe-wrap">
+            <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
+                    credentials="include" 
+                    referrerpolicy="no-referrer-when-downgrade"
+                    allowfullscreen
+                    src="${url}"></iframe>
+        </div>
+        <div class="auth-iframe-wrap">
+            <div class="auth-header">
+                <span>Login</span>
+                <button class="auth-close-btn">×</button>
+            </div>
+            <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
+                    credentials="include" 
+                    referrerpolicy="no-referrer-when-downgrade"
+                    allowfullscreen
+                    src=""></iframe>
+        </div>
+        <div class="auth-overlay">
+            <div class="auth-message">Waiting for authentication...</div>
+        </div>
+        <div class="resize"></div>
+    `;
+
+    document.body.appendChild(win);
+    bringToFront(win);
+
+    enableDrag(win);
+    enableResize(win);
+    enableInput(win);
+    enableClose(win);
+    enableRefresh(win);
+    enableNewTab(win);
+    enableAuth(win);
+}
+
+function createEmptyFullscreenWindow() {
     const win = document.createElement("div");
     win.className = "window";
     win.style.left = "0";
@@ -382,9 +639,10 @@ function createFullscreenWindow() {
             <button class="new-tab-btn">↗</button>
         </div>
         <div class="iframe-wrap">
-            <iframe allow="popups; same-origin; scripts; forms" 
+            <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
                     credentials="include" 
                     referrerpolicy="no-referrer-when-downgrade"
+                    allowfullscreen
                     src=""></iframe>
         </div>
         <div class="auth-iframe-wrap">
@@ -392,9 +650,10 @@ function createFullscreenWindow() {
                 <span>Login</span>
                 <button class="auth-close-btn">×</button>
             </div>
-            <iframe allow="popups; same-origin; scripts; forms" 
+            <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
                     credentials="include" 
                     referrerpolicy="no-referrer-when-downgrade"
+                    allowfullscreen
                     src=""></iframe>
         </div>
         <div class="auth-overlay">
@@ -439,9 +698,10 @@ function enableInput(win) {
         }
 
         // Set iframe attributes for better cross-domain support
-        iframe.setAttribute('allow', 'popups; same-origin; scripts; forms');
+        iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera');
         iframe.setAttribute('credentials', 'include');
         iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+        iframe.setAttribute('allowfullscreen', '');
         
         // Try to set custom user agent header (limited support)
         try {
@@ -601,13 +861,18 @@ function enableAuth(win) {
 /* Dragging */
 function enableDrag(win) {
     const bar = win.querySelector(".input-bar");
+    const grabBar = win.querySelector(".grab-bar");
+    
+    // Use input bar if available, otherwise use grab bar, otherwise use window
+    const dragTarget = bar || grabBar || win;
 
-    bar.onpointerdown = e => {
-        // Don't drag if clicking buttons or input
-        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+    dragTarget.onpointerdown = e => {
+        // Don't drag if clicking buttons, input, iframe, or resize handle
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || 
+            e.target.tagName === 'IFRAME' || e.target.classList.contains('resize')) return;
         
         bringToFront(win);
-        bar.setPointerCapture(e.pointerId);
+        dragTarget.setPointerCapture(e.pointerId);
 
         const sx = e.clientX;
         const sy = e.clientY;
@@ -615,14 +880,18 @@ function enableDrag(win) {
         const st = win.offsetTop;
 
         const move = ev => {
-            win.style.left = sl + (ev.clientX - sx) + "px";
-            win.style.top  = st + (ev.clientY - sy) + "px";
+            const newLeft = sl + (ev.clientX - sx);
+            const newTop = st + (ev.clientY - sy);
+            
+            // Constrain to keep grab bar visible (prevent going above screen)
+            win.style.left = newLeft + "px";
+            win.style.top = Math.max(0, newTop) + "px";
         };
 
-        const up = () => bar.onpointermove = null;
+        const up = () => dragTarget.onpointermove = null;
 
-        bar.onpointermove = move;
-        bar.onpointerup = up;
+        dragTarget.onpointermove = move;
+        dragTarget.onpointerup = up;
     };
 }
 
