@@ -2,37 +2,34 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dynamic Windows with Scratchpad</title>
-
+<title>Widget Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <style>
 html, body {
+    margin: 0;
     width: 100%;
     height: 100%;
-    margin: 0;
     background: #0b132b;
     overflow: hidden;
-    touch-action: none;
-    user-select: none;
     font-family: system-ui, sans-serif;
+    touch-action: none;
 }
 
-/* ================= WINDOW SYSTEM ================= */
+/* ================= CORE WINDOW ================= */
+.window,
 .scratchpad-widget {
     position: absolute;
-    width: 420px;
-    height: 320px;
     background: #1a1f2e;
-    border-radius: 12px;
     border: 1px solid #2d3c66;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0,0,0,.8);
     display: flex;
     flex-direction: column;
-    touch-action: none;
     overflow: hidden;
 }
 
+.grab-bar,
 .scratchpad-grab-bar {
     height: 24px;
     background: #0f1320;
@@ -43,25 +40,49 @@ html, body {
     justify-content: center;
 }
 
+.grab-bar::before,
 .scratchpad-grab-bar::before {
     content: '⋮⋮';
     color: #8fb4ff;
-    font-size: 14px;
+    opacity: .6;
     letter-spacing: 2px;
-    opacity: 0.5;
 }
 
+.resize,
 .scratchpad-resize {
     position: absolute;
-    width: 25px;
-    height: 25px;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    width: 22px;
+    height: 22px;
     cursor: nwse-resize;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
 }
 
-/* ================= TOOLBAR ================= */
+/* ================= CLOCK ================= */
+#clock {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    font-size: 42px;
+    color: white;
+    font-weight: bold;
+    z-index: 9999;
+}
+
+/* ================= WEATHER ================= */
+.weather {
+    padding: 12px;
+    color: white;
+    font-size: 14px;
+}
+
+/* ================= SCRATCHPAD ================= */
+.scratchpad-widget {
+    width: 420px;
+    height: 320px;
+}
+
 .scratchpad-toolbar {
     display: flex;
     align-items: center;
@@ -76,20 +97,17 @@ html, body {
     height: 24px;
     border-radius: 6px;
     cursor: crosshair;
-    border: 1px solid #000;
 }
 
 .eraser-toggle,
 .clear-btn {
-    height: 24px;
-    padding: 0 8px;
+    font-size: 10px;
+    padding: 4px 8px;
     border-radius: 6px;
     border: none;
-    cursor: pointer;
-    font-size: 10px;
-    font-weight: bold;
-    color: #fff;
     background: #2d3c66;
+    color: white;
+    cursor: pointer;
 }
 
 .eraser-toggle.active {
@@ -101,33 +119,65 @@ html, body {
     width: 70px;
 }
 
-/* ================= CANVAS ================= */
 .scratchpad-canvas-wrap {
     flex: 1;
-    background: #fff;
+    background: white;
 }
 
-canvas {
+.draw-canvas {
     width: 100%;
     height: 100%;
     display: block;
+}
+
+/* ================= PLUS BUTTON ================= */
+#addBtn {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #4d79ff;
+    color: white;
+    font-size: 32px;
+    border: none;
+    cursor: pointer;
 }
 </style>
 </head>
 
 <body>
 
-<!-- ================= SCRATCHPAD ================= -->
-<div class="scratchpad-widget" id="scratchpad">
+<div id="clock"></div>
+
+<!-- WEATHER -->
+<div class="window" style="left:20px;top:20px;width:220px;height:140px;">
+    <div class="grab-bar"></div>
+    <div class="weather">
+        <b>Weather</b><br>
+        Temp: 72°F<br>
+        Clear skies
+    </div>
+    <div class="resize"></div>
+</div>
+
+<!-- RADAR -->
+<div class="window" style="left:260px;top:20px;width:360px;height:260px;">
+    <div class="grab-bar"></div>
+    <iframe src="https://www.weather.gov" style="border:0;width:100%;height:100%;"></iframe>
+    <div class="resize"></div>
+</div>
+
+<!-- SCRATCHPAD -->
+<div class="scratchpad-widget" id="scratchpadWidget" style="left:200px;top:320px;">
     <div class="scratchpad-grab-bar"></div>
 
     <div class="scratchpad-toolbar">
         <canvas class="color-gradient"></canvas>
-
         <button class="eraser-toggle">ERASER</button>
-
         <input type="range" min="1" max="12" value="3" class="thickness">
-
         <button class="clear-btn">CLEAR</button>
     </div>
 
@@ -138,134 +188,29 @@ canvas {
     <div class="scratchpad-resize"></div>
 </div>
 
+<button id="addBtn">+</button>
+
 <script>
 let zIndex = 10;
 
-/* ================= SCRATCHPAD LOGIC ================= */
-(() => {
-    const widget = document.getElementById('scratchpad');
-    const drawCanvas = widget.querySelector('.draw-canvas');
-    const drawCtx = drawCanvas.getContext('2d');
-
-    const gradientCanvas = widget.querySelector('.color-gradient');
-    const gradCtx = gradientCanvas.getContext('2d');
-
-    let drawing = false;
-    let penColor = '#000';
-    let penSize = 3;
-    let erasing = false;
-
-    /* ----- Resize drawing canvas ----- */
-    function resizeDrawCanvas() {
-        const img = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
-        drawCanvas.width = drawCanvas.offsetWidth;
-        drawCanvas.height = drawCanvas.offsetHeight;
-        drawCtx.putImageData(img, 0, 0);
-    }
-
-    resizeDrawCanvas();
-    window.addEventListener('resize', resizeDrawCanvas);
-
-    /* ----- Build color gradient ----- */
-    function buildGradient() {
-        gradientCanvas.width = gradientCanvas.offsetWidth;
-        gradientCanvas.height = gradientCanvas.offsetHeight;
-
-        const g1 = gradCtx.createLinearGradient(0, 0, gradientCanvas.width, 0);
-        g1.addColorStop(0, 'red');
-        g1.addColorStop(0.17, 'yellow');
-        g1.addColorStop(0.34, 'lime');
-        g1.addColorStop(0.51, 'cyan');
-        g1.addColorStop(0.68, 'blue');
-        g1.addColorStop(0.85, 'magenta');
-        g1.addColorStop(1, 'red');
-
-        gradCtx.fillStyle = g1;
-        gradCtx.fillRect(0, 0, gradientCanvas.width, gradientCanvas.height);
-
-        const g2 = gradCtx.createLinearGradient(0, 0, 0, gradientCanvas.height);
-        g2.addColorStop(0, 'rgba(255,255,255,1)');
-        g2.addColorStop(0.5, 'rgba(255,255,255,0)');
-        g2.addColorStop(0.5, 'rgba(0,0,0,0)');
-        g2.addColorStop(1, 'rgba(0,0,0,1)');
-
-        gradCtx.fillStyle = g2;
-        gradCtx.fillRect(0, 0, gradientCanvas.width, gradientCanvas.height);
-    }
-
-    buildGradient();
-
-    /* ----- Pick color from gradient ----- */
-    gradientCanvas.addEventListener('pointerdown', e => {
-        const r = gradientCanvas.getBoundingClientRect();
-        const x = e.clientX - r.left;
-        const y = e.clientY - r.top;
-        const data = gradCtx.getImageData(x, y, 1, 1).data;
-        penColor = `rgb(${data[0]},${data[1]},${data[2]})`;
-        erasing = false;
-        eraserBtn.classList.remove('active');
-    });
-
-    /* ----- Drawing ----- */
-    function pos(e) {
-        const r = drawCanvas.getBoundingClientRect();
-        return { x: e.clientX - r.left, y: e.clientY - r.top };
-    }
-
-    drawCanvas.onpointerdown = e => {
-        drawing = true;
-        drawCtx.beginPath();
-        const p = pos(e);
-        drawCtx.moveTo(p.x, p.y);
-    };
-
-    drawCanvas.onpointermove = e => {
-        if (!drawing) return;
-        const p = pos(e);
-        drawCtx.lineCap = 'round';
-        drawCtx.lineWidth = penSize;
-        drawCtx.strokeStyle = penColor;
-        drawCtx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over';
-        drawCtx.lineTo(p.x, p.y);
-        drawCtx.stroke();
-    };
-
-    drawCanvas.onpointerup = () => drawing = false;
-    drawCanvas.onpointerleave = () => drawing = false;
-
-    /* ----- Controls ----- */
-    const eraserBtn = widget.querySelector('.eraser-toggle');
-    eraserBtn.onclick = () => {
-        erasing = !erasing;
-        eraserBtn.classList.toggle('active', erasing);
-    };
-
-    widget.querySelector('.thickness').oninput = e =>
-        penSize = +e.target.value;
-
-    widget.querySelector('.clear-btn').onclick = () =>
-        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-
-    /* ----- Position + behavior ----- */
-    widget.style.left = '500px';
-    widget.style.top = '200px';
-    widget.style.zIndex = ++zIndex;
-
-    enableDrag(widget, widget.querySelector('.scratchpad-grab-bar'));
-    enableResize(widget, widget.querySelector('.scratchpad-resize'));
-})();
+/* ================= CLOCK ================= */
+setInterval(() => {
+    const d = new Date();
+    document.getElementById('clock').textContent =
+        d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+}, 1000);
 
 /* ================= DRAG / RESIZE ================= */
 function enableDrag(win, handle) {
     handle.onpointerdown = e => {
-        handle.setPointerCapture(e.pointerId);
         win.style.zIndex = ++zIndex;
         const sx = e.clientX, sy = e.clientY;
         const sl = win.offsetLeft, st = win.offsetTop;
+        handle.setPointerCapture(e.pointerId);
 
         handle.onpointermove = ev => {
             win.style.left = sl + ev.clientX - sx + 'px';
-            win.style.top = st + ev.clientY - sy + 'px';
+            win.style.top  = st + ev.clientY - sy + 'px';
         };
         handle.onpointerup = () => handle.onpointermove = null;
     };
@@ -273,21 +218,82 @@ function enableDrag(win, handle) {
 
 function enableResize(win, handle) {
     handle.onpointerdown = e => {
-        handle.setPointerCapture(e.pointerId);
         win.style.zIndex = ++zIndex;
         const sx = e.clientX, sy = e.clientY;
         const sw = win.offsetWidth, sh = win.offsetHeight;
+        handle.setPointerCapture(e.pointerId);
 
         handle.onpointermove = ev => {
-            win.style.width = Math.max(250, sw + ev.clientX - sx) + 'px';
-            win.style.height = Math.max(200, sh + ev.clientY - sy) + 'px';
-            const c = win.querySelector('.draw-canvas');
-            c.width = c.offsetWidth;
-            c.height = c.offsetHeight;
+            win.style.width  = Math.max(200, sw + ev.clientX - sx) + 'px';
+            win.style.height = Math.max(150, sh + ev.clientY - sy) + 'px';
         };
         handle.onpointerup = () => handle.onpointermove = null;
     };
 }
+
+document.querySelectorAll('.window').forEach(w => {
+    enableDrag(w, w.querySelector('.grab-bar'));
+    enableResize(w, w.querySelector('.resize'));
+});
+
+/* ================= SCRATCHPAD ================= */
+(() => {
+    const w = document.getElementById('scratchpadWidget');
+    const canvas = w.querySelector('.draw-canvas');
+    const ctx = canvas.getContext('2d');
+    const grad = w.querySelector('.color-gradient');
+    const gctx = grad.getContext('2d');
+
+    let drawing=false, erasing=false, color='#000', size=3;
+
+    function resize() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    }
+    resize();
+
+    const g = gctx.createLinearGradient(0,0,grad.width,0);
+    ['red','yellow','lime','cyan','blue','magenta','red']
+        .forEach((c,i)=>g.addColorStop(i/6,c));
+    gctx.fillStyle=g; gctx.fillRect(0,0,grad.width,grad.height);
+
+    grad.onpointerdown = e => {
+        const r = grad.getBoundingClientRect();
+        const d = gctx.getImageData(e.clientX-r.left,e.clientY-r.top,1,1).data;
+        color=`rgb(${d[0]},${d[1]},${d[2]})`;
+        erasing=false;
+        w.querySelector('.eraser-toggle').classList.remove('active');
+    };
+
+    canvas.onpointerdown = e => {
+        drawing=true;
+        ctx.beginPath();
+        ctx.moveTo(e.offsetX,e.offsetY);
+    };
+
+    canvas.onpointermove = e => {
+        if(!drawing) return;
+        ctx.lineWidth=size;
+        ctx.lineCap='round';
+        ctx.strokeStyle=color;
+        ctx.globalCompositeOperation = erasing?'destination-out':'source-over';
+        ctx.lineTo(e.offsetX,e.offsetY);
+        ctx.stroke();
+    };
+
+    canvas.onpointerup = () => drawing=false;
+
+    w.querySelector('.eraser-toggle').onclick = e=>{
+        erasing=!erasing;
+        e.target.classList.toggle('active',erasing);
+    };
+
+    w.querySelector('.thickness').oninput = e=>size=e.target.value;
+    w.querySelector('.clear-btn').onclick = ()=>ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    enableDrag(w,w.querySelector('.scratchpad-grab-bar'));
+    enableResize(w,w.querySelector('.scratchpad-resize'));
+})();
 </script>
 
 </body>
