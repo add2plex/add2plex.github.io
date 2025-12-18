@@ -454,6 +454,149 @@ iframe[sandbox] {
     cursor: nwse-resize;
     touch-action: none;
 }
+
+/* 5-Day Forecast Widget */
+.forecast-widget {
+    position: absolute;
+    width: 600px;
+    height: 192px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
+    container-type: size;
+    container-name: forecast;
+}
+
+.forecast-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.forecast-grab-bar:active {
+    cursor: grabbing;
+}
+
+.forecast-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.forecast-content {
+    flex: 1;
+    padding: 8px;
+    display: flex;
+    gap: 6px;
+    overflow: hidden;
+    container-type: size;
+}
+
+@container (max-height: 150px) {
+    .forecast-day {
+        padding: 4px 8px;
+    }
+    
+    .forecast-icon {
+        flex-shrink: 0;
+    }
+}
+
+.forecast-day {
+    flex: 1;
+    background: #0f1320;
+    border-radius: 8px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(4px, 2cqw, 12px);
+    position: relative;
+    gap: clamp(4px, 2cqw, 12px);
+}
+
+.forecast-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(2px, 1cqw, 6px);
+}
+
+.forecast-day-label {
+    position: absolute;
+    top: 4px;
+    left: 6px;
+    font-size: clamp(14px, 5.8cqw, 23px);
+    font-weight: bold;
+    color: #8fb4ff;
+    opacity: 0.8;
+}
+
+.forecast-icon {
+    font-size: clamp(35px, 17.3cqw, 70px);
+    animation: float 3s ease-in-out infinite;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.forecast-temps {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.forecast-high {
+    font-size: clamp(20px, 8.6cqw, 35px);
+    font-weight: bold;
+    color: #ff8080;
+    line-height: 1;
+}
+
+.forecast-low {
+    font-size: clamp(17px, 7.2cqw, 29px);
+    font-weight: bold;
+    color: #80b3ff;
+    line-height: 1;
+}
+
+.forecast-precip {
+    font-size: clamp(14px, 5.8cqw, 23px);
+    color: #8fb4ff;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.forecast-precip::before {
+    content: '💧';
+    font-size: clamp(12px, 5cqw, 20px);
+}
+
+.forecast-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+}
 </style>
 </head>
 <body>
@@ -485,6 +628,68 @@ iframe[sandbox] {
         </div>
     </div>
     <div class="weather-resize"></div>
+</div>
+
+<div class="forecast-widget" id="forecastWidget">
+    <div class="forecast-grab-bar"></div>
+    <div class="forecast-content">
+        <div class="forecast-day">
+            <div class="forecast-day-label">T</div>
+            <div class="forecast-icon">☀️</div>
+            <div class="forecast-info">
+                <div class="forecast-temps">
+                    <div class="forecast-high">--°</div>
+                    <div class="forecast-low">--°</div>
+                </div>
+                <div class="forecast-precip">--%</div>
+            </div>
+        </div>
+        <div class="forecast-day">
+            <div class="forecast-day-label">-</div>
+            <div class="forecast-icon">☀️</div>
+            <div class="forecast-info">
+                <div class="forecast-temps">
+                    <div class="forecast-high">--°</div>
+                    <div class="forecast-low">--°</div>
+                </div>
+                <div class="forecast-precip">--%</div>
+            </div>
+        </div>
+        <div class="forecast-day">
+            <div class="forecast-day-label">-</div>
+            <div class="forecast-icon">☀️</div>
+            <div class="forecast-info">
+                <div class="forecast-temps">
+                    <div class="forecast-high">--°</div>
+                    <div class="forecast-low">--°</div>
+                </div>
+                <div class="forecast-precip">--%</div>
+            </div>
+        </div>
+        <div class="forecast-day">
+            <div class="forecast-day-label">-</div>
+            <div class="forecast-icon">☀️</div>
+            <div class="forecast-info">
+                <div class="forecast-temps">
+                    <div class="forecast-high">--°</div>
+                    <div class="forecast-low">--°</div>
+                </div>
+                <div class="forecast-precip">--%</div>
+            </div>
+        </div>
+        <div class="forecast-day">
+            <div class="forecast-day-label">-</div>
+            <div class="forecast-icon">☀️</div>
+            <div class="forecast-info">
+                <div class="forecast-temps">
+                    <div class="forecast-high">--°</div>
+                    <div class="forecast-low">--°</div>
+                </div>
+                <div class="forecast-precip">--%</div>
+            </div>
+        </div>
+    </div>
+    <div class="forecast-resize"></div>
 </div>
 
 <script>
@@ -695,6 +900,41 @@ function getWeatherInfo(code) {
     return weatherMap[code] || { description: 'Unknown', icon: '🌡️' };
 }
 
+// Fetch 5-day forecast data
+async function fetchForecast() {
+    try {
+        const lat = 30.1588;
+        const lon = -85.6602;
+        
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago&forecast_days=5`);
+        const data = await response.json();
+        
+        const forecastDays = document.querySelectorAll('.forecast-day');
+        const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+        const today = new Date();
+        
+        forecastDays.forEach((dayEl, index) => {
+            const date = new Date(today);
+            date.setDate(today.getDate() + index);
+            const dayLetter = days[date.getDay()];
+            
+            const high = Math.round(data.daily.temperature_2m_max[index]);
+            const low = Math.round(data.daily.temperature_2m_min[index]);
+            const precip = data.daily.precipitation_probability_max[index] || 0;
+            const weatherCode = data.daily.weather_code[index];
+            const weatherInfo = getWeatherInfo(weatherCode);
+            
+            dayEl.querySelector('.forecast-day-label').textContent = dayLetter;
+            dayEl.querySelector('.forecast-icon').textContent = weatherInfo.icon;
+            dayEl.querySelector('.forecast-high').textContent = `${high}°`;
+            dayEl.querySelector('.forecast-low').textContent = `${low}°`;
+            dayEl.querySelector('.forecast-precip').textContent = `${precip}%`;
+        });
+    } catch (error) {
+        console.error('Error fetching forecast:', error);
+    }
+}
+
 // Create initial weather radar window
 window.addEventListener('load', () => {
     // Position weather widget
@@ -709,6 +949,19 @@ window.addEventListener('load', () => {
     // Fetch weather data
     fetchWeather();
     setInterval(fetchWeather, 600000); // Update every 10 minutes
+    
+    // Position forecast widget
+    const forecastWidget = document.getElementById('forecastWidget');
+    forecastWidget.style.left = "50px";
+    forecastWidget.style.top = "480px";
+    forecastWidget.style.zIndex = ++zIndex;
+    
+    enableDrag(forecastWidget, forecastWidget.querySelector('.forecast-grab-bar'));
+    enableResize(forecastWidget, forecastWidget.querySelector('.forecast-resize'));
+    
+    // Fetch forecast data
+    fetchForecast();
+    setInterval(fetchForecast, 600000); // Update every 10 minutes
     
     const radarWin = document.createElement("div");
     radarWin.className = "window no-input-bar";
@@ -940,8 +1193,12 @@ function enableResize(win, handle) {
         const sh = win.offsetHeight;
 
         const move = ev => {
-            win.style.width  = Math.max(250, sw + (ev.clientX - sx)) + "px";
-            win.style.height = Math.max(200, sh + (ev.clientY - sy)) + "px";
+            const isForecast = win.classList.contains('forecast-widget');
+            const minWidth = isForecast ? 400 : 250;
+            const minHeight = isForecast ? 140 : 200;
+            
+            win.style.width  = Math.max(minWidth, sw + (ev.clientX - sx)) + "px";
+            win.style.height = Math.max(minHeight, sh + (ev.clientY - sy)) + "px";
         };
 
         const up = () => handle.onpointermove = null;
