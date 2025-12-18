@@ -20,27 +20,7 @@ html, body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Plus button */
-.add-button {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    background: #1f2a44;
-    color: #8fb4ff;
-    font-size: 42px;
-    font-weight: bold;
-    border: none;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    touch-action: manipulation;
-    cursor: pointer;
-}
+
 
 /* Clock */
 .clock {
@@ -57,7 +37,7 @@ html, body {
     touch-action: none;
     cursor: grab;
     transition: transform 0.1s ease-out;
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: flex-end;
 }
@@ -299,8 +279,175 @@ iframe[sandbox] {
 /* Resize handle */
 .resize {
     position: absolute;
-    width: 36px;
-    height: 36px;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+}
+
+/* Weather Widget */
+.weather-widget {
+    position: absolute;
+    width: 320px;
+    height: 280px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
+    container-type: size;
+    container-name: weather;
+}
+
+.weather-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.weather-grab-bar:active {
+    cursor: grabbing;
+}
+
+.weather-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.weather-content {
+    flex: 1;
+    padding: 4px 4px 4px 4px;
+    padding-top: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.weather-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    gap: clamp(8px, 3cqw, 20px);
+}
+
+.weather-temp {
+    font-size: clamp(22px, 15cqw, 72px);
+    font-weight: bold;
+    color: #8fb4ff;
+    line-height: 1;
+}
+
+.weather-icon {
+    font-size: clamp(50px, 35cqw, 200px);
+    animation: float 3s ease-in-out infinite;
+    line-height: 1;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.weather-description {
+    font-size: clamp(13px, 5.5cqw, 26px);
+    color: #ffffff;
+    text-transform: capitalize;
+    flex-shrink: 0;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.weather-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 2px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.weather-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+}
+
+.weather-detail-label {
+    font-size: clamp(9px, 3.5cqw, 16px);
+    color: #8fb4ff;
+    opacity: 0.7;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+.weather-detail-value {
+    font-size: clamp(16px, 6cqw, 28px);
+    color: #ffffff;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.weather-location {
+    font-size: clamp(10px, 4cqw, 17px);
+    color: #8fb4ff;
+    opacity: 0.9;
+    text-align: center;
+    font-weight: 500;
+    padding: 4px 0;
+    border-top: 1px solid #2d3c66;
+    border-bottom: 1px solid #2d3c66;
+    line-height: 1.2;
+    width: 100%;
+}
+
+.weather-clock {
+    font-size: clamp(11px, 4.5cqw, 18px);
+    color: #ffffff;
+    opacity: 0.95;
+    text-align: center;
+    font-weight: 500;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #2d3c66;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.weather-clock-time {
+    font-size: clamp(22px, 15cqw, 72px);
+    font-weight: bold;
+}
+
+.weather-clock-date {
+    font-size: clamp(12px, 5cqw, 20px);
+    opacity: 0.85;
+}
+
+.weather-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
     right: 0;
     bottom: 0;
     background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
@@ -315,16 +462,31 @@ iframe[sandbox] {
 
 <div class="weather-widget" id="weatherWidget">
     <div class="weather-grab-bar"></div>
-    <div class="weather-iframe-wrap">
-        <iframe src="https://weatherwidget.io/w/horizontal/?id=ww_3a60b29a54f44&t=horizontal&lang=en&sl_lpl=1&ids=%5B%5D&font=Arial&sl_ics=one_a&sl_sot=fahrenheit&cl_bkg=image&cl_font=%23FFFFFF&cl_cloud=%23FFFFFF&cl_persp=%2381D4FA&cl_sun=%23FFC107&cl_moon=%23FFC107&cl_thund=%23FF5722" frameborder="0"></iframe>
+    <div class="weather-content">
+        <div class="weather-clock" id="weatherClock">
+            <div class="weather-clock-time">--:-- --</div>
+            <div class="weather-clock-date">Loading...</div>
+        </div>
+        <div class="weather-main">
+            <div class="weather-temp">--°F</div>
+            <div class="weather-icon">☀️</div>
+        </div>
+        <div class="weather-description">Loading weather...</div>
+        <div class="weather-location">Panama City, FL</div>
+        <div class="weather-details">
+            <div class="weather-detail">
+                <div class="weather-detail-label">Humidity</div>
+                <div class="weather-detail-value">--%</div>
+            </div>
+            <div class="weather-detail">
+                <div class="weather-detail-label">Precipitation</div>
+                <div class="weather-detail-value">--%</div>
+            </div>
+        </div>
     </div>
     <div class="weather-resize"></div>
 </div>
 
-<button class="add-button" id="addBtn">+</button>
-
-<script async src="https://app3.weatherwidget.org/js/?id=ww_3a60b29a54f44"></script>
-<script async src="https://app3.weatherwidget.org/js/?id=ww_3a60b29a54f44"></script>
 <script>
 // Enable third-party cookies and credentials globally
 document.cookie = "cookiesEnabled=true; SameSite=None; Secure";
@@ -358,10 +520,13 @@ function updateClock() {
     const date = now.getDate();
     const year = now.getFullYear();
     
-    document.getElementById('clock').innerHTML = `
-        <div class="clock-time">${hours}:${minutesStr} ${ampm}</div>
-        <div class="clock-date">${dayName}, ${monthName} ${date} ${year}</div>
-    `;
+    // Update weather widget clock
+    const weatherClockTime = document.querySelector('.weather-clock-time');
+    const weatherClockDate = document.querySelector('.weather-clock-date');
+    if (weatherClockTime && weatherClockDate) {
+        weatherClockTime.textContent = `${hours}:${minutesStr} ${ampm}`;
+        weatherClockDate.textContent = `${dayName}, ${monthName} ${date} ${year}`;
+    }
 }
 
 updateClock();
@@ -468,10 +633,83 @@ clockEl.addEventListener('wheel', (e) => {
     clockEl.style.transformOrigin = 'top left';
 });
 
-document.getElementById("addBtn").addEventListener("click", createWindow);
+// Fetch weather data
+async function fetchWeather() {
+    try {
+        // Use Open-Meteo API (no API key required)
+        const lat = 30.1588;
+        const lon = -85.6602;
+        
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago`);
+        const data = await response.json();
+        
+        const temp = Math.round(data.current.temperature_2m);
+        const humidity = data.current.relative_humidity_2m;
+        const precipitation = data.current.precipitation || 0;
+        const weatherCode = data.current.weather_code;
+        
+        // Map weather codes to descriptions and icons
+        const weatherInfo = getWeatherInfo(weatherCode);
+        
+        // Update widget
+        document.querySelector('.weather-temp').textContent = `${temp}°F`;
+        document.querySelector('.weather-icon').textContent = weatherInfo.icon;
+        document.querySelector('.weather-description').textContent = weatherInfo.description;
+        document.querySelector('.weather-details .weather-detail:nth-child(1) .weather-detail-value').textContent = `${humidity}%`;
+        document.querySelector('.weather-details .weather-detail:nth-child(2) .weather-detail-value').textContent = `${(precipitation * 100).toFixed(0)}%`;
+    } catch (error) {
+        console.error('Error fetching weather:', error);
+        document.querySelector('.weather-description').textContent = 'Unable to load weather';
+    }
+}
+
+function getWeatherInfo(code) {
+    // WMO Weather interpretation codes
+    const weatherMap = {
+        0: { description: 'Clear sky', icon: '☀️' },
+        1: { description: 'Mainly clear', icon: '🌤️' },
+        2: { description: 'Partly cloudy', icon: '⛅' },
+        3: { description: 'Overcast', icon: '☁️' },
+        45: { description: 'Foggy', icon: '🌫️' },
+        48: { description: 'Foggy', icon: '🌫️' },
+        51: { description: 'Light drizzle', icon: '🌦️' },
+        53: { description: 'Drizzle', icon: '🌦️' },
+        55: { description: 'Heavy drizzle', icon: '🌧️' },
+        61: { description: 'Light rain', icon: '🌦️' },
+        63: { description: 'Rain', icon: '🌧️' },
+        65: { description: 'Heavy rain', icon: '⛈️' },
+        71: { description: 'Light snow', icon: '🌨️' },
+        73: { description: 'Snow', icon: '❄️' },
+        75: { description: 'Heavy snow', icon: '❄️' },
+        77: { description: 'Snow grains', icon: '❄️' },
+        80: { description: 'Light showers', icon: '🌦️' },
+        81: { description: 'Showers', icon: '🌧️' },
+        82: { description: 'Heavy showers', icon: '⛈️' },
+        85: { description: 'Light snow showers', icon: '🌨️' },
+        86: { description: 'Snow showers', icon: '❄️' },
+        95: { description: 'Thunderstorm', icon: '⛈️' },
+        96: { description: 'Thunderstorm with hail', icon: '⛈️' },
+        99: { description: 'Thunderstorm with hail', icon: '⛈️' }
+    };
+    
+    return weatherMap[code] || { description: 'Unknown', icon: '🌡️' };
+}
 
 // Create initial weather radar window
 window.addEventListener('load', () => {
+    // Position weather widget
+    const weatherWidget = document.getElementById('weatherWidget');
+    weatherWidget.style.left = "50px";
+    weatherWidget.style.top = "150px";
+    weatherWidget.style.zIndex = ++zIndex;
+    
+    enableDrag(weatherWidget, weatherWidget.querySelector('.weather-grab-bar'));
+    enableResize(weatherWidget, weatherWidget.querySelector('.weather-resize'));
+    
+    // Fetch weather data
+    fetchWeather();
+    setInterval(fetchWeather, 600000); // Update every 10 minutes
+    
     const radarWin = document.createElement("div");
     radarWin.className = "window no-input-bar";
     radarWin.style.left = "100px";
@@ -550,133 +788,9 @@ function createWindow() {
     enableAuth(win);
 }
 
-function createFullscreenWindow() {
-    // Get all existing windows
-    const allWindows = document.querySelectorAll('.window');
-    const windowsWithContent = Array.from(allWindows).filter(w => {
-        const iframe = w.querySelector('.iframe-wrap iframe');
-        return iframe && iframe.src && iframe.src !== '';
-    });
-
-    // If no windows with content exist, create empty fullscreen window
-    if (windowsWithContent.length === 0) {
-        createEmptyFullscreenWindow();
-        return;
-    }
-
-    // Pick a random window
-    const randomWindow = windowsWithContent[Math.floor(Math.random() * windowsWithContent.length)];
-    const randomIframe = randomWindow.querySelector('.iframe-wrap iframe');
-    const url = randomIframe.src;
-
-    const win = document.createElement("div");
-    win.className = "window";
-    win.style.left = "0";
-    win.style.top = "0";
-    win.style.width = "100%";
-    win.style.height = "100%";
-    win.style.zIndex = ++zIndex;
-
-    win.innerHTML = `
-        <div class="input-bar">
-            <button class="close-btn">×</button>
-            <button class="refresh-btn">↻</button>
-            <input type="text" placeholder="Enter URL or search term" value="${url}">
-            <button>Go</button>
-            <button class="new-tab-btn">↗</button>
-        </div>
-        <div class="iframe-wrap">
-            <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
-                    credentials="include" 
-                    referrerpolicy="no-referrer-when-downgrade"
-                    allowfullscreen
-                    src="${url}"></iframe>
-        </div>
-        <div class="auth-iframe-wrap">
-            <div class="auth-header">
-                <span>Login</span>
-                <button class="auth-close-btn">×</button>
-            </div>
-            <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
-                    credentials="include" 
-                    referrerpolicy="no-referrer-when-downgrade"
-                    allowfullscreen
-                    src=""></iframe>
-        </div>
-        <div class="auth-overlay">
-            <div class="auth-message">Waiting for authentication...</div>
-        </div>
-        <div class="resize"></div>
-    `;
-
-    document.body.appendChild(win);
-    bringToFront(win);
-
-    enableDrag(win);
-    enableResize(win);
-    enableInput(win);
-    enableClose(win);
-    enableRefresh(win);
-    enableNewTab(win);
-    enableAuth(win);
-}
-
-function createEmptyFullscreenWindow() {
-    const win = document.createElement("div");
-    win.className = "window";
-    win.style.left = "0";
-    win.style.top = "0";
-    win.style.width = "100%";
-    win.style.height = "100%";
-    win.style.zIndex = ++zIndex;
-
-    win.innerHTML = `
-        <div class="input-bar">
-            <button class="close-btn">×</button>
-            <button class="refresh-btn">↻</button>
-            <input type="text" placeholder="Enter URL or search term">
-            <button>Go</button>
-            <button class="new-tab-btn">↗</button>
-        </div>
-        <div class="iframe-wrap">
-            <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
-                    credentials="include" 
-                    referrerpolicy="no-referrer-when-downgrade"
-                    allowfullscreen
-                    src=""></iframe>
-        </div>
-        <div class="auth-iframe-wrap">
-            <div class="auth-header">
-                <span>Login</span>
-                <button class="auth-close-btn">×</button>
-            </div>
-            <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
-                    credentials="include" 
-                    referrerpolicy="no-referrer-when-downgrade"
-                    allowfullscreen
-                    src=""></iframe>
-        </div>
-        <div class="auth-overlay">
-            <div class="auth-message">Waiting for authentication...</div>
-        </div>
-        <div class="resize"></div>
-    `;
-
-    document.body.appendChild(win);
-    bringToFront(win);
-
-    enableDrag(win);
-    enableResize(win);
-    enableInput(win);
-    enableClose(win);
-    enableRefresh(win);
-    enableNewTab(win);
-    enableAuth(win);
-}
-
 function enableInput(win) {
     const input = win.querySelector(".input-bar input");
-    const goButton = win.querySelector(".input-bar button:last-child");
+    const goButton = win.querySelector(".input-bar button:last-of-type");
     const iframe = win.querySelector("iframe");
 
     function navigate(e) {
@@ -697,18 +811,10 @@ function enableInput(win) {
             url = "https://www.google.com/search?q=" + encodeURIComponent(value);
         }
 
-        // Set iframe attributes for better cross-domain support
         iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera');
         iframe.setAttribute('credentials', 'include');
         iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
         iframe.setAttribute('allowfullscreen', '');
-        
-        // Try to set custom user agent header (limited support)
-        try {
-            iframe.contentWindow.navigator.userAgent = navigator.userAgent.replace(/iframe/gi, '');
-        } catch(e) {
-            // User agent spoofing blocked by browser
-        }
         
         iframe.src = url;
     }
@@ -758,118 +864,42 @@ function enableAuth(win) {
     const authIframe = win.querySelector(".auth-iframe-wrap iframe");
     const authCloseBtn = win.querySelector(".auth-close-btn");
     const overlay = win.querySelector(".auth-overlay");
-    let authPopup = null;
 
-    // Close auth panel
     authCloseBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         win.classList.remove("split-view");
         authIframeWrap.classList.remove("active");
         authIframe.src = "";
-        if (authPopup && !authPopup.closed) {
-            authPopup.close();
-        }
     });
 
-    // Intercept popup creation
-    const originalOpen = window.open;
-    
-    // Listen for messages from authentication iframe
     window.addEventListener("message", (event) => {
         if (event.data && event.data.type === "auth-success") {
-            console.log("Auth token received:", event.data.token);
-            
             win.classList.remove("split-view");
             authIframeWrap.classList.remove("active");
             overlay.classList.remove("active");
             authIframe.src = "";
             
-            if (authPopup && !authPopup.closed) {
-                authPopup.close();
-            }
-            
             win.authToken = event.data.token;
-            
-            try {
-                if (event.data.tokenType === "bearer") {
-                    win.bearerToken = event.data.token;
-                }
-            } catch(e) {
-                console.log("Cannot access iframe directly due to CORS");
-            }
             
             if (iframe.src) {
                 iframe.src = iframe.src;
             }
-        } else if (event.data && event.data.type === "auth-failed") {
-            console.error("Authentication failed:", event.data.error);
-            win.classList.remove("split-view");
-            authIframeWrap.classList.remove("active");
-            overlay.classList.remove("active");
-            if (authPopup && !authPopup.closed) {
-                authPopup.close();
-            }
         }
     });
-
-    iframe.addEventListener('error', () => {
-        console.warn("Iframe failed to load - may be blocked by X-Frame-Options or CSP");
-    });
-
-    // Monitor for popup attempts from the main iframe
-    const checkForPopups = setInterval(() => {
-        try {
-            const iframeDoc = iframe.contentWindow || iframe.contentDocument;
-            if (iframeDoc && iframeDoc.document) {
-                // Override window.open in the iframe context
-                iframeDoc.open = function(url, name, features) {
-                    // Check if this looks like an auth popup
-                    if (url && (url.includes('login') || url.includes('auth') || url.includes('oauth') || 
-                        features && (features.includes('popup') || features.includes('width=') || features.includes('height=')))) {
-                        
-                        // Show in side panel instead
-                        win.classList.add("split-view");
-                        authIframeWrap.classList.add("active");
-                        authIframe.src = url;
-                        
-                        return {
-                            closed: false,
-                            close: () => {
-                                win.classList.remove("split-view");
-                                authIframeWrap.classList.remove("active");
-                                authIframe.src = "";
-                            }
-                        };
-                    }
-                    
-                    // Otherwise use original open
-                    return originalOpen.call(window, url, name, features);
-                };
-            }
-        } catch(e) {
-            // CORS prevents access, which is expected for cross-origin iframes
-        }
-    }, 1000);
-
-    win.openAuthPopup = (authUrl, width = 500, height = 600) => {
-        win.classList.add("split-view");
-        authIframeWrap.classList.add("active");
-        authIframe.src = authUrl;
-    };
 }
 
 /* Dragging */
-function enableDrag(win) {
-    const bar = win.querySelector(".input-bar");
-    const grabBar = win.querySelector(".grab-bar");
-    
-    // Use input bar if available, otherwise use grab bar, otherwise use window
-    const dragTarget = bar || grabBar || win;
+function enableDrag(win, dragTarget) {
+    if (!dragTarget) {
+        const bar = win.querySelector(".input-bar");
+        const grabBar = win.querySelector(".grab-bar");
+        dragTarget = bar || grabBar || win;
+    }
 
     dragTarget.onpointerdown = e => {
-        // Don't drag if clicking buttons, input, iframe, or resize handle
         if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || 
-            e.target.tagName === 'IFRAME' || e.target.classList.contains('resize')) return;
+            e.target.tagName === 'IFRAME' || e.target.classList.contains('resize') ||
+            e.target.classList.contains('weather-resize')) return;
         
         bringToFront(win);
         dragTarget.setPointerCapture(e.pointerId);
@@ -883,7 +913,6 @@ function enableDrag(win) {
             const newLeft = sl + (ev.clientX - sx);
             const newTop = st + (ev.clientY - sy);
             
-            // Constrain to keep grab bar visible (prevent going above screen)
             win.style.left = newLeft + "px";
             win.style.top = Math.max(0, newTop) + "px";
         };
@@ -896,8 +925,10 @@ function enableDrag(win) {
 }
 
 /* Resizing */
-function enableResize(win) {
-    const handle = win.querySelector(".resize");
+function enableResize(win, handle) {
+    if (!handle) {
+        handle = win.querySelector(".resize");
+    }
 
     handle.onpointerdown = e => {
         bringToFront(win);
@@ -909,8 +940,8 @@ function enableResize(win) {
         const sh = win.offsetHeight;
 
         const move = ev => {
-            win.style.width  = Math.max(320, sw + (ev.clientX - sx)) + "px";
-            win.style.height = Math.max(240, sh + (ev.clientY - sy)) + "px";
+            win.style.width  = Math.max(250, sw + (ev.clientX - sx)) + "px";
+            win.style.height = Math.max(200, sh + (ev.clientY - sy)) + "px";
         };
 
         const up = () => handle.onpointermove = null;
