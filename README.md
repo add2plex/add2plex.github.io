@@ -98,8 +98,9 @@ html, body {
     cursor: grab;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     flex-shrink: 0;
+    padding: 0 8px;
 }
 
 .grab-bar:active {
@@ -312,8 +313,9 @@ iframe[sandbox] {
     cursor: grab;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     flex-shrink: 0;
+    padding: 0 8px;
 }
 
 .weather-grab-bar:active {
@@ -326,6 +328,14 @@ iframe[sandbox] {
     font-size: 14px;
     letter-spacing: 2px;
     opacity: 0.5;
+}
+
+.widget-name {
+    font-size: 11px;
+    color: #8fb4ff;
+    font-weight: 600;
+    opacity: 0.8;
+    letter-spacing: 0.5px;
 }
 
 .weather-content {
@@ -458,8 +468,8 @@ iframe[sandbox] {
 /* 5-Day Forecast Widget */
 .forecast-widget {
     position: absolute;
-    width: 600px;
-    height: 192px;
+    width: 384px;
+    height: 122.88px;
     background: #1a1f2e;
     border-radius: 12px;
     border: 1px solid #2d3c66;
@@ -470,6 +480,7 @@ iframe[sandbox] {
     overflow: hidden;
     container-type: size;
     container-name: forecast;
+    font-size: 0.64;
 }
 
 .forecast-grab-bar {
@@ -479,8 +490,9 @@ iframe[sandbox] {
     cursor: grab;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     flex-shrink: 0;
+    padding: 0 8px;
 }
 
 .forecast-grab-bar:active {
@@ -497,9 +509,9 @@ iframe[sandbox] {
 
 .forecast-content {
     flex: 1;
-    padding: 8px;
+    padding: 5.12px;
     display: flex;
-    gap: 6px;
+    gap: 3.84px;
     overflow: hidden;
     container-type: size;
 }
@@ -517,22 +529,22 @@ iframe[sandbox] {
 .forecast-day {
     flex: 1;
     background: #0f1320;
-    border-radius: 8px;
+    border-radius: 5.12px;
     border: 1px solid #2d3c66;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    padding: clamp(4px, 2cqw, 12px);
+    padding: clamp(2.56px, 2cqw, 7.68px);
     position: relative;
-    gap: clamp(4px, 2cqw, 12px);
+    gap: clamp(2.56px, 2cqw, 7.68px);
 }
 
 .forecast-info {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: clamp(2px, 1cqw, 6px);
+    gap: clamp(1.28px, 1cqw, 3.84px);
 }
 
 .forecast-day-label {
@@ -620,8 +632,9 @@ iframe[sandbox] {
     cursor: grab;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     flex-shrink: 0;
+    padding: 0 8px;
 }
 
 .scratchpad-grab-bar:active {
@@ -750,6 +763,25 @@ iframe[sandbox] {
     touch-action: none;
 }
 
+/* Padlock Icon */
+.padlock-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    font-size: 22.4px;
+    cursor: pointer;
+    z-index: 999;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    filter: grayscale(1) brightness(0.7);
+}
+
+.padlock-btn:hover {
+    opacity: 0.8;
+}
+
 .scratchpad-resize {
     position: absolute;
     width: 25px;
@@ -760,19 +792,178 @@ iframe[sandbox] {
     cursor: nwse-resize;
     touch-action: none;
 }
+
+/* Clock Widget */
+.clock-widget {
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
+}
+
+.clock-widget-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.clock-widget-grab-bar:active {
+    cursor: grabbing;
+}
+
+.clock-widget-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.clock-widget-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.clock-widget-time {
+    font-size: clamp(36px, 10vw, 72px);
+    font-weight: bold;
+    color: #ffffff;
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    line-height: 1;
+}
+
+.clock-widget-date {
+    font-size: clamp(12px, 3vw, 18px);
+    color: #8fb4ff;
+    opacity: 0.9;
+    text-align: center;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.clock-widget-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+}
+
+.clock-size-controls {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.clock-size-btn {
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 3px;
+    background: #2d3c66;
+    color: #8fb4ff;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.2s;
+}
+
+.clock-size-btn:hover {
+    background: #3d4c76;
+}
+
+.size-controls {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.size-btn {
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 3px;
+    background: #2d3c66;
+    color: #8fb4ff;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.2s;
+}
+
+.size-btn:hover {
+    background: #3d4c76;
+}
+.cursor-circle {
+    position: fixed;
+    border: 2px solid #8fb4ff;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1001;
+    display: none;
+    opacity: 0.7;
+}
+
+.scratchpad-brush-preview {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #2d3c66;
+    border-radius: 4px;
+    background: #0f1320;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+
+
+
 </style>
 </head>
 <body>
 
+<button class="padlock-btn" id="padlockBtn">🔓</button>
+
+<div class="cursor-circle" id="cursorCircle"></div>
+
 <div class="clock" id="clock"></div>
 
 <div class="weather-widget" id="weatherWidget">
-    <div class="weather-grab-bar"></div>
+    <div class="weather-grab-bar">
+        <span class="widget-name">Weather</span>
+    </div>
     <div class="weather-content">
-        <div class="weather-clock" id="weatherClock">
-            <div class="weather-clock-time">--:-- --</div>
-            <div class="weather-clock-date">Loading...</div>
-        </div>
         <div class="weather-main">
             <div class="weather-temp">--°F</div>
             <div class="weather-icon">☀️</div>
@@ -794,7 +985,9 @@ iframe[sandbox] {
 </div>
 
 <div class="forecast-widget" id="forecastWidget">
-    <div class="forecast-grab-bar"></div>
+    <div class="forecast-grab-bar">
+        <span class="widget-name">Forecast</span>
+    </div>
     <div class="forecast-content">
         <div class="forecast-day">
             <div class="forecast-day-label">T</div>
@@ -856,7 +1049,9 @@ iframe[sandbox] {
 </div>
 
 <div class="scratchpad-widget" id="scratchpadWidget">
-    <div class="scratchpad-grab-bar"></div>
+    <div class="scratchpad-grab-bar">
+        <span class="widget-name">Draw</span>
+    </div>
     <div class="scratchpad-toolbar">
         <div class="scratchpad-color-bar">
             <div class="scratchpad-gradient-bar" id="gradientBar"></div>
@@ -870,6 +1065,7 @@ iframe[sandbox] {
             <label class="scratchpad-thickness-label">Size:</label>
             <input type="range" class="scratchpad-thickness-slider" id="thicknessSlider" min="1" max="50" value="3">
         </div>
+        <div class="scratchpad-brush-preview" id="brushPreview"></div>
         <button class="scratchpad-btn" id="eraserBtn">✏️ Eraser</button>
         <button class="scratchpad-btn" id="clearBtn">Clear</button>
     </div>
@@ -879,11 +1075,27 @@ iframe[sandbox] {
     <div class="scratchpad-resize"></div>
 </div>
 
+<div class="clock-widget" id="clockWidget">
+    <div class="clock-widget-grab-bar">
+        <span class="widget-name">Clock</span>
+        <div class="clock-size-controls">
+            <button class="clock-size-btn" id="clockMinusBtn">−</button>
+            <button class="clock-size-btn" id="clockPlusBtn">+</button>
+        </div>
+    </div>
+    <div class="clock-widget-content">
+        <div class="clock-widget-time" id="clockWidgetTime">--:-- --</div>
+        <div class="clock-widget-date" id="clockWidgetDate">Loading...</div>
+    </div>
+    <div class="clock-widget-resize"></div>
+</div>
+
 <script>
 // Enable third-party cookies and credentials globally
 document.cookie = "cookiesEnabled=true; SameSite=None; Secure";
 
 let zIndex = 1;
+let isLocked = false;
 let clockScale = 1;
 let initialDistance = 0;
 let initialScale = 1;
@@ -912,12 +1124,12 @@ function updateClock() {
     const date = now.getDate();
     const year = now.getFullYear();
     
-    // Update weather widget clock
-    const weatherClockTime = document.querySelector('.weather-clock-time');
-    const weatherClockDate = document.querySelector('.weather-clock-date');
-    if (weatherClockTime && weatherClockDate) {
-        weatherClockTime.textContent = `${hours}:${minutesStr} ${ampm}`;
-        weatherClockDate.textContent = `${dayName}, ${monthName} ${date} ${year}`;
+    // Update clock widget
+    const clockWidgetTime = document.getElementById('clockWidgetTime');
+    const clockWidgetDate = document.getElementById('clockWidgetDate');
+    if (clockWidgetTime && clockWidgetDate) {
+        clockWidgetTime.textContent = `${hours}:${minutesStr} ${ampm}`;
+        clockWidgetDate.textContent = `${dayName}, ${monthName} ${date} ${year}`;
     }
 }
 
@@ -1124,10 +1336,22 @@ async function fetchForecast() {
 
 // Create initial weather radar window
 window.addEventListener('load', () => {
+    // Calculate equal sizing for all widgets across the viewport
+    const padding = 20;
+    const windowWidth = window.innerWidth;
+    const numWidgets = 5; // weather, forecast, radar, scratchpad, clock
+    const widgetWidth = (windowWidth - (padding * (numWidgets + 1))) / numWidgets;
+    const widgetHeight = widgetWidth; // Height equals width
+
+    
+    let leftPosition = padding;
+    
     // Position weather widget
     const weatherWidget = document.getElementById('weatherWidget');
-    weatherWidget.style.left = "50px";
-    weatherWidget.style.top = "150px";
+    weatherWidget.style.left = leftPosition + "px";
+    weatherWidget.style.top = padding + "px";
+    weatherWidget.style.width = widgetWidth + "px";
+    weatherWidget.style.height = widgetHeight + "px";
     weatherWidget.style.zIndex = ++zIndex;
     
     enableDrag(weatherWidget, weatherWidget.querySelector('.weather-grab-bar'));
@@ -1137,10 +1361,14 @@ window.addEventListener('load', () => {
     fetchWeather();
     setInterval(fetchWeather, 600000); // Update every 10 minutes
     
+    leftPosition += widgetWidth + padding;
+    
     // Position forecast widget
     const forecastWidget = document.getElementById('forecastWidget');
-    forecastWidget.style.left = "50px";
-    forecastWidget.style.top = "480px";
+    forecastWidget.style.left = leftPosition + "px";
+    forecastWidget.style.top = padding + "px";
+    forecastWidget.style.width = widgetWidth + "px";
+    forecastWidget.style.height = widgetHeight + "px";
     forecastWidget.style.zIndex = ++zIndex;
     
     enableDrag(forecastWidget, forecastWidget.querySelector('.forecast-grab-bar'));
@@ -1150,19 +1378,21 @@ window.addEventListener('load', () => {
     fetchForecast();
     setInterval(fetchForecast, 600000); // Update every 10 minutes
     
-    // Initialize scratch pad
-    initScratchpad();
+    leftPosition += widgetWidth + padding;
     
+    // Position radar widget
     const radarWin = document.createElement("div");
     radarWin.className = "window no-input-bar";
-    radarWin.style.left = "100px";
-    radarWin.style.top = "100px";
-    radarWin.style.width = "800px";
-    radarWin.style.height = "600px";
+    radarWin.style.left = leftPosition + "px";
+    radarWin.style.top = padding + "px";
+    radarWin.style.width = widgetWidth + "px";
+    radarWin.style.height = widgetHeight + "px";
     radarWin.style.zIndex = ++zIndex;
 
     radarWin.innerHTML = `
-        <div class="grab-bar"></div>
+        <div class="grab-bar">
+            <span class="widget-name">Radar</span>
+        </div>
         <div class="iframe-wrap">
             <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
                     credentials="include" 
@@ -1178,6 +1408,71 @@ window.addEventListener('load', () => {
 
     enableDrag(radarWin);
     enableResize(radarWin);
+    
+    leftPosition += widgetWidth + padding;
+    
+    // Position scratch pad before initialization
+    const scratchpadWidget = document.getElementById('scratchpadWidget');
+    scratchpadWidget.style.left = leftPosition + "px";
+    scratchpadWidget.style.top = padding + "px";
+    scratchpadWidget.style.width = widgetWidth + "px";
+    scratchpadWidget.style.height = widgetHeight + "px";
+    scratchpadWidget.style.zIndex = ++zIndex;
+    
+    // Initialize scratch pad
+    initScratchpad();
+    
+    leftPosition += widgetWidth + padding;
+    
+    // Position clock widget
+    const clockWidget = document.getElementById('clockWidget');
+    clockWidget.style.left = leftPosition + "px";
+    clockWidget.style.top = padding + "px";
+    clockWidget.style.width = widgetWidth + "px";
+    clockWidget.style.height = widgetHeight + "px";
+    clockWidget.style.zIndex = ++zIndex;
+    
+    enableDrag(clockWidget, clockWidget.querySelector('.clock-widget-grab-bar'));
+    enableResize(clockWidget, clockWidget.querySelector('.clock-widget-resize'));
+    
+    // Clock size control
+    let clockFontSizeMultiplier = 1;
+    const clockMinusBtn = document.getElementById('clockMinusBtn');
+    const clockPlusBtn = document.getElementById('clockPlusBtn');
+    const clockWidgetTime = document.getElementById('clockWidgetTime');
+    const clockWidgetDate = document.getElementById('clockWidgetDate');
+    
+    function updateClockFontSize() {
+        clockWidgetTime.style.fontSize = `clamp(36px, ${clockFontSizeMultiplier * 10}vw, ${clockFontSizeMultiplier * 72}px)`;
+        clockWidgetDate.style.fontSize = `clamp(12px, ${clockFontSizeMultiplier * 3}vw, ${clockFontSizeMultiplier * 18}px)`;
+    }
+    
+    if (clockMinusBtn) {
+        clockMinusBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (clockFontSizeMultiplier > 0.5) {
+                clockFontSizeMultiplier -= 0.1;
+                updateClockFontSize();
+            }
+        });
+    }
+    
+    if (clockPlusBtn) {
+        clockPlusBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (clockFontSizeMultiplier < 2) {
+                clockFontSizeMultiplier += 0.1;
+                updateClockFontSize();
+            }
+        });
+    }
+    
+    // Padlock button event handler
+    const padlockBtn = document.getElementById('padlockBtn');
+    padlockBtn.addEventListener('click', () => {
+        isLocked = !isLocked;
+        padlockBtn.textContent = isLocked ? '🔒' : '🔓';
+    });
 });
 
 function createWindow() {
@@ -1340,6 +1635,7 @@ function enableDrag(win, dragTarget) {
     }
 
     dragTarget.onpointerdown = e => {
+        if (isLocked) return;
         if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || 
             e.target.tagName === 'IFRAME' || e.target.classList.contains('resize') ||
             e.target.classList.contains('weather-resize')) return;
@@ -1374,6 +1670,7 @@ function enableResize(win, handle) {
     }
 
     handle.onpointerdown = e => {
+        if (isLocked) return;
         bringToFront(win);
         handle.setPointerCapture(e.pointerId);
 
@@ -1410,11 +1707,31 @@ function initScratchpad() {
     const thicknessSlider = document.getElementById('thicknessSlider');
     const eraserBtn = document.getElementById('eraserBtn');
     const clearBtn = document.getElementById('clearBtn');
+    const brushPreview = document.getElementById('brushPreview');
     
     let isDrawing = false;
     let isErasing = false;
     let currentColor = '#ff0000';
     let currentThickness = 3;
+    
+
+    
+    // Helper function to update brush preview
+    function updateBrushPreview() {
+        brushPreview.innerHTML = '';
+        const previewCircle = document.createElement('div');
+        previewCircle.style.width = Math.min(currentThickness, 30) + 'px';
+        previewCircle.style.height = Math.min(currentThickness, 30) + 'px';
+        previewCircle.style.borderRadius = '50%';
+        
+        if (isErasing) {
+            previewCircle.style.border = '2px solid #8fb4ff';
+            previewCircle.style.backgroundColor = 'transparent';
+        } else {
+            previewCircle.style.backgroundColor = currentColor;
+        }
+        brushPreview.appendChild(previewCircle);
+    }
     
     // Helper function to set color and update UI
     function setColor(color) {
@@ -1429,6 +1746,7 @@ function initScratchpad() {
         } else if (color === '#ffffff') {
             whiteBtn.classList.add('active');
         }
+        updateBrushPreview();
     }
     
     // Set up canvas
@@ -1494,6 +1812,7 @@ function initScratchpad() {
     // Thickness slider
     thicknessSlider.addEventListener('input', (e) => {
         currentThickness = e.target.value;
+        updateBrushPreview();
     });
     
     // Eraser button
@@ -1507,6 +1826,7 @@ function initScratchpad() {
         }
         blackBtn.classList.remove('active');
         whiteBtn.classList.remove('active');
+        updateBrushPreview();
     });
     
     // Clear button
@@ -1522,6 +1842,14 @@ function initScratchpad() {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         
+        // Show cursor circle
+        const cursorCircle = document.getElementById('cursorCircle');
+        cursorCircle.style.display = 'block';
+        cursorCircle.style.left = (e.clientX - currentThickness / 2) + 'px';
+        cursorCircle.style.top = (e.clientY - currentThickness / 2) + 'px';
+        cursorCircle.style.width = currentThickness + 'px';
+        cursorCircle.style.height = currentThickness + 'px';
+        
         ctx.beginPath();
         ctx.moveTo(x, y);
     }
@@ -1532,6 +1860,13 @@ function initScratchpad() {
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
+        
+        // Update cursor circle
+        const cursorCircle = document.getElementById('cursorCircle');
+        cursorCircle.style.left = (e.clientX - currentThickness / 2) + 'px';
+        cursorCircle.style.top = (e.clientY - currentThickness / 2) + 'px';
+        cursorCircle.style.width = currentThickness + 'px';
+        cursorCircle.style.height = currentThickness + 'px';
         
         ctx.lineWidth = currentThickness;
         ctx.lineCap = 'round';
@@ -1549,6 +1884,10 @@ function initScratchpad() {
     function stopDrawing() {
         isDrawing = false;
         ctx.closePath();
+        
+        // Hide cursor circle
+        const cursorCircle = document.getElementById('cursorCircle');
+        cursorCircle.style.display = 'none';
     }
     
     // Touch support
@@ -1565,6 +1904,15 @@ function initScratchpad() {
         const touch = e.touches[0];
         isDrawing = true;
         const pos = getTouchPos(touch);
+        
+        // Show cursor circle
+        const cursorCircle = document.getElementById('cursorCircle');
+        cursorCircle.style.display = 'block';
+        cursorCircle.style.left = (touch.clientX - currentThickness / 2) + 'px';
+        cursorCircle.style.top = (touch.clientY - currentThickness / 2) + 'px';
+        cursorCircle.style.width = currentThickness + 'px';
+        cursorCircle.style.height = currentThickness + 'px';
+        
         ctx.beginPath();
         ctx.moveTo(pos.x, pos.y);
     }
@@ -1575,6 +1923,13 @@ function initScratchpad() {
         
         const touch = e.touches[0];
         const pos = getTouchPos(touch);
+        
+        // Update cursor circle
+        const cursorCircle = document.getElementById('cursorCircle');
+        cursorCircle.style.left = (touch.clientX - currentThickness / 2) + 'px';
+        cursorCircle.style.top = (touch.clientY - currentThickness / 2) + 'px';
+        cursorCircle.style.width = currentThickness + 'px';
+        cursorCircle.style.height = currentThickness + 'px';
         
         ctx.lineWidth = currentThickness;
         ctx.lineCap = 'round';
@@ -1593,6 +1948,10 @@ function initScratchpad() {
         e.preventDefault();
         isDrawing = false;
         ctx.closePath();
+        
+        // Hide cursor circle
+        const cursorCircle = document.getElementById('cursorCircle');
+        cursorCircle.style.display = 'none';
     }
     
     // Mouse events
@@ -1606,41 +1965,12 @@ function initScratchpad() {
     canvas.addEventListener('touchmove', touchDraw);
     canvas.addEventListener('touchend', stopTouchDrawing);
     
-    // Position widget
-    scratchpadWidget.style.left = "450px";
-    scratchpadWidget.style.top = "150px";
-    scratchpadWidget.style.zIndex = ++zIndex;
-    
+    // Enable drag and resize
     enableDrag(scratchpadWidget, scratchpadWidget.querySelector('.scratchpad-grab-bar'));
     enableResize(scratchpadWidget, scratchpadWidget.querySelector('.scratchpad-resize'));
     
-    // Custom resize handler for canvas
-    const resizeHandle = scratchpadWidget.querySelector('.scratchpad-resize');
-    resizeHandle.onpointerdown = e => {
-        bringToFront(scratchpadWidget);
-        resizeHandle.setPointerCapture(e.pointerId);
-
-        const sx = e.clientX;
-        const sy = e.clientY;
-        const sw = scratchpadWidget.offsetWidth;
-        const sh = scratchpadWidget.offsetHeight;
-
-        const move = ev => {
-            const minWidth = 300;
-            const minHeight = 250;
-            
-            scratchpadWidget.style.width  = Math.max(minWidth, sw + (ev.clientX - sx)) + "px";
-            scratchpadWidget.style.height = Math.max(minHeight, sh + (ev.clientY - sy)) + "px";
-            
-            // Resize canvas to fit new widget size
-            resizeCanvas();
-        };
-
-        const up = () => resizeHandle.onpointermove = null;
-
-        resizeHandle.onpointermove = move;
-        resizeHandle.onpointerup = up;
-    };
+    // Initialize brush preview
+    updateBrushPreview();
 }
 </script>
 
