@@ -469,8 +469,8 @@ iframe[sandbox] {
 /* 5-Day Forecast Widget */
 .forecast-widget {
     position: absolute;
-    width: 384px;
-    height: 122.88px;
+    width: 307.2px;
+    height: 98.304px;
     background: #1a1f2e;
     border-radius: 12px;
     border: 1px solid #2d3c66;
@@ -481,7 +481,7 @@ iframe[sandbox] {
     overflow: hidden;
     container-type: size;
     container-name: forecast;
-    font-size: 0.64;
+    font-size: 0.512;
 }
 
 .forecast-grab-bar {
@@ -921,6 +921,7 @@ iframe[sandbox] {
     width: 100%;
     height: 100%;
     border: none;
+    zoom: 0.5;
 }
 
 .internet-speed-resize {
