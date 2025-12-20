@@ -287,6 +287,7 @@ iframe[sandbox] {
     background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
     cursor: nwse-resize;
     touch-action: none;
+    border-radius: 0 0 12px 0;
 }
 
 /* Weather Widget */
@@ -869,6 +870,70 @@ iframe[sandbox] {
     touch-action: none;
 }
 
+/* Internet Speed Widget */
+.internet-speed-widget {
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
+}
+
+.internet-speed-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.internet-speed-grab-bar:active {
+    cursor: grabbing;
+}
+
+.internet-speed-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.internet-speed-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.internet-speed-content iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.internet-speed-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+}
+
 .clock-size-controls {
     display: flex;
     gap: 4px;
@@ -1090,6 +1155,16 @@ iframe[sandbox] {
     <div class="clock-widget-resize"></div>
 </div>
 
+<div class="internet-speed-widget" id="internetSpeedWidget">
+    <div class="internet-speed-grab-bar">
+        <span class="widget-name">Internet Speed</span>
+    </div>
+    <div class="internet-speed-content">
+        <iframe src="https://speed.add2plex.com/" allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media" credentials="include" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+    </div>
+    <div class="internet-speed-resize"></div>
+</div>
+
 <script>
 // Enable third-party cookies and credentials globally
 document.cookie = "cookiesEnabled=true; SameSite=None; Secure";
@@ -1243,8 +1318,9 @@ async function fetchWeather() {
         // Use Open-Meteo API (no API key required)
         const lat = 30.1588;
         const lon = -85.6602;
+        const now = new Date();
         
-        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago`);
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code&daily=sunrise,sunset&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago`);
         const data = await response.json();
         
         const temp = Math.round(data.current.temperature_2m);
@@ -1252,12 +1328,69 @@ async function fetchWeather() {
         const precipitation = data.current.precipitation || 0;
         const weatherCode = data.current.weather_code;
         
+        // Get current local time
+        const localNow = new Date();
+        const currentHour = localNow.getHours();
+        const currentMin = localNow.getMinutes();
+        
+        console.log('=== WEATHER UPDATE ===');
+        console.log('Local time:', localNow.toLocaleTimeString());
+        console.log('Current hour (0-23):', currentHour);
+        console.log('Current minute:', currentMin);
+        
+        // Get sunrise and sunset times
+        const today = localNow.toISOString().split('T')[0];
+        const dailyIndex = data.daily.time.indexOf(today);
+        
+        let isNightTime = false;
+        
+        if (dailyIndex >= 0 && data.daily.sunrise && data.daily.sunset) {
+            const sunriseStr = data.daily.sunrise[dailyIndex]; // e.g., "2025-12-20T06:34"
+            const sunsetStr = data.daily.sunset[dailyIndex];   // e.g., "2025-12-20T16:46"
+            
+            // Extract HH:MM from the strings
+            const sunriseHourMin = sunriseStr.substring(11, 16); // "06:34"
+            const sunsetHourMin = sunsetStr.substring(11, 16);   // "16:46"
+            
+            const currentHourMin = currentHour.toString().padStart(2, '0') + ':' + 
+                                   currentMin.toString().padStart(2, '0');
+            
+            console.log('Sunrise (HH:MM):', sunriseHourMin);
+            console.log('Sunset (HH:MM):', sunsetHourMin);
+            console.log('Current time (HH:MM):', currentHourMin);
+            
+            // It's night if current time is after sunset OR before sunrise
+            isNightTime = currentHourMin > sunsetHourMin || currentHourMin < sunriseHourMin;
+            
+            console.log('Is after sunset?', currentHourMin > sunsetHourMin);
+            console.log('Is before sunrise?', currentHourMin < sunriseHourMin);
+        } else {
+            console.log('Daily sunrise/sunset data not available');
+        }
+        
+        console.log('Is night time?', isNightTime);
+        
         // Map weather codes to descriptions and icons
         const weatherInfo = getWeatherInfo(weatherCode);
         
+        // Determine final icon - use moon if night time
+        let finalIcon = weatherInfo.icon;
+        console.log('Original icon:', weatherInfo.icon);
+        
+        if (isNightTime) {
+            // Night time - show moon
+            console.log('Setting to moon icon (night time)');
+            finalIcon = '🌙';
+        } else {
+            console.log('Keeping original day icon');
+        }
+        
+        console.log('Final icon:', finalIcon);
+        console.log('===================');
+        
         // Update widget
         document.querySelector('.weather-temp').textContent = `${temp}°F`;
-        document.querySelector('.weather-icon').textContent = weatherInfo.icon;
+        document.querySelector('.weather-icon').textContent = finalIcon;
         document.querySelector('.weather-description').textContent = weatherInfo.description;
         document.querySelector('.weather-details .weather-detail:nth-child(1) .weather-detail-value').textContent = `${humidity}%`;
         document.querySelector('.weather-details .weather-detail:nth-child(2) .weather-detail-value').textContent = `${(precipitation * 100).toFixed(0)}%`;
@@ -1339,7 +1472,7 @@ window.addEventListener('load', () => {
     // Calculate equal sizing for all widgets across the viewport
     const padding = 20;
     const windowWidth = window.innerWidth;
-    const numWidgets = 5; // weather, forecast, radar, scratchpad, clock
+    const numWidgets = 6; // weather, forecast, radar, scratchpad, clock, internet speed
     const widgetWidth = (windowWidth - (padding * (numWidgets + 1))) / numWidgets;
     const widgetHeight = widgetWidth; // Height equals width
 
@@ -1466,6 +1599,19 @@ window.addEventListener('load', () => {
             }
         });
     }
+    
+    leftPosition += widgetWidth + padding;
+    
+    // Position Internet Speed widget
+    const internetSpeedWidget = document.getElementById('internetSpeedWidget');
+    internetSpeedWidget.style.left = leftPosition + "px";
+    internetSpeedWidget.style.top = padding + "px";
+    internetSpeedWidget.style.width = widgetWidth + "px";
+    internetSpeedWidget.style.height = widgetHeight + "px";
+    internetSpeedWidget.style.zIndex = ++zIndex;
+    
+    enableDrag(internetSpeedWidget, internetSpeedWidget.querySelector('.internet-speed-grab-bar'));
+    enableResize(internetSpeedWidget, internetSpeedWidget.querySelector('.internet-speed-resize'));
     
     // Padlock button event handler
     const padlockBtn = document.getElementById('padlockBtn');
