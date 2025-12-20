@@ -935,6 +935,242 @@ iframe[sandbox] {
     touch-action: none;
 }
 
+/* Search Widget */
+.search-widget {
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
+}
+
+.search-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.search-grab-bar:active {
+    cursor: grabbing;
+}
+
+.search-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.search-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.search-login-container {
+    padding: 12px;
+    border-bottom: 1px solid #2d3c66;
+}
+
+.search-login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.search-login-form input {
+    background: #0f1320;
+    border: 1px solid #2d3c66;
+    color: #ffffff;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    box-sizing: border-box;
+}
+
+.search-login-form input::placeholder {
+    color: #8fb4ff;
+    opacity: 0.5;
+}
+
+.search-login-btn {
+    background: #8fb4ff;
+    color: #0f1320;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    transition: opacity 0.2s;
+}
+
+.search-login-btn:hover {
+    opacity: 0.8;
+}
+
+.search-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #2d3c66;
+    padding: 0 8px;
+}
+
+.search-tab-btn {
+    background: none;
+    border: none;
+    color: #8fb4ff;
+    cursor: pointer;
+    padding: 6px 12px;
+    font-size: 11px;
+    border-bottom: 2px solid transparent;
+    opacity: 0.7;
+    transition: all 0.2s;
+}
+
+.search-tab-btn.active {
+    border-bottom-color: #8fb4ff;
+    opacity: 1;
+}
+
+.search-tab-btn:hover {
+    opacity: 1;
+}
+
+.search-input-container {
+    padding: 8px;
+    border-bottom: 1px solid #2d3c66;
+}
+
+.search-input {
+    width: 100%;
+    background: #0f1320;
+    border: 1px solid #2d3c66;
+    color: #ffffff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    box-sizing: border-box;
+}
+
+.search-input::placeholder {
+    color: #8fb4ff;
+    opacity: 0.5;
+}
+
+.search-results {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.search-result-item {
+    background: #0f1320;
+    border: 1px solid #2d3c66;
+    border-radius: 4px;
+    padding: 6px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.search-result-item:hover {
+    border-color: #8fb4ff;
+}
+
+.search-result-title {
+    font-weight: bold;
+    font-size: 11px;
+    color: #ffffff;
+}
+
+.search-result-meta {
+    font-size: 10px;
+    color: #8fb4ff;
+    margin-top: 2px;
+}
+
+.search-result-rating {
+    display: inline-block;
+    background: #8fb4ff;
+    color: #0f1320;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-size: 9px;
+    font-weight: bold;
+}
+
+.search-request-btn {
+    background: #8fb4ff;
+    color: #0f1320;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: bold;
+    margin-top: 4px;
+    width: 100%;
+    transition: opacity 0.2s;
+}
+
+.search-request-btn:hover {
+    opacity: 0.8;
+}
+
+.search-request-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.search-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #8fb4ff;
+    font-size: 12px;
+}
+
+.search-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #8fb4ff;
+    text-align: center;
+    padding: 16px;
+}
+
+.search-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+    border-radius: 0 0 12px 0;
+}
+
 .clock-size-controls {
     display: flex;
     gap: 4px;
@@ -1164,6 +1400,36 @@ iframe[sandbox] {
         <iframe src="https://speed.add2plex.com/" allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media" credentials="include" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
     </div>
     <div class="internet-speed-resize"></div>
+</div>
+
+<div class="search-widget" id="searchWidget">
+    <div class="search-grab-bar">
+        <span class="widget-name">Search</span>
+    </div>
+    <div class="search-content" id="searchContent">
+        <div class="search-login-container" id="loginContainer">
+            <div class="search-login-form">
+                <input type="text" id="apiBaseUrl" placeholder="Base URL (https://overseerr.example.com)" value="https://search.add2plex.com">
+                <input type="password" id="apiKey" placeholder="API Key">
+                <button class="search-login-btn" onclick="connectOverseerr()">Connect</button>
+            </div>
+        </div>
+        <div id="mainContent" style="display: none; flex: 1; display: flex; flex-direction: column;">
+            <div class="search-tabs">
+                <button class="search-tab-btn active" data-tab="search">Search</button>
+                <button class="search-tab-btn" data-tab="trending">Trending</button>
+                <button class="search-tab-btn" data-tab="requests">Requests</button>
+                <button class="search-tab-btn" onclick="logoutOverseerr()" style="margin-left: auto; opacity: 0.7;">Logout</button>
+            </div>
+            <div class="search-input-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search movies/shows...">
+            </div>
+            <div class="search-results" id="searchResults">
+                <div class="search-loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+    <div class="search-resize"></div>
 </div>
 
 <script>
@@ -1401,6 +1667,232 @@ async function fetchWeather() {
     }
 }
 
+let overseerrApiKey = null;
+let overseerrBaseUrl = null;
+let currentTab = 'search';
+
+function loadSearchContent() {
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const tabButtons = document.querySelectorAll('.search-tab-btn:not([onclick])');
+    
+    // Tab switching
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentTab = btn.dataset.tab;
+            
+            if (currentTab === 'search') {
+                searchResults.innerHTML = '<div style="padding: 8px; text-align: center; color: #8fb4ff;">Enter a search query</div>';
+            } else if (currentTab === 'trending') {
+                loadTrending();
+            } else if (currentTab === 'requests') {
+                loadRequests();
+            }
+        });
+    });
+    
+    // Search functionality
+    let searchTimeout;
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        
+        if (query.length < 2) {
+            searchResults.innerHTML = '<div style="padding: 8px; text-align: center; color: #8fb4ff;">Enter at least 2 characters</div>';
+            return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+            searchMedia(query);
+        }, 500);
+    });
+}
+
+function connectOverseerr() {
+    const baseUrl = document.getElementById('apiBaseUrl').value.trim();
+    const apiKey = document.getElementById('apiKey').value.trim();
+    
+    if (!baseUrl || !apiKey) {
+        alert('Please enter both URL and API key');
+        return;
+    }
+    
+    overseerrBaseUrl = baseUrl.replace(/\/$/, '');
+    overseerrApiKey = apiKey;
+    
+    // Test connection
+    fetch(`${overseerrBaseUrl}/api/v1/status`, {
+        headers: { 'X-Api-Key': apiKey }
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('Authentication failed');
+        return r.json();
+    })
+    .then(() => {
+        // Connection successful
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'flex';
+        loadTrending();
+        loadSearchContent();
+    })
+    .catch(err => {
+        alert('Failed to connect: ' + err.message);
+        overseerrApiKey = null;
+        overseerrBaseUrl = null;
+    });
+}
+
+function logoutOverseerr() {
+    overseerrApiKey = null;
+    overseerrBaseUrl = null;
+    document.getElementById('loginContainer').style.display = 'block';
+    document.getElementById('mainContent').style.display = 'none';
+    document.getElementById('apiKey').value = '';
+}
+
+function searchMedia(query) {
+    const searchResults = document.getElementById('searchResults');
+    searchResults.innerHTML = '<div class="search-loading">Searching...</div>';
+    
+    fetch(`${overseerrBaseUrl}/api/v1/search?query=${encodeURIComponent(query)}`, {
+        headers: { 'X-Api-Key': overseerrApiKey }
+    })
+    .then(r => r.json())
+    .then(data => {
+        const results = data.results || [];
+        
+        if (results.length === 0) {
+            searchResults.innerHTML = '<div class="search-empty">No results found</div>';
+            return;
+        }
+        
+        searchResults.innerHTML = results.map(item => `
+            <div class="search-result-item">
+                <div class="search-result-title">${item.title || item.name}</div>
+                <div class="search-result-meta">
+                    ${item.releaseDate ? new Date(item.releaseDate).getFullYear() : 'N/A'}
+                    ${item.voteAverage ? `<span class="search-result-rating">${(item.voteAverage / 2).toFixed(1)}⭐</span>` : ''}
+                </div>
+                <div class="search-result-meta">${item.mediaType || 'Unknown'}</div>
+                <button class="search-request-btn" onclick="requestMedia(${item.id}, '${item.mediaType}')">
+                    Request
+                </button>
+            </div>
+        `).join('');
+    })
+    .catch(err => {
+        console.error('Search error:', err);
+        searchResults.innerHTML = '<div class="search-empty" style="color: #ff6b6b;">Error searching</div>';
+    });
+}
+
+function loadTrending() {
+    const searchResults = document.getElementById('searchResults');
+    searchResults.innerHTML = '<div class="search-loading">Loading trending...</div>';
+    
+    fetch(`${overseerrBaseUrl}/api/v1/discover/movies?page=1&sort=-popularity`, {
+        headers: { 'X-Api-Key': overseerrApiKey }
+    })
+    .then(r => r.json())
+    .then(data => {
+        const results = data.results || [];
+        
+        if (results.length === 0) {
+            searchResults.innerHTML = '<div class="search-empty">No trending content</div>';
+            return;
+        }
+        
+        searchResults.innerHTML = results.slice(0, 8).map(item => `
+            <div class="search-result-item">
+                <div class="search-result-title">${item.title || item.name}</div>
+                <div class="search-result-meta">
+                    ${item.releaseDate ? new Date(item.releaseDate).getFullYear() : 'N/A'}
+                    ${item.voteAverage ? `<span class="search-result-rating">${(item.voteAverage / 2).toFixed(1)}⭐</span>` : ''}
+                </div>
+                <div class="search-result-meta">Movie</div>
+                <button class="search-request-btn" onclick="requestMedia(${item.id}, 'movie')">
+                    Request
+                </button>
+            </div>
+        `).join('');
+    })
+    .catch(err => {
+        console.error('Trending error:', err);
+        searchResults.innerHTML = '<div class="search-empty" style="color: #ff6b6b;">Error loading trending</div>';
+    });
+}
+
+function loadRequests() {
+    const searchResults = document.getElementById('searchResults');
+    searchResults.innerHTML = '<div class="search-loading">Loading requests...</div>';
+    
+    fetch(`${overseerrBaseUrl}/api/v1/request?page=1&take=20`, {
+        headers: { 'X-Api-Key': overseerrApiKey }
+    })
+    .then(r => r.json())
+    .then(data => {
+        const requests = data.results || [];
+        
+        if (requests.length === 0) {
+            searchResults.innerHTML = '<div class="search-empty">No pending requests</div>';
+            return;
+        }
+        
+        searchResults.innerHTML = requests.slice(0, 10).map(req => `
+            <div class="search-result-item">
+                <div class="search-result-title">${req.media?.title || req.media?.name || 'Unknown'}</div>
+                <div class="search-result-meta">
+                    Requested by: ${req.requestedBy?.displayName || 'Unknown'}
+                </div>
+                <div class="search-result-meta">
+                    Status: <span style="color: ${req.status === 'approved' ? '#4ade80' : req.status === 'declined' ? '#ff6b6b' : '#fbbf24'};">${req.status}</span>
+                </div>
+            </div>
+        `).join('');
+    })
+    .catch(err => {
+        console.error('Requests error:', err);
+        searchResults.innerHTML = '<div class="search-empty" style="color: #ff6b6b;">Error loading requests</div>';
+    });
+}
+
+function requestMedia(mediaId, mediaType) {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = 'Requesting...';
+    
+    const payload = {
+        mediaType: mediaType === 'tv' ? 'tv' : 'movie',
+        mediaId: mediaId
+    };
+    
+    fetch(`${overseerrBaseUrl}/api/v1/request`, {
+        method: 'POST',
+        headers: {
+            'X-Api-Key': overseerrApiKey,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.id) {
+            btn.textContent = '✓ Requested';
+            btn.disabled = true;
+        } else {
+            btn.textContent = 'Request Failed';
+            btn.disabled = false;
+        }
+    })
+    .catch(err => {
+        console.error('Request error:', err);
+        btn.textContent = 'Error';
+        btn.disabled = false;
+    });
+}
+
 function getWeatherInfo(code) {
     // WMO Weather interpretation codes
     const weatherMap = {
@@ -1473,7 +1965,7 @@ window.addEventListener('load', () => {
     // Calculate equal sizing for all widgets across the viewport
     const padding = 20;
     const windowWidth = window.innerWidth;
-    const numWidgets = 6; // weather, forecast, radar, scratchpad, clock, internet speed
+    const numWidgets = 7; // weather, forecast, radar, scratchpad, clock, internet speed, search
     const widgetWidth = (windowWidth - (padding * (numWidgets + 1))) / numWidgets;
     const widgetHeight = widgetWidth; // Height equals width
 
@@ -1613,6 +2105,22 @@ window.addEventListener('load', () => {
     
     enableDrag(internetSpeedWidget, internetSpeedWidget.querySelector('.internet-speed-grab-bar'));
     enableResize(internetSpeedWidget, internetSpeedWidget.querySelector('.internet-speed-resize'));
+    
+    leftPosition += widgetWidth + padding;
+    
+    // Position Search widget
+    const searchWidget = document.getElementById('searchWidget');
+    searchWidget.style.left = leftPosition + "px";
+    searchWidget.style.top = padding + "px";
+    searchWidget.style.width = widgetWidth + "px";
+    searchWidget.style.height = widgetHeight + "px";
+    searchWidget.style.zIndex = ++zIndex;
+    
+    enableDrag(searchWidget, searchWidget.querySelector('.search-grab-bar'));
+    enableResize(searchWidget, searchWidget.querySelector('.search-resize'));
+    
+    // Load search widget content
+    loadSearchContent();
     
     // Padlock button event handler
     const padlockBtn = document.getElementById('padlockBtn');
