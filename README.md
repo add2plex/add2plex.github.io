@@ -64,6 +64,7 @@ html, body {
     flex-direction: column;
     box-shadow: 0 20px 40px rgba(0,0,0,0.8);
     touch-action: none;
+    overflow: hidden;
 }
 
 .window.no-input-bar .iframe-wrap {
@@ -93,7 +94,7 @@ html, body {
 /* Grab bar for windows without input bar */
 .grab-bar {
     height: 24px;
-    background: #1a1f2e;
+    background: #0f1320;
     border-bottom: 1px solid #2d3c66;
     cursor: grab;
     display: flex;
@@ -936,6 +937,66 @@ iframe[sandbox] {
     border-radius: 0 0 12px 0;
 }
 
+/* Pup Pics Widget */
+.pup-pics-widget {
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
+}
+
+.pup-pics-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.pup-pics-grab-bar:active {
+    cursor: grabbing;
+}
+
+.pup-pics-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.pup-pics-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #0f1320;
+}
+
+.pup-pics-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+    border-radius: 0 0 12px 0;
+}
+
 
 
 .search-resize {
@@ -1181,6 +1242,16 @@ iframe[sandbox] {
     <div class="internet-speed-resize"></div>
 </div>
 
+<div class="pup-pics-widget" id="pupPicsWidget">
+    <div class="pup-pics-grab-bar">
+        <span class="widget-name">Pup Pics</span>
+    </div>
+    <div class="pup-pics-content" id="pupPicsContent">
+        <img id="pupPicsImage" src="" alt="Cute Dog Picture" style="width: 100%; height: 100%; object-fit: cover;">
+    </div>
+    <div class="pup-pics-resize"></div>
+</div>
+
 <script>
 // Enable third-party cookies and credentials globally
 document.cookie = "cookiesEnabled=true; SameSite=None; Secure";
@@ -1416,6 +1487,224 @@ async function fetchWeather() {
     }
 }
 
+let pupPicsIntervalId = null;
+let pupPicsObserver = null;
+let scratchpadResizeObserver = null;
+let nextPupPicsUrl = null;
+let isLoadingNextImage = false;
+let preloadRetryId = null;
+
+function initPupPics() {
+    loadNextPupPic();
+    
+    // Set up resize observer once during init
+    const pupPicsWidget = document.getElementById('pupPicsWidget');
+    pupPicsObserver = new ResizeObserver(() => {
+        loadNextPupPic();
+    });
+    pupPicsObserver.observe(pupPicsWidget);
+}
+
+function getAspectRatio() {
+    const widget = document.getElementById('pupPicsWidget');
+    const width = widget.offsetWidth;
+    const height = widget.offsetHeight - 24; // Subtract grab bar height
+    
+    return width / height;
+}
+
+function preloadNextImage() {
+    if (isLoadingNextImage) return; // Already loading
+    
+    isLoadingNextImage = true;
+    
+    // Use RandomDog API which supports CORS
+    fetch('https://random.dog/woof.json')
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.url) {
+                const imageUrl = data.url;
+                
+                // Skip video files, only load images
+                if (imageUrl.toLowerCase().endsWith('.mp4') || imageUrl.toLowerCase().endsWith('.webm')) {
+                    // Try again after a delay if it's a video
+                    isLoadingNextImage = false;
+                    preloadRetryId = setTimeout(preloadNextImage, 200);
+                    return;
+                }
+                
+                // Store the URL for later display
+                nextPupPicsUrl = imageUrl;
+                isLoadingNextImage = false;
+            } else {
+                isLoadingNextImage = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error preloading dog pic:', error);
+            isLoadingNextImage = false;
+        });
+}
+
+function displayNextImage() {
+    // Clear any pending preload retries
+    if (preloadRetryId) {
+        clearTimeout(preloadRetryId);
+        preloadRetryId = null;
+    }
+    
+    // If we have a preloaded image, use it
+    if (nextPupPicsUrl) {
+        const img = document.getElementById('pupPicsImage');
+        const imageUrl = nextPupPicsUrl;
+        nextPupPicsUrl = null; // Clear the cache
+        
+        // Only apply fade transition on the actual image change
+        img.style.transition = 'opacity 1s ease-in-out';
+        
+        // Fade out
+        img.style.opacity = '0';
+        
+        // Update image and fade in
+        setTimeout(() => {
+            img.src = imageUrl;
+            img.alt = 'Cute dog picture';
+            img.style.opacity = '1';
+            
+            // Start preloading the next image
+            preloadNextImage();
+            
+            // Set the next image change after 20 seconds
+            pupPicsIntervalId = setTimeout(displayNextImage, 20000);
+        }, 1000);
+    } else {
+        // Fallback: load immediately if preload hasn't finished
+        loadNextPupPic();
+    }
+}
+
+function loadNextPupPic() {
+    // Clear any existing interval
+    if (pupPicsIntervalId) {
+        clearTimeout(pupPicsIntervalId);
+    }
+    
+    // Clear any pending preload retries
+    if (preloadRetryId) {
+        clearTimeout(preloadRetryId);
+        preloadRetryId = null;
+    }
+    
+    // Use RandomDog API which supports CORS
+    fetch('https://random.dog/woof.json')
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.url) {
+                const imageUrl = data.url;
+                
+                // Skip video files, only load images
+                if (imageUrl.toLowerCase().endsWith('.mp4') || imageUrl.toLowerCase().endsWith('.webm')) {
+                    // Retry after a small delay instead of immediately
+                    pupPicsIntervalId = setTimeout(loadNextPupPic, 300);
+                    return;
+                }
+                
+                const img = document.getElementById('pupPicsImage');
+                
+                // Only apply fade transition on the actual image change
+                img.style.transition = 'opacity 1s ease-in-out';
+                
+                // Fade out
+                img.style.opacity = '0';
+                
+                // Update image and fade in
+                setTimeout(() => {
+                    img.src = imageUrl;
+                    img.alt = 'Cute dog picture';
+                    img.style.opacity = '1';
+                    
+                    // Start preloading the next image while this one displays
+                    preloadNextImage();
+                    
+                    // Set the next image change after 20 seconds
+                    pupPicsIntervalId = setTimeout(displayNextImage, 20000);
+                }, 1000);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading dog pic:', error);
+            // Retry after 2 seconds
+            pupPicsIntervalId = setTimeout(loadNextPupPic, 2000);
+        });
+}
+
+function saveWidgetLayout() {
+    const layout = {};
+    
+    // Save widget positions and sizes
+    const widgets = [
+        { id: 'weatherWidget', type: 'standard' },
+        { id: 'forecastWidget', type: 'standard' },
+        { id: 'radarWin', type: 'window' },
+        { id: 'scratchpadWidget', type: 'standard' },
+        { id: 'clockWidget', type: 'standard' },
+        { id: 'internetSpeedWidget', type: 'standard' },
+        { id: 'pupPicsWidget', type: 'standard' }
+    ];
+    
+    widgets.forEach(widget => {
+        const el = document.getElementById(widget.id);
+        if (el) {
+            layout[widget.id] = {
+                left: el.style.left,
+                top: el.style.top,
+                width: el.style.width,
+                height: el.style.height
+            };
+        }
+    });
+    
+    // Save as cookie with 1 year expiration
+    const expiryDate = new Date();
+    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+    document.cookie = `widgetLayout=${encodeURIComponent(JSON.stringify(layout))}; expires=${expiryDate.toUTCString()}; path=/`;
+    console.log('Widget layout saved to cookie');
+}
+
+function loadWidgetLayout() {
+    // Get cookie value
+    const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('widgetLayout='));
+    
+    if (!cookieValue) return;
+    
+    try {
+        const layout = JSON.parse(decodeURIComponent(cookieValue.split('=')[1]));
+        
+        // Restore widget positions and sizes
+        Object.keys(layout).forEach(widgetId => {
+            const el = document.getElementById(widgetId);
+            if (el && layout[widgetId]) {
+                el.style.left = layout[widgetId].left;
+                el.style.top = layout[widgetId].top;
+                el.style.width = layout[widgetId].width;
+                el.style.height = layout[widgetId].height;
+            }
+        });
+        
+        console.log('Widget layout restored from cookie');
+    } catch (error) {
+        console.error('Error loading widget layout:', error);
+    }
+}
+
+function clearWidgetLayout() {
+    // Delete cookie by setting expiry to past date
+    document.cookie = 'widgetLayout=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+    console.log('Widget layout cookie cleared');
+}
+
 function getWeatherInfo(code) {
     // WMO Weather interpretation codes
     const weatherMap = {
@@ -1485,10 +1774,13 @@ async function fetchForecast() {
 
 // Create initial weather radar window
 window.addEventListener('load', () => {
+    // Try to restore saved layout first
+    loadWidgetLayout();
+    
     // Calculate equal sizing for all widgets across the viewport
     const padding = 20;
     const windowWidth = window.innerWidth;
-    const numWidgets = 6; // weather, forecast, radar, scratchpad, clock, internet speed
+    const numWidgets = 7; // weather, forecast, radar, scratchpad, clock, internet speed, pup pics
     const widgetWidth = (windowWidth - (padding * (numWidgets + 1))) / numWidgets;
     const widgetHeight = widgetWidth; // Height equals width
 
@@ -1629,11 +1921,35 @@ window.addEventListener('load', () => {
     enableDrag(internetSpeedWidget, internetSpeedWidget.querySelector('.internet-speed-grab-bar'));
     enableResize(internetSpeedWidget, internetSpeedWidget.querySelector('.internet-speed-resize'));
     
+    leftPosition += widgetWidth + padding;
+    
+    // Position Pup Pics widget
+    const pupPicsWidget = document.getElementById('pupPicsWidget');
+    pupPicsWidget.style.left = leftPosition + "px";
+    pupPicsWidget.style.top = padding + "px";
+    pupPicsWidget.style.width = widgetWidth + "px";
+    pupPicsWidget.style.height = widgetHeight + "px";
+    pupPicsWidget.style.zIndex = ++zIndex;
+    
+    enableDrag(pupPicsWidget, pupPicsWidget.querySelector('.pup-pics-grab-bar'));
+    enableResize(pupPicsWidget, pupPicsWidget.querySelector('.pup-pics-resize'));
+    
+    // Initialize Pup Pics widget
+    initPupPics();
+    
     // Padlock button event handler
     const padlockBtn = document.getElementById('padlockBtn');
     padlockBtn.addEventListener('click', () => {
         isLocked = !isLocked;
         padlockBtn.textContent = isLocked ? '🔒' : '🔓';
+        
+        if (isLocked) {
+            // Save layout when locking
+            saveWidgetLayout();
+        } else {
+            // Clear layout when unlocking
+            clearWidgetLayout();
+        }
     });
 });
 
@@ -1925,10 +2241,13 @@ function initScratchpad() {
     window.addEventListener('resize', resizeCanvas);
     
     // Observe canvas wrapper for size changes (when widget is resized)
-    const resizeObserver = new ResizeObserver(() => {
+    if (scratchpadResizeObserver) {
+        scratchpadResizeObserver.disconnect();
+    }
+    scratchpadResizeObserver = new ResizeObserver(() => {
         resizeCanvas();
     });
-    resizeObserver.observe(scratchpadWidget.querySelector('.scratchpad-canvas-wrap'));
+    scratchpadResizeObserver.observe(scratchpadWidget.querySelector('.scratchpad-canvas-wrap'));
     
     // Gradient bar color selection
     gradientBar.addEventListener('click', (e) => {
