@@ -1312,7 +1312,7 @@ iframe {
         <span class="widget-name">Lights</span>
     </div>
     <div class="lights-content">
-        <iframe src="http://localhost:5000/" allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media" credentials="include" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        <iframe src="http://192.168.1.12:5000/api/" allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media" credentials="include" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
     </div>
     <div class="lights-resize"></div>
 </div>
