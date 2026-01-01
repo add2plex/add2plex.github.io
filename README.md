@@ -20,8 +20,6 @@ html, body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-
-
 /* Clock */
 .clock {
     position: fixed;
@@ -206,10 +204,6 @@ iframe {
     width: 100%;
     height: 100%;
     border: none;
-}
-
-iframe[sandbox] {
-    /* Allow forms, scripts, popups, and same-origin for authentication flows */
 }
 
 /* Auth popup overlay */
@@ -997,7 +991,71 @@ iframe[sandbox] {
     border-radius: 0 0 12px 0;
 }
 
+/* Lights Widget */
+.lights-widget {
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
+}
 
+.lights-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.lights-grab-bar:active {
+    cursor: grabbing;
+}
+
+.lights-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.lights-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #0f1320;
+}
+
+.lights-content iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.lights-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+    border-radius: 0 0 12px 0;
+}
 
 .search-resize {
     position: absolute;
@@ -1066,6 +1124,7 @@ iframe[sandbox] {
 .size-btn:hover {
     background: #3d4c76;
 }
+
 .cursor-circle {
     position: fixed;
     border: 2px solid #8fb4ff;
@@ -1087,10 +1146,6 @@ iframe[sandbox] {
     justify-content: center;
     flex-shrink: 0;
 }
-
-
-
-
 </style>
 </head>
 <body>
@@ -1252,6 +1307,16 @@ iframe[sandbox] {
     <div class="pup-pics-resize"></div>
 </div>
 
+<div class="lights-widget" id="lightsWidget">
+    <div class="lights-grab-bar">
+        <span class="widget-name">Lights</span>
+    </div>
+    <div class="lights-content">
+        <iframe src="http://localhost:5000/" allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media" credentials="include" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+    </div>
+    <div class="lights-resize"></div>
+</div>
+
 <script>
 // Enable third-party cookies and credentials globally
 document.cookie = "cookiesEnabled=true; SameSite=None; Secure";
@@ -1275,7 +1340,7 @@ function updateClock() {
     const ampm = hours >= 12 ? 'PM' : 'AM';
     
     hours = hours % 12;
-    hours = hours ? hours : 12; // 0 should be 12
+    hours = hours ? hours : 12;
     const minutesStr = minutes < 10 ? '0' + minutes : minutes;
     
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -1286,7 +1351,6 @@ function updateClock() {
     const date = now.getDate();
     const year = now.getFullYear();
     
-    // Update clock widget
     const clockWidgetTime = document.getElementById('clockWidgetTime');
     const clockWidgetDate = document.getElementById('clockWidgetDate');
     if (clockWidgetTime && clockWidgetDate) {
@@ -1298,7 +1362,6 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-// Pinch to zoom clock
 const clockEl = document.getElementById('clock');
 
 function getDistance(touches) {
@@ -1318,42 +1381,31 @@ function isTouchingClock(touches) {
     return false;
 }
 
-// Drag clock
 clockEl.addEventListener('pointerdown', (e) => {
     isDraggingClock = true;
     clockEl.setPointerCapture(e.pointerId);
-    
     const rect = clockEl.getBoundingClientRect();
     clockStartX = e.clientX - rect.left;
     clockStartY = e.clientY - rect.top;
-    
     clockEl.style.cursor = 'grabbing';
 });
 
 clockEl.addEventListener('pointermove', (e) => {
     if (isDraggingClock) {
         e.preventDefault();
-        
         clockOffsetX = e.clientX - clockStartX;
         clockOffsetY = e.clientY - clockStartY;
-        
         clockEl.style.left = clockOffsetX + 'px';
         clockEl.style.top = clockOffsetY + 'px';
         clockEl.style.right = 'auto';
-        
-        // Adjust text alignment based on position
         const screenWidth = window.innerWidth;
         const centerX = screenWidth / 2;
         const clockCenterX = clockOffsetX + (clockEl.offsetWidth / 2);
-        
         if (Math.abs(clockCenterX - centerX) <= 20) {
-            // Center
             clockEl.style.alignItems = 'center';
         } else if (clockCenterX < centerX) {
-            // Left side
             clockEl.style.alignItems = 'flex-start';
         } else {
-            // Right side
             clockEl.style.alignItems = 'flex-end';
         }
     }
@@ -1383,13 +1435,12 @@ clockEl.addEventListener('touchmove', (e) => {
         e.preventDefault();
         const currentDistance = getDistance(e.touches);
         clockScale = initialScale * (currentDistance / initialDistance);
-        clockScale = Math.max(0.5, Math.min(clockScale, 3)); // Limit between 0.5x and 3x
+        clockScale = Math.max(0.5, Math.min(clockScale, 3));
         clockEl.style.transform = `scale(${clockScale})`;
         clockEl.style.transformOrigin = 'top left';
     }
 });
 
-// Mouse wheel zoom for desktop
 clockEl.addEventListener('wheel', (e) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? -0.1 : 0.1;
@@ -1399,14 +1450,10 @@ clockEl.addEventListener('wheel', (e) => {
     clockEl.style.transformOrigin = 'top left';
 });
 
-// Fetch weather data
 async function fetchWeather() {
     try {
-        // Use Open-Meteo API (no API key required)
         const lat = 30.1588;
         const lon = -85.6602;
-        const now = new Date();
-        
         const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code&daily=sunrise,sunset&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago`);
         const data = await response.json();
         
@@ -1415,67 +1462,30 @@ async function fetchWeather() {
         const precipitation = data.current.precipitation || 0;
         const weatherCode = data.current.weather_code;
         
-        // Get current local time
         const localNow = new Date();
         const currentHour = localNow.getHours();
         const currentMin = localNow.getMinutes();
         
-        console.log('=== WEATHER UPDATE ===');
-        console.log('Local time:', localNow.toLocaleTimeString());
-        console.log('Current hour (0-23):', currentHour);
-        console.log('Current minute:', currentMin);
-        
-        // Get sunrise and sunset times
         const today = localNow.toISOString().split('T')[0];
         const dailyIndex = data.daily.time.indexOf(today);
         
         let isNightTime = false;
         
         if (dailyIndex >= 0 && data.daily.sunrise && data.daily.sunset) {
-            const sunriseStr = data.daily.sunrise[dailyIndex]; // e.g., "2025-12-20T06:34"
-            const sunsetStr = data.daily.sunset[dailyIndex];   // e.g., "2025-12-20T16:46"
-            
-            // Extract HH:MM from the strings
-            const sunriseHourMin = sunriseStr.substring(11, 16); // "06:34"
-            const sunsetHourMin = sunsetStr.substring(11, 16);   // "16:46"
-            
-            const currentHourMin = currentHour.toString().padStart(2, '0') + ':' + 
-                                   currentMin.toString().padStart(2, '0');
-            
-            console.log('Sunrise (HH:MM):', sunriseHourMin);
-            console.log('Sunset (HH:MM):', sunsetHourMin);
-            console.log('Current time (HH:MM):', currentHourMin);
-            
-            // It's night if current time is after sunset OR before sunrise
+            const sunriseStr = data.daily.sunrise[dailyIndex];
+            const sunsetStr = data.daily.sunset[dailyIndex];
+            const sunriseHourMin = sunriseStr.substring(11, 16);
+            const sunsetHourMin = sunsetStr.substring(11, 16);
+            const currentHourMin = currentHour.toString().padStart(2, '0') + ':' + currentMin.toString().padStart(2, '0');
             isNightTime = currentHourMin > sunsetHourMin || currentHourMin < sunriseHourMin;
-            
-            console.log('Is after sunset?', currentHourMin > sunsetHourMin);
-            console.log('Is before sunrise?', currentHourMin < sunriseHourMin);
-        } else {
-            console.log('Daily sunrise/sunset data not available');
         }
         
-        console.log('Is night time?', isNightTime);
-        
-        // Map weather codes to descriptions and icons
         const weatherInfo = getWeatherInfo(weatherCode);
-        
-        // Determine final icon - use moon if night time
         let finalIcon = weatherInfo.icon;
-        console.log('Original icon:', weatherInfo.icon);
-        
         if (isNightTime) {
-            // Night time - show moon
-            console.log('Setting to moon icon (night time)');
             finalIcon = '🌙';
-        } else {
-            console.log('Keeping original day icon');
         }
         
-        console.log('Final icon:', finalIcon);
-        console.log('===================');
-        
-        // Update widget
         document.querySelector('.weather-temp').textContent = `${temp}°F`;
         document.querySelector('.weather-icon').textContent = finalIcon;
         document.querySelector('.weather-description').textContent = weatherInfo.description;
@@ -1496,8 +1506,6 @@ let preloadRetryId = null;
 
 function initPupPics() {
     loadNextPupPic();
-    
-    // Set up resize observer once during init
     const pupPicsWidget = document.getElementById('pupPicsWidget');
     pupPicsObserver = new ResizeObserver(() => {
         loadNextPupPic();
@@ -1508,32 +1516,23 @@ function initPupPics() {
 function getAspectRatio() {
     const widget = document.getElementById('pupPicsWidget');
     const width = widget.offsetWidth;
-    const height = widget.offsetHeight - 24; // Subtract grab bar height
-    
+    const height = widget.offsetHeight - 24;
     return width / height;
 }
 
 function preloadNextImage() {
-    if (isLoadingNextImage) return; // Already loading
-    
+    if (isLoadingNextImage) return;
     isLoadingNextImage = true;
-    
-    // Use RandomDog API which supports CORS
     fetch('https://random.dog/woof.json')
         .then(response => response.json())
         .then(data => {
             if (data && data.url) {
                 const imageUrl = data.url;
-                
-                // Skip video files, only load images
                 if (imageUrl.toLowerCase().endsWith('.mp4') || imageUrl.toLowerCase().endsWith('.webm')) {
-                    // Try again after a delay if it's a video
                     isLoadingNextImage = false;
                     preloadRetryId = setTimeout(preloadNextImage, 200);
                     return;
                 }
-                
-                // Store the URL for later display
                 nextPupPicsUrl = imageUrl;
                 isLoadingNextImage = false;
             } else {
@@ -1547,101 +1546,65 @@ function preloadNextImage() {
 }
 
 function displayNextImage() {
-    // Clear any pending preload retries
     if (preloadRetryId) {
         clearTimeout(preloadRetryId);
         preloadRetryId = null;
     }
-    
-    // If we have a preloaded image, use it
     if (nextPupPicsUrl) {
         const img = document.getElementById('pupPicsImage');
         const imageUrl = nextPupPicsUrl;
-        nextPupPicsUrl = null; // Clear the cache
-        
-        // Only apply fade transition on the actual image change
+        nextPupPicsUrl = null;
         img.style.transition = 'opacity 1s ease-in-out';
-        
-        // Fade out
         img.style.opacity = '0';
-        
-        // Update image and fade in
         setTimeout(() => {
             img.src = imageUrl;
             img.alt = 'Cute dog picture';
             img.style.opacity = '1';
-            
-            // Start preloading the next image
             preloadNextImage();
-            
-            // Set the next image change after 20 seconds
             pupPicsIntervalId = setTimeout(displayNextImage, 20000);
         }, 1000);
     } else {
-        // Fallback: load immediately if preload hasn't finished
         loadNextPupPic();
     }
 }
 
 function loadNextPupPic() {
-    // Clear any existing interval
     if (pupPicsIntervalId) {
         clearTimeout(pupPicsIntervalId);
     }
-    
-    // Clear any pending preload retries
     if (preloadRetryId) {
         clearTimeout(preloadRetryId);
         preloadRetryId = null;
     }
-    
-    // Use RandomDog API which supports CORS
     fetch('https://random.dog/woof.json')
         .then(response => response.json())
         .then(data => {
             if (data && data.url) {
                 const imageUrl = data.url;
-                
-                // Skip video files, only load images
                 if (imageUrl.toLowerCase().endsWith('.mp4') || imageUrl.toLowerCase().endsWith('.webm')) {
-                    // Retry after a small delay instead of immediately
                     pupPicsIntervalId = setTimeout(loadNextPupPic, 300);
                     return;
                 }
-                
                 const img = document.getElementById('pupPicsImage');
-                
-                // Only apply fade transition on the actual image change
                 img.style.transition = 'opacity 1s ease-in-out';
-                
-                // Fade out
                 img.style.opacity = '0';
-                
-                // Update image and fade in
                 setTimeout(() => {
                     img.src = imageUrl;
                     img.alt = 'Cute dog picture';
                     img.style.opacity = '1';
-                    
-                    // Start preloading the next image while this one displays
                     preloadNextImage();
-                    
-                    // Set the next image change after 20 seconds
                     pupPicsIntervalId = setTimeout(displayNextImage, 20000);
                 }, 1000);
             }
         })
         .catch(error => {
             console.error('Error loading dog pic:', error);
-            // Retry after 2 seconds
             pupPicsIntervalId = setTimeout(loadNextPupPic, 2000);
         });
 }
 
 function saveWidgetLayout() {
     const layout = {};
-    
-    // Save widget positions and sizes
     const widgets = [
         { id: 'weatherWidget', type: 'standard' },
         { id: 'forecastWidget', type: 'standard' },
@@ -1649,9 +1612,9 @@ function saveWidgetLayout() {
         { id: 'scratchpadWidget', type: 'standard' },
         { id: 'clockWidget', type: 'standard' },
         { id: 'internetSpeedWidget', type: 'standard' },
-        { id: 'pupPicsWidget', type: 'standard' }
+        { id: 'pupPicsWidget', type: 'standard' },
+        { id: 'lightsWidget', type: 'standard' }
     ];
-    
     widgets.forEach(widget => {
         const el = document.getElementById(widget.id);
         if (el) {
@@ -1663,26 +1626,16 @@ function saveWidgetLayout() {
             };
         }
     });
-    
-    // Save as cookie with 1 year expiration
     const expiryDate = new Date();
     expiryDate.setFullYear(expiryDate.getFullYear() + 1);
     document.cookie = `widgetLayout=${encodeURIComponent(JSON.stringify(layout))}; expires=${expiryDate.toUTCString()}; path=/`;
-    console.log('Widget layout saved to cookie');
 }
 
 function loadWidgetLayout() {
-    // Get cookie value
-    const cookieValue = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('widgetLayout='));
-    
+    const cookieValue = document.cookie.split('; ').find(row => row.startsWith('widgetLayout='));
     if (!cookieValue) return;
-    
     try {
         const layout = JSON.parse(decodeURIComponent(cookieValue.split('=')[1]));
-        
-        // Restore widget positions and sizes
         Object.keys(layout).forEach(widgetId => {
             const el = document.getElementById(widgetId);
             if (el && layout[widgetId]) {
@@ -1692,21 +1645,16 @@ function loadWidgetLayout() {
                 el.style.height = layout[widgetId].height;
             }
         });
-        
-        console.log('Widget layout restored from cookie');
     } catch (error) {
         console.error('Error loading widget layout:', error);
     }
 }
 
 function clearWidgetLayout() {
-    // Delete cookie by setting expiry to past date
     document.cookie = 'widgetLayout=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
-    console.log('Widget layout cookie cleared');
 }
 
 function getWeatherInfo(code) {
-    // WMO Weather interpretation codes
     const weatherMap = {
         0: { description: 'Clear sky', icon: '☀️' },
         1: { description: 'Mainly clear', icon: '🌤️' },
@@ -1733,34 +1681,27 @@ function getWeatherInfo(code) {
         96: { description: 'Thunderstorm with hail', icon: '⛈️' },
         99: { description: 'Thunderstorm with hail', icon: '⛈️' }
     };
-    
     return weatherMap[code] || { description: 'Unknown', icon: '🌡️' };
 }
 
-// Fetch 5-day forecast data
 async function fetchForecast() {
     try {
         const lat = 30.1588;
         const lon = -85.6602;
-        
         const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago&forecast_days=5`);
         const data = await response.json();
-        
         const forecastDays = document.querySelectorAll('.forecast-day');
         const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
         const today = new Date();
-        
         forecastDays.forEach((dayEl, index) => {
             const date = new Date(today);
             date.setDate(today.getDate() + index);
             const dayLetter = days[date.getDay()];
-            
             const high = Math.round(data.daily.temperature_2m_max[index]);
             const low = Math.round(data.daily.temperature_2m_min[index]);
             const precip = data.daily.precipitation_probability_max[index] || 0;
             const weatherCode = data.daily.weather_code[index];
             const weatherInfo = getWeatherInfo(weatherCode);
-            
             dayEl.querySelector('.forecast-day-label').textContent = dayLetter;
             dayEl.querySelector('.forecast-icon').textContent = weatherInfo.icon;
             dayEl.querySelector('.forecast-high').textContent = `${high}°`;
@@ -1772,64 +1713,47 @@ async function fetchForecast() {
     }
 }
 
-// Create initial weather radar window
 window.addEventListener('load', () => {
-    // Try to restore saved layout first
     loadWidgetLayout();
-    
-    // Calculate equal sizing for all widgets across the viewport
     const padding = 20;
     const windowWidth = window.innerWidth;
-    const numWidgets = 7; // weather, forecast, radar, scratchpad, clock, internet speed, pup pics
+    const numWidgets = 8;
     const widgetWidth = (windowWidth - (padding * (numWidgets + 1))) / numWidgets;
-    const widgetHeight = widgetWidth; // Height equals width
-
-    
+    const widgetHeight = widgetWidth;
     let leftPosition = padding;
     
-    // Position weather widget
     const weatherWidget = document.getElementById('weatherWidget');
     weatherWidget.style.left = leftPosition + "px";
     weatherWidget.style.top = padding + "px";
     weatherWidget.style.width = widgetWidth + "px";
     weatherWidget.style.height = widgetHeight + "px";
     weatherWidget.style.zIndex = ++zIndex;
-    
     enableDrag(weatherWidget, weatherWidget.querySelector('.weather-grab-bar'));
     enableResize(weatherWidget, weatherWidget.querySelector('.weather-resize'));
-    
-    // Fetch weather data
     fetchWeather();
-    setInterval(fetchWeather, 600000); // Update every 10 minutes
-    
+    setInterval(fetchWeather, 600000);
     leftPosition += widgetWidth + padding;
     
-    // Position forecast widget
     const forecastWidget = document.getElementById('forecastWidget');
     forecastWidget.style.left = leftPosition + "px";
     forecastWidget.style.top = padding + "px";
     forecastWidget.style.width = widgetWidth + "px";
     forecastWidget.style.height = widgetHeight + "px";
     forecastWidget.style.zIndex = ++zIndex;
-    
     enableDrag(forecastWidget, forecastWidget.querySelector('.forecast-grab-bar'));
     enableResize(forecastWidget, forecastWidget.querySelector('.forecast-resize'));
-    
-    // Fetch forecast data
     fetchForecast();
-    setInterval(fetchForecast, 600000); // Update every 10 minutes
-    
+    setInterval(fetchForecast, 600000);
     leftPosition += widgetWidth + padding;
     
-    // Position radar widget
     const radarWin = document.createElement("div");
     radarWin.className = "window no-input-bar";
+    radarWin.id = "radarWin";
     radarWin.style.left = leftPosition + "px";
     radarWin.style.top = padding + "px";
     radarWin.style.width = widgetWidth + "px";
     radarWin.style.height = widgetHeight + "px";
     radarWin.style.zIndex = ++zIndex;
-
     radarWin.innerHTML = `
         <div class="grab-bar">
             <span class="widget-name">Radar</span>
@@ -1843,51 +1767,39 @@ window.addEventListener('load', () => {
         </div>
         <div class="resize"></div>
     `;
-
     document.body.appendChild(radarWin);
     bringToFront(radarWin);
-
     enableDrag(radarWin);
     enableResize(radarWin);
-    
     leftPosition += widgetWidth + padding;
     
-    // Position scratch pad before initialization
     const scratchpadWidget = document.getElementById('scratchpadWidget');
     scratchpadWidget.style.left = leftPosition + "px";
     scratchpadWidget.style.top = padding + "px";
     scratchpadWidget.style.width = widgetWidth + "px";
     scratchpadWidget.style.height = widgetHeight + "px";
     scratchpadWidget.style.zIndex = ++zIndex;
-    
-    // Initialize scratch pad
     initScratchpad();
-    
     leftPosition += widgetWidth + padding;
     
-    // Position clock widget
     const clockWidget = document.getElementById('clockWidget');
     clockWidget.style.left = leftPosition + "px";
     clockWidget.style.top = padding + "px";
     clockWidget.style.width = widgetWidth + "px";
     clockWidget.style.height = widgetHeight + "px";
     clockWidget.style.zIndex = ++zIndex;
-    
     enableDrag(clockWidget, clockWidget.querySelector('.clock-widget-grab-bar'));
     enableResize(clockWidget, clockWidget.querySelector('.clock-widget-resize'));
     
-    // Clock size control
     let clockFontSizeMultiplier = 1;
     const clockMinusBtn = document.getElementById('clockMinusBtn');
     const clockPlusBtn = document.getElementById('clockPlusBtn');
     const clockWidgetTime = document.getElementById('clockWidgetTime');
     const clockWidgetDate = document.getElementById('clockWidgetDate');
-    
     function updateClockFontSize() {
         clockWidgetTime.style.fontSize = `clamp(36px, ${clockFontSizeMultiplier * 10}vw, ${clockFontSizeMultiplier * 72}px)`;
         clockWidgetDate.style.fontSize = `clamp(12px, ${clockFontSizeMultiplier * 3}vw, ${clockFontSizeMultiplier * 18}px)`;
     }
-    
     if (clockMinusBtn) {
         clockMinusBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1897,7 +1809,6 @@ window.addEventListener('load', () => {
             }
         });
     }
-    
     if (clockPlusBtn) {
         clockPlusBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1907,47 +1818,45 @@ window.addEventListener('load', () => {
             }
         });
     }
-    
     leftPosition += widgetWidth + padding;
     
-    // Position Internet Speed widget
     const internetSpeedWidget = document.getElementById('internetSpeedWidget');
     internetSpeedWidget.style.left = leftPosition + "px";
     internetSpeedWidget.style.top = padding + "px";
     internetSpeedWidget.style.width = widgetWidth + "px";
     internetSpeedWidget.style.height = widgetHeight + "px";
     internetSpeedWidget.style.zIndex = ++zIndex;
-    
     enableDrag(internetSpeedWidget, internetSpeedWidget.querySelector('.internet-speed-grab-bar'));
     enableResize(internetSpeedWidget, internetSpeedWidget.querySelector('.internet-speed-resize'));
-    
     leftPosition += widgetWidth + padding;
     
-    // Position Pup Pics widget
     const pupPicsWidget = document.getElementById('pupPicsWidget');
     pupPicsWidget.style.left = leftPosition + "px";
     pupPicsWidget.style.top = padding + "px";
     pupPicsWidget.style.width = widgetWidth + "px";
     pupPicsWidget.style.height = widgetHeight + "px";
     pupPicsWidget.style.zIndex = ++zIndex;
-    
     enableDrag(pupPicsWidget, pupPicsWidget.querySelector('.pup-pics-grab-bar'));
     enableResize(pupPicsWidget, pupPicsWidget.querySelector('.pup-pics-resize'));
-    
-    // Initialize Pup Pics widget
     initPupPics();
+    leftPosition += widgetWidth + padding;
     
-    // Padlock button event handler
+    const lightsWidget = document.getElementById('lightsWidget');
+    lightsWidget.style.left = leftPosition + "px";
+    lightsWidget.style.top = padding + "px";
+    lightsWidget.style.width = widgetWidth + "px";
+    lightsWidget.style.height = widgetHeight + "px";
+    lightsWidget.style.zIndex = ++zIndex;
+    enableDrag(lightsWidget, lightsWidget.querySelector('.lights-grab-bar'));
+    enableResize(lightsWidget, lightsWidget.querySelector('.lights-resize'));
+    
     const padlockBtn = document.getElementById('padlockBtn');
     padlockBtn.addEventListener('click', () => {
         isLocked = !isLocked;
         padlockBtn.textContent = isLocked ? '🔒' : '🔓';
-        
         if (isLocked) {
-            // Save layout when locking
             saveWidgetLayout();
         } else {
-            // Clear layout when unlocking
             clearWidgetLayout();
         }
     });
@@ -1959,7 +1868,6 @@ function createWindow() {
     win.style.left = "40px";
     win.style.top = "40px";
     win.style.zIndex = ++zIndex;
-
     win.innerHTML = `
         <div class="input-bar">
             <button class="close-btn">×</button>
@@ -1991,10 +1899,8 @@ function createWindow() {
         </div>
         <div class="resize"></div>
     `;
-
     document.body.appendChild(win);
     bringToFront(win);
-
     enableDrag(win);
     enableResize(win);
     enableInput(win);
@@ -2008,12 +1914,10 @@ function enableInput(win) {
     const input = win.querySelector(".input-bar input");
     const goButton = win.querySelector(".input-bar button:last-of-type");
     const iframe = win.querySelector("iframe");
-
     function navigate(e) {
         if (e) e.stopPropagation();
         let value = input.value.trim();
         if (!value) return;
-
         let url;
         if (/^https?:\/\//i.test(value)) {
             url = value;
@@ -2026,15 +1930,12 @@ function enableInput(win) {
         } else {
             url = "https://www.google.com/search?q=" + encodeURIComponent(value);
         }
-
         iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera');
         iframe.setAttribute('credentials', 'include');
         iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
         iframe.setAttribute('allowfullscreen', '');
-        
         iframe.src = url;
     }
-
     goButton.addEventListener("click", navigate);
     goButton.addEventListener("touchend", navigate);
     input.addEventListener("keydown", e => { if(e.key === "Enter") navigate(); });
@@ -2080,23 +1981,19 @@ function enableAuth(win) {
     const authIframe = win.querySelector(".auth-iframe-wrap iframe");
     const authCloseBtn = win.querySelector(".auth-close-btn");
     const overlay = win.querySelector(".auth-overlay");
-
     authCloseBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         win.classList.remove("split-view");
         authIframeWrap.classList.remove("active");
         authIframe.src = "";
     });
-
     window.addEventListener("message", (event) => {
         if (event.data && event.data.type === "auth-success") {
             win.classList.remove("split-view");
             authIframeWrap.classList.remove("active");
             overlay.classList.remove("active");
             authIframe.src = "";
-            
             win.authToken = event.data.token;
-            
             if (iframe.src) {
                 iframe.src = iframe.src;
             }
@@ -2104,76 +2001,60 @@ function enableAuth(win) {
     });
 }
 
-/* Dragging */
 function enableDrag(win, dragTarget) {
     if (!dragTarget) {
         const bar = win.querySelector(".input-bar");
         const grabBar = win.querySelector(".grab-bar");
         dragTarget = bar || grabBar || win;
     }
-
     dragTarget.onpointerdown = e => {
         if (isLocked) return;
         if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || 
             e.target.tagName === 'IFRAME' || e.target.classList.contains('resize') ||
             e.target.classList.contains('weather-resize')) return;
-        
         bringToFront(win);
         dragTarget.setPointerCapture(e.pointerId);
-
         const sx = e.clientX;
         const sy = e.clientY;
         const sl = win.offsetLeft;
         const st = win.offsetTop;
-
         const move = ev => {
             const newLeft = sl + (ev.clientX - sx);
             const newTop = st + (ev.clientY - sy);
-            
             win.style.left = newLeft + "px";
             win.style.top = Math.max(0, newTop) + "px";
         };
-
         const up = () => dragTarget.onpointermove = null;
-
         dragTarget.onpointermove = move;
         dragTarget.onpointerup = up;
     };
 }
 
-/* Resizing */
 function enableResize(win, handle) {
     if (!handle) {
         handle = win.querySelector(".resize");
     }
-
     handle.onpointerdown = e => {
         if (isLocked) return;
         bringToFront(win);
         handle.setPointerCapture(e.pointerId);
-
         const sx = e.clientX;
         const sy = e.clientY;
         const sw = win.offsetWidth;
         const sh = win.offsetHeight;
-
         const move = ev => {
             const isForecast = win.classList.contains('forecast-widget');
             const minWidth = isForecast ? 400 : 250;
             const minHeight = isForecast ? 140 : 200;
-            
             win.style.width  = Math.max(minWidth, sw + (ev.clientX - sx)) + "px";
             win.style.height = Math.max(minHeight, sh + (ev.clientY - sy)) + "px";
         };
-
         const up = () => handle.onpointermove = null;
-
         handle.onpointermove = move;
         handle.onpointerup = up;
     };
 }
 
-// Scratch Pad Functionality
 function initScratchpad() {
     const scratchpadWidget = document.getElementById('scratchpadWidget');
     const canvas = document.getElementById('scratchpadCanvas');
@@ -2192,16 +2073,12 @@ function initScratchpad() {
     let currentColor = '#ff0000';
     let currentThickness = 3;
     
-
-    
-    // Helper function to update brush preview
     function updateBrushPreview() {
         brushPreview.innerHTML = '';
         const previewCircle = document.createElement('div');
         previewCircle.style.width = Math.min(currentThickness, 30) + 'px';
         previewCircle.style.height = Math.min(currentThickness, 30) + 'px';
         previewCircle.style.borderRadius = '50%';
-        
         if (isErasing) {
             previewCircle.style.border = '2px solid #8fb4ff';
             previewCircle.style.backgroundColor = 'transparent';
@@ -2211,7 +2088,6 @@ function initScratchpad() {
         brushPreview.appendChild(previewCircle);
     }
     
-    // Helper function to set color and update UI
     function setColor(color) {
         currentColor = color;
         colorPreview.style.background = color;
@@ -2227,7 +2103,6 @@ function initScratchpad() {
         updateBrushPreview();
     }
     
-    // Set up canvas
     function resizeCanvas() {
         const wrap = scratchpadWidget.querySelector('.scratchpad-canvas-wrap');
         canvas.width = wrap.clientWidth;
@@ -2235,12 +2110,10 @@ function initScratchpad() {
         ctx.fillStyle = '#3a4a7a';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
-
     
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
-    // Observe canvas wrapper for size changes (when widget is resized)
     if (scratchpadResizeObserver) {
         scratchpadResizeObserver.disconnect();
     }
@@ -2249,18 +2122,14 @@ function initScratchpad() {
     });
     scratchpadResizeObserver.observe(scratchpadWidget.querySelector('.scratchpad-canvas-wrap'));
     
-    // Gradient bar color selection
     gradientBar.addEventListener('click', (e) => {
         const rect = gradientBar.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const width = rect.width;
-        
-        // Create gradient to sample color
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = width;
         tempCanvas.height = 1;
         const tempCtx = tempCanvas.getContext('2d');
-        
         const gradient = tempCtx.createLinearGradient(0, 0, width, 0);
         gradient.addColorStop(0, '#ff0000');
         gradient.addColorStop(0.17, '#ffff00');
@@ -2269,34 +2138,22 @@ function initScratchpad() {
         gradient.addColorStop(0.67, '#0000ff');
         gradient.addColorStop(0.83, '#ff00ff');
         gradient.addColorStop(1, '#ff0000');
-        
         tempCtx.fillStyle = gradient;
         tempCtx.fillRect(0, 0, width, 1);
-        
         const imageData = tempCtx.getImageData(Math.floor(x), 0, 1, 1);
         const data = imageData.data;
         const color = `rgb(${data[0]}, ${data[1]}, ${data[2]})`;
-        
         setColor(color);
     });
     
-    // Black button
-    blackBtn.addEventListener('click', () => {
-        setColor('#000000');
-    });
+    blackBtn.addEventListener('click', () => { setColor('#000000'); });
+    whiteBtn.addEventListener('click', () => { setColor('#ffffff'); });
     
-    // White button
-    whiteBtn.addEventListener('click', () => {
-        setColor('#ffffff');
-    });
-    
-    // Thickness slider
     thicknessSlider.addEventListener('input', (e) => {
         currentThickness = e.target.value;
         updateBrushPreview();
     });
     
-    // Eraser button
     eraserBtn.addEventListener('click', () => {
         isErasing = !isErasing;
         eraserBtn.style.opacity = isErasing ? '1' : '0.7';
@@ -2310,49 +2167,39 @@ function initScratchpad() {
         updateBrushPreview();
     });
     
-    // Clear button
     clearBtn.addEventListener('click', () => {
         ctx.fillStyle = '#3a4a7a';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     });
     
-    // Drawing functions
     function startDrawing(e) {
         isDrawing = true;
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        
-        // Show cursor circle
         const cursorCircle = document.getElementById('cursorCircle');
         cursorCircle.style.display = 'block';
         cursorCircle.style.left = (e.clientX - currentThickness / 2) + 'px';
         cursorCircle.style.top = (e.clientY - currentThickness / 2) + 'px';
         cursorCircle.style.width = currentThickness + 'px';
         cursorCircle.style.height = currentThickness + 'px';
-        
         ctx.beginPath();
         ctx.moveTo(x, y);
     }
     
     function draw(e) {
         if (!isDrawing) return;
-        
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        
-        // Update cursor circle
         const cursorCircle = document.getElementById('cursorCircle');
         cursorCircle.style.left = (e.clientX - currentThickness / 2) + 'px';
         cursorCircle.style.top = (e.clientY - currentThickness / 2) + 'px';
         cursorCircle.style.width = currentThickness + 'px';
         cursorCircle.style.height = currentThickness + 'px';
-        
         ctx.lineWidth = currentThickness;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        
         if (isErasing) {
             ctx.clearRect(x - currentThickness / 2, y - currentThickness / 2, currentThickness, currentThickness);
         } else {
@@ -2365,19 +2212,13 @@ function initScratchpad() {
     function stopDrawing() {
         isDrawing = false;
         ctx.closePath();
-        
-        // Hide cursor circle
         const cursorCircle = document.getElementById('cursorCircle');
         cursorCircle.style.display = 'none';
     }
     
-    // Touch support
     function getTouchPos(touch) {
         const rect = canvas.getBoundingClientRect();
-        return {
-            x: touch.clientX - rect.left,
-            y: touch.clientY - rect.top
-        };
+        return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
     }
     
     function startTouchDrawing(e) {
@@ -2385,15 +2226,12 @@ function initScratchpad() {
         const touch = e.touches[0];
         isDrawing = true;
         const pos = getTouchPos(touch);
-        
-        // Show cursor circle
         const cursorCircle = document.getElementById('cursorCircle');
         cursorCircle.style.display = 'block';
         cursorCircle.style.left = (touch.clientX - currentThickness / 2) + 'px';
         cursorCircle.style.top = (touch.clientY - currentThickness / 2) + 'px';
         cursorCircle.style.width = currentThickness + 'px';
         cursorCircle.style.height = currentThickness + 'px';
-        
         ctx.beginPath();
         ctx.moveTo(pos.x, pos.y);
     }
@@ -2401,21 +2239,16 @@ function initScratchpad() {
     function touchDraw(e) {
         e.preventDefault();
         if (!isDrawing) return;
-        
         const touch = e.touches[0];
         const pos = getTouchPos(touch);
-        
-        // Update cursor circle
         const cursorCircle = document.getElementById('cursorCircle');
         cursorCircle.style.left = (touch.clientX - currentThickness / 2) + 'px';
         cursorCircle.style.top = (touch.clientY - currentThickness / 2) + 'px';
         cursorCircle.style.width = currentThickness + 'px';
         cursorCircle.style.height = currentThickness + 'px';
-        
         ctx.lineWidth = currentThickness;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        
         if (isErasing) {
             ctx.clearRect(pos.x - currentThickness / 2, pos.y - currentThickness / 2, currentThickness, currentThickness);
         } else {
@@ -2429,28 +2262,20 @@ function initScratchpad() {
         e.preventDefault();
         isDrawing = false;
         ctx.closePath();
-        
-        // Hide cursor circle
         const cursorCircle = document.getElementById('cursorCircle');
         cursorCircle.style.display = 'none';
     }
     
-    // Mouse events
     canvas.addEventListener('mousedown', startDrawing);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseout', stopDrawing);
-    
-    // Touch events
     canvas.addEventListener('touchstart', startTouchDrawing);
     canvas.addEventListener('touchmove', touchDraw);
     canvas.addEventListener('touchend', stopTouchDrawing);
     
-    // Enable drag and resize
     enableDrag(scratchpadWidget, scratchpadWidget.querySelector('.scratchpad-grab-bar'));
     enableResize(scratchpadWidget, scratchpadWidget.querySelector('.scratchpad-resize'));
-    
-    // Initialize brush preview
     updateBrushPreview();
 }
 </script>
