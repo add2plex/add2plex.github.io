@@ -1057,6 +1057,65 @@ iframe {
     border-radius: 0 0 12px 0;
 }
 
+/* Overseerr Widget */
+.overseerr-widget {
+    position: absolute;
+    width: 400px;
+    height: 500px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
+}
+
+.overseerr-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.overseerr-grab-bar:active {
+    cursor: grabbing;
+}
+
+.overseerr-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.overseerr-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #0a0f1a;
+}
+
+.overseerr-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+    border-radius: 0 0 12px 0;
+}
+
 .search-resize {
     position: absolute;
     width: 25px;
@@ -1315,6 +1374,16 @@ iframe {
         <iframe src="http://192.168.1.168:5000/" allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media" credentials="include" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
     </div>
     <div class="lights-resize"></div>
+</div>
+
+<div class="overseerr-widget" id="overseerrWidget">
+    <div class="overseerr-grab-bar">
+        <span class="widget-name">Overseerr</span>
+    </div>
+    <div class="overseerr-content" id="overseerrContent">
+        <!-- Overseerr app renders here -->
+    </div>
+    <div class="overseerr-resize"></div>
 </div>
 
 <script>
@@ -1613,7 +1682,8 @@ function saveWidgetLayout() {
         { id: 'clockWidget', type: 'standard' },
         { id: 'internetSpeedWidget', type: 'standard' },
         { id: 'pupPicsWidget', type: 'standard' },
-        { id: 'lightsWidget', type: 'standard' }
+        { id: 'lightsWidget', type: 'standard' },
+        { id: 'overseerrWidget', type: 'standard' }
     ];
     widgets.forEach(widget => {
         const el = document.getElementById(widget.id);
@@ -1717,7 +1787,7 @@ window.addEventListener('load', () => {
     loadWidgetLayout();
     const padding = 20;
     const windowWidth = window.innerWidth;
-    const numWidgets = 8;
+    const numWidgets = 9;
     const widgetWidth = (windowWidth - (padding * (numWidgets + 1))) / numWidgets;
     const widgetHeight = widgetWidth;
     let leftPosition = padding;
@@ -1849,6 +1919,18 @@ window.addEventListener('load', () => {
     lightsWidget.style.zIndex = ++zIndex;
     enableDrag(lightsWidget, lightsWidget.querySelector('.lights-grab-bar'));
     enableResize(lightsWidget, lightsWidget.querySelector('.lights-resize'));
+    leftPosition += widgetWidth + padding;
+    
+    // Position Overseerr widget
+    const overseerrWidget = document.getElementById('overseerrWidget');
+    overseerrWidget.style.left = leftPosition + "px";
+    overseerrWidget.style.top = padding + "px";
+    overseerrWidget.style.width = widgetWidth + "px";
+    overseerrWidget.style.height = widgetHeight + "px";
+    overseerrWidget.style.zIndex = ++zIndex;
+    enableDrag(overseerrWidget, overseerrWidget.querySelector('.overseerr-grab-bar'));
+    enableResize(overseerrWidget, overseerrWidget.querySelector('.overseerr-resize'));
+    initOverseerr();
     
     const padlockBtn = document.getElementById('padlockBtn');
     padlockBtn.addEventListener('click', () => {
@@ -2277,6 +2359,324 @@ function initScratchpad() {
     enableDrag(scratchpadWidget, scratchpadWidget.querySelector('.scratchpad-grab-bar'));
     enableResize(scratchpadWidget, scratchpadWidget.querySelector('.scratchpad-resize'));
     updateBrushPreview();
+}
+
+// Overseerr Widget
+function initOverseerr() {
+    const container = document.getElementById('overseerrContent');
+    
+    // State
+    let connected = false;
+    let config = JSON.parse(localStorage.getItem('overseerrConfig') || '{"serverUrl":"","apiKey":""}');
+    let api = null;
+    let currentUser = null;
+    let activeTab = 'discover';
+    let trending = [];
+    let requests = [];
+    let searchResults = [];
+    let selectedMedia = null;
+    
+    // API Client
+    const createApiClient = (baseUrl, apiKey) => {
+        const cleanUrl = baseUrl?.replace(/\/$/, '') || '';
+        
+        const fetchApi = async (endpoint, options = {}) => {
+            const response = await fetch(`${cleanUrl}/api/v1${endpoint}`, {
+                ...options,
+                headers: {
+                    'X-Api-Key': apiKey,
+                    'Content-Type': 'application/json',
+                    ...options.headers,
+                },
+            });
+            if (!response.ok) throw new Error(`API Error: ${response.status}`);
+            return response.json();
+        };
+        
+        return {
+            getStatus: () => fetchApi('/status'),
+            getCurrentUser: () => fetchApi('/auth/me'),
+            getTrending: (page = 1) => fetchApi(`/discover/trending?page=${page}`),
+            search: (query, page = 1) => fetchApi(`/search?query=${encodeURIComponent(query)}&page=${page}`),
+            getMovie: (id) => fetchApi(`/movie/${id}`),
+            getTv: (id) => fetchApi(`/tv/${id}`),
+            getRequests: (page = 1) => fetchApi(`/request?take=10&skip=${(page - 1) * 10}&sort=added`),
+            createRequest: (mediaType, mediaId, seasons) => fetchApi('/request', {
+                method: 'POST',
+                body: JSON.stringify({ mediaType, mediaId, seasons }),
+            }),
+        };
+    };
+    
+    // Render functions
+    function render() {
+        if (!connected) {
+            renderConnectionScreen();
+        } else {
+            renderMainApp();
+        }
+    }
+    
+    function renderConnectionScreen() {
+        container.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:16px;background:linear-gradient(to bottom right,#030712,#1e1b4b);">
+                <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(to bottom right,#6366f1,#9333ea);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+                    <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+                </div>
+                <h2 style="color:white;font-size:16px;font-weight:bold;margin-bottom:4px;">Overseerr</h2>
+                <p style="color:#9ca3af;font-size:11px;margin-bottom:16px;">Connect to your server</p>
+                <input type="url" id="overseerrUrl" placeholder="https://overseerr.example.com" value="${config.serverUrl}" style="width:100%;padding:8px 12px;margin-bottom:8px;border-radius:8px;border:1px solid #374151;background:#1f2937;color:white;font-size:12px;outline:none;">
+                <input type="password" id="overseerrKey" placeholder="API Key" value="${config.apiKey}" style="width:100%;padding:8px 12px;margin-bottom:12px;border-radius:8px;border:1px solid #374151;background:#1f2937;color:white;font-size:12px;outline:none;">
+                <button id="overseerrConnect" style="width:100%;padding:8px 12px;border-radius:8px;border:none;background:linear-gradient(to right,#6366f1,#9333ea);color:white;font-size:12px;font-weight:500;cursor:pointer;">Connect</button>
+                <p id="overseerrError" style="color:#f87171;font-size:11px;margin-top:8px;display:none;"></p>
+            </div>
+        `;
+        
+        document.getElementById('overseerrConnect').onclick = handleConnect;
+        document.getElementById('overseerrUrl').onkeydown = (e) => e.key === 'Enter' && handleConnect();
+        document.getElementById('overseerrKey').onkeydown = (e) => e.key === 'Enter' && handleConnect();
+    }
+    
+    async function handleConnect() {
+        const serverUrl = document.getElementById('overseerrUrl').value.trim();
+        const apiKey = document.getElementById('overseerrKey').value.trim();
+        const errorEl = document.getElementById('overseerrError');
+        
+        if (!serverUrl || !apiKey) {
+            errorEl.textContent = 'Please enter both URL and API key';
+            errorEl.style.display = 'block';
+            return;
+        }
+        
+        try {
+            api = createApiClient(serverUrl, apiKey);
+            await api.getStatus();
+            currentUser = await api.getCurrentUser();
+            config = { serverUrl, apiKey };
+            localStorage.setItem('overseerrConfig', JSON.stringify(config));
+            connected = true;
+            render();
+            loadData();
+        } catch (err) {
+            errorEl.textContent = 'Connection failed. Check URL and API key.';
+            errorEl.style.display = 'block';
+        }
+    }
+    
+    async function loadData() {
+        try {
+            const trendingData = await api.getTrending();
+            trending = trendingData.results || [];
+            const requestsData = await api.getRequests();
+            requests = requestsData.results || [];
+            renderContent();
+        } catch (err) {
+            console.error('Failed to load data:', err);
+        }
+    }
+    
+    function renderMainApp() {
+        container.innerHTML = `
+            <div style="display:flex;flex-direction:column;height:100%;background:#030712;">
+                <div style="display:flex;border-bottom:1px solid #1f2937;background:#0f172a;">
+                    <button class="overseerr-tab ${activeTab === 'discover' ? 'active' : ''}" data-tab="discover" style="flex:1;padding:8px;border:none;background:${activeTab === 'discover' ? '#6366f1' : 'transparent'};color:${activeTab === 'discover' ? 'white' : '#9ca3af'};font-size:11px;cursor:pointer;">Discover</button>
+                    <button class="overseerr-tab ${activeTab === 'requests' ? 'active' : ''}" data-tab="requests" style="flex:1;padding:8px;border:none;background:${activeTab === 'requests' ? '#6366f1' : 'transparent'};color:${activeTab === 'requests' ? 'white' : '#9ca3af'};font-size:11px;cursor:pointer;">Requests</button>
+                    <button class="overseerr-tab ${activeTab === 'search' ? 'active' : ''}" data-tab="search" style="flex:1;padding:8px;border:none;background:${activeTab === 'search' ? '#6366f1' : 'transparent'};color:${activeTab === 'search' ? 'white' : '#9ca3af'};font-size:11px;cursor:pointer;">Search</button>
+                </div>
+                <div style="padding:8px;border-bottom:1px solid #1f2937;display:flex;gap:8px;">
+                    <input type="text" id="overseerrSearch" placeholder="Search..." style="flex:1;padding:6px 10px;border-radius:6px;border:1px solid #374151;background:#1f2937;color:white;font-size:11px;outline:none;">
+                    <button id="overseerrDisconnect" style="padding:6px 10px;border-radius:6px;border:none;background:#dc2626;color:white;font-size:10px;cursor:pointer;">✕</button>
+                </div>
+                <div id="overseerrContentArea" style="flex:1;overflow-y:auto;padding:8px;"></div>
+            </div>
+        `;
+        
+        document.querySelectorAll('.overseerr-tab').forEach(btn => {
+            btn.onclick = () => {
+                activeTab = btn.dataset.tab;
+                renderMainApp();
+                renderContent();
+            };
+        });
+        
+        document.getElementById('overseerrSearch').onkeydown = async (e) => {
+            if (e.key === 'Enter') {
+                const query = e.target.value.trim();
+                if (query) {
+                    activeTab = 'search';
+                    try {
+                        const data = await api.search(query);
+                        searchResults = data.results || [];
+                    } catch (err) {
+                        searchResults = [];
+                    }
+                    renderMainApp();
+                    renderContent();
+                }
+            }
+        };
+        
+        document.getElementById('overseerrDisconnect').onclick = () => {
+            connected = false;
+            localStorage.removeItem('overseerrConfig');
+            render();
+        };
+        
+        renderContent();
+    }
+    
+    function renderContent() {
+        const area = document.getElementById('overseerrContentArea');
+        if (!area) return;
+        
+        if (activeTab === 'discover') {
+            area.innerHTML = `
+                <h3 style="color:white;font-size:12px;font-weight:bold;margin-bottom:8px;">🔥 Trending</h3>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;">
+                    ${trending.slice(0, 12).map(item => renderMediaCard(item)).join('')}
+                </div>
+            `;
+        } else if (activeTab === 'requests') {
+            area.innerHTML = `
+                <h3 style="color:white;font-size:12px;font-weight:bold;margin-bottom:8px;">📋 Recent Requests</h3>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    ${requests.length > 0 ? requests.slice(0, 10).map(req => renderRequestCard(req)).join('') : '<p style="color:#9ca3af;font-size:11px;">No requests</p>'}
+                </div>
+            `;
+        } else if (activeTab === 'search') {
+            area.innerHTML = `
+                <h3 style="color:white;font-size:12px;font-weight:bold;margin-bottom:8px;">🔍 Search Results</h3>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;">
+                    ${searchResults.length > 0 ? searchResults.slice(0, 12).map(item => renderMediaCard(item)).join('') : '<p style="color:#9ca3af;font-size:11px;">Search for movies or TV shows</p>'}
+                </div>
+            `;
+        }
+        
+        // Add click handlers for media cards
+        document.querySelectorAll('.overseerr-media-card').forEach(card => {
+            card.onclick = () => showMediaDetail(JSON.parse(card.dataset.item));
+        });
+    }
+    
+    function renderMediaCard(item) {
+        const title = item.title || item.name || 'Unknown';
+        const poster = item.posterPath ? `https://image.tmdb.org/t/p/w200${item.posterPath}` : '';
+        const type = item.mediaType === 'tv' ? 'TV' : 'Movie';
+        const status = item.mediaInfo?.status;
+        const statusBadge = status === 5 ? '✓' : status === 2 ? '⏳' : '';
+        
+        return `
+            <div class="overseerr-media-card" data-item='${JSON.stringify(item).replace(/'/g, "\\'")}' style="cursor:pointer;border-radius:8px;overflow:hidden;background:#1f2937;transition:transform 0.2s;">
+                <div style="position:relative;aspect-ratio:2/3;background:#374151;">
+                    ${poster ? `<img src="${poster}" alt="${title}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#6b7280;">🎬</div>`}
+                    <span style="position:absolute;top:4px;left:4px;padding:2px 4px;background:${item.mediaType === 'tv' ? '#3b82f6' : '#f59e0b'};color:white;font-size:8px;border-radius:4px;">${type}</span>
+                    ${statusBadge ? `<span style="position:absolute;top:4px;right:4px;padding:2px 4px;background:#22c55e;color:white;font-size:8px;border-radius:4px;">${statusBadge}</span>` : ''}
+                </div>
+                <div style="padding:6px;">
+                    <p style="color:white;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    function renderRequestCard(req) {
+        const media = req.media;
+        const title = media?.title || media?.name || 'Unknown';
+        const status = req.status === 1 ? '⏳ Pending' : req.status === 2 ? '✓ Approved' : '✗ Declined';
+        const statusColor = req.status === 1 ? '#eab308' : req.status === 2 ? '#22c55e' : '#ef4444';
+        
+        return `
+            <div style="display:flex;gap:8px;padding:8px;background:#1f2937;border-radius:8px;">
+                <div style="width:40px;height:60px;background:#374151;border-radius:4px;overflow:hidden;">
+                    ${media?.posterPath ? `<img src="https://image.tmdb.org/t/p/w200${media.posterPath}" style="width:100%;height:100%;object-fit:cover;">` : ''}
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <p style="color:white;font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</p>
+                    <p style="color:${statusColor};font-size:10px;">${status}</p>
+                    <p style="color:#6b7280;font-size:9px;">${new Date(req.createdAt).toLocaleDateString()}</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    async function showMediaDetail(item) {
+        const area = document.getElementById('overseerrContentArea');
+        area.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;"><p style="color:#9ca3af;">Loading...</p></div>`;
+        
+        try {
+            const details = item.mediaType === 'tv' ? await api.getTv(item.id) : await api.getMovie(item.id);
+            const title = details.title || details.name;
+            const year = (details.releaseDate || details.firstAirDate)?.split('-')[0];
+            const backdrop = details.backdropPath ? `https://image.tmdb.org/t/p/w780${details.backdropPath}` : '';
+            const poster = details.posterPath ? `https://image.tmdb.org/t/p/w200${details.posterPath}` : '';
+            const status = details.mediaInfo?.status;
+            const isAvailable = status === 5;
+            const isPending = status === 2 || status === 3;
+            
+            area.innerHTML = `
+                <div style="position:relative;">
+                    <button id="overseerrBack" style="position:absolute;top:8px;left:8px;z-index:10;padding:4px 8px;background:rgba(0,0,0,0.5);border:none;border-radius:4px;color:white;font-size:10px;cursor:pointer;">← Back</button>
+                    ${backdrop ? `<div style="height:120px;background:url('${backdrop}') center/cover;position:relative;"><div style="position:absolute;inset:0;background:linear-gradient(to top,#030712,transparent);"></div></div>` : ''}
+                    <div style="padding:12px;margin-top:${backdrop ? '-40px' : '0'};position:relative;">
+                        <div style="display:flex;gap:12px;">
+                            <div style="width:80px;flex-shrink:0;">
+                                ${poster ? `<img src="${poster}" style="width:100%;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,0.5);">` : ''}
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <h2 style="color:white;font-size:14px;font-weight:bold;margin-bottom:4px;">${title}</h2>
+                                <p style="color:#9ca3af;font-size:11px;margin-bottom:8px;">${year || ''} • ${item.mediaType === 'tv' ? 'TV Show' : 'Movie'}</p>
+                                ${isAvailable ? `<span style="display:inline-block;padding:4px 8px;background:#22c55e33;color:#22c55e;font-size:10px;border-radius:4px;">✓ Available</span>` : 
+                                  isPending ? `<span style="display:inline-block;padding:4px 8px;background:#eab30833;color:#eab308;font-size:10px;border-radius:4px;">⏳ Requested</span>` :
+                                  `<button id="overseerrRequest" style="padding:6px 12px;background:#6366f1;border:none;border-radius:6px;color:white;font-size:11px;cursor:pointer;">✨ Request</button>`}
+                            </div>
+                        </div>
+                        ${details.overview ? `<p style="color:#d1d5db;font-size:11px;margin-top:12px;line-height:1.4;">${details.overview.substring(0, 200)}${details.overview.length > 200 ? '...' : ''}</p>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('overseerrBack').onclick = () => {
+                renderMainApp();
+                renderContent();
+            };
+            
+            const requestBtn = document.getElementById('overseerrRequest');
+            if (requestBtn) {
+                requestBtn.onclick = async () => {
+                    requestBtn.disabled = true;
+                    requestBtn.textContent = 'Requesting...';
+                    try {
+                        await api.createRequest(item.mediaType, item.id, item.mediaType === 'tv' ? [{ seasonNumber: 1 }] : undefined);
+                        requestBtn.textContent = '✓ Requested!';
+                        requestBtn.style.background = '#22c55e';
+                        loadData();
+                    } catch (err) {
+                        requestBtn.textContent = 'Failed';
+                        requestBtn.style.background = '#ef4444';
+                    }
+                };
+            }
+        } catch (err) {
+            area.innerHTML = `<p style="color:#ef4444;font-size:11px;">Failed to load details</p>`;
+        }
+    }
+    
+    // Auto-connect if config exists
+    if (config.serverUrl && config.apiKey) {
+        api = createApiClient(config.serverUrl, config.apiKey);
+        api.getStatus().then(() => {
+            return api.getCurrentUser();
+        }).then(user => {
+            currentUser = user;
+            connected = true;
+            render();
+            loadData();
+        }).catch(() => {
+            render();
+        });
+    } else {
+        render();
+    }
 }
 </script>
 
