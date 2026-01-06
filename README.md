@@ -1580,11 +1580,101 @@ let nextPupPicsUrl = null;
 let isLoadingNextImage = false;
 let preloadRetryId = null;
 
+// Multiple dog image API sources
+const dogApiSources = [
+    {
+        name: 'random.dog',
+        fetch: async () => {
+            const response = await fetch('https://random.dog/woof.json');
+            const data = await response.json();
+            if (data && data.url) {
+                const url = data.url.toLowerCase();
+                if (url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.gif')) {
+                    return null; // Skip videos and gifs
+                }
+                return data.url;
+            }
+            return null;
+        }
+    },
+    {
+        name: 'dog.ceo',
+        fetch: async () => {
+            const response = await fetch('https://dog.ceo/api/breeds/image/random');
+            const data = await response.json();
+            if (data && data.status === 'success' && data.message) {
+                return data.message;
+            }
+            return null;
+        }
+    },
+    {
+        name: 'thedogapi',
+        fetch: async () => {
+            const response = await fetch('https://api.thedogapi.com/v1/images/search?size=med&mime_types=jpg,png');
+            const data = await response.json();
+            if (data && data.length > 0 && data[0].url) {
+                return data[0].url;
+            }
+            return null;
+        }
+    },
+    {
+        name: 'shibe.online',
+        fetch: async () => {
+            const response = await fetch('https://shibe.online/api/shibes?count=1&urls=true');
+            const data = await response.json();
+            if (data && data.length > 0) {
+                return data[0];
+            }
+            return null;
+        }
+    },
+    {
+        name: 'place.dog',
+        fetch: async () => {
+            // Generate random dimensions for variety
+            const width = 400 + Math.floor(Math.random() * 200);
+            const height = 400 + Math.floor(Math.random() * 200);
+            return `https://place.dog/${width}/${height}?random=${Date.now()}`;
+        }
+    }
+];
+
+let lastDogSourceIndex = -1;
+
+async function getRandomDogImage() {
+    // Rotate through sources to ensure variety
+    let attempts = 0;
+    while (attempts < dogApiSources.length * 2) {
+        // Pick a different source than last time if possible
+        let sourceIndex;
+        do {
+            sourceIndex = Math.floor(Math.random() * dogApiSources.length);
+        } while (sourceIndex === lastDogSourceIndex && dogApiSources.length > 1 && attempts < dogApiSources.length);
+        
+        lastDogSourceIndex = sourceIndex;
+        const source = dogApiSources[sourceIndex];
+        
+        try {
+            const url = await source.fetch();
+            if (url) {
+                console.log(`Dog pic from: ${source.name}`);
+                return url;
+            }
+        } catch (error) {
+            console.error(`Error fetching from ${source.name}:`, error);
+        }
+        attempts++;
+    }
+    return null;
+}
+
 function initPupPics() {
     loadNextPupPic();
     const pupPicsWidget = document.getElementById('pupPicsWidget');
     pupPicsObserver = new ResizeObserver(() => {
-        loadNextPupPic();
+        // Don't reload on resize, just let CSS handle it
     });
     pupPicsObserver.observe(pupPicsWidget);
 }
@@ -1596,29 +1686,20 @@ function getAspectRatio() {
     return width / height;
 }
 
-function preloadNextImage() {
+async function preloadNextImage() {
     if (isLoadingNextImage) return;
     isLoadingNextImage = true;
-    fetch('https://random.dog/woof.json')
-        .then(response => response.json())
-        .then(data => {
-            if (data && data.url) {
-                const imageUrl = data.url;
-                if (imageUrl.toLowerCase().endsWith('.mp4') || imageUrl.toLowerCase().endsWith('.webm')) {
-                    isLoadingNextImage = false;
-                    preloadRetryId = setTimeout(preloadNextImage, 200);
-                    return;
-                }
-                nextPupPicsUrl = imageUrl;
-                isLoadingNextImage = false;
-            } else {
-                isLoadingNextImage = false;
-            }
-        })
-        .catch(error => {
-            console.error('Error preloading dog pic:', error);
-            isLoadingNextImage = false;
-        });
+    
+    try {
+        const imageUrl = await getRandomDogImage();
+        if (imageUrl) {
+            nextPupPicsUrl = imageUrl;
+        }
+    } catch (error) {
+        console.error('Error preloading dog pic:', error);
+    } finally {
+        isLoadingNextImage = false;
+    }
 }
 
 function displayNextImage() {
@@ -1644,7 +1725,7 @@ function displayNextImage() {
     }
 }
 
-function loadNextPupPic() {
+async function loadNextPupPic() {
     if (pupPicsIntervalId) {
         clearTimeout(pupPicsIntervalId);
     }
@@ -1652,31 +1733,28 @@ function loadNextPupPic() {
         clearTimeout(preloadRetryId);
         preloadRetryId = null;
     }
-    fetch('https://random.dog/woof.json')
-        .then(response => response.json())
-        .then(data => {
-            if (data && data.url) {
-                const imageUrl = data.url;
-                if (imageUrl.toLowerCase().endsWith('.mp4') || imageUrl.toLowerCase().endsWith('.webm')) {
-                    pupPicsIntervalId = setTimeout(loadNextPupPic, 300);
-                    return;
-                }
-                const img = document.getElementById('pupPicsImage');
-                img.style.transition = 'opacity 1s ease-in-out';
-                img.style.opacity = '0';
-                setTimeout(() => {
-                    img.src = imageUrl;
-                    img.alt = 'Cute dog picture';
-                    img.style.opacity = '1';
-                    preloadNextImage();
-                    pupPicsIntervalId = setTimeout(displayNextImage, 20000);
-                }, 1000);
-            }
-        })
-        .catch(error => {
-            console.error('Error loading dog pic:', error);
+    
+    try {
+        const imageUrl = await getRandomDogImage();
+        if (imageUrl) {
+            const img = document.getElementById('pupPicsImage');
+            img.style.transition = 'opacity 1s ease-in-out';
+            img.style.opacity = '0';
+            setTimeout(() => {
+                img.src = imageUrl;
+                img.alt = 'Cute dog picture';
+                img.style.opacity = '1';
+                preloadNextImage();
+                pupPicsIntervalId = setTimeout(displayNextImage, 20000);
+            }, 1000);
+        } else {
+            // Retry after 2 seconds if no image found
             pupPicsIntervalId = setTimeout(loadNextPupPic, 2000);
-        });
+        }
+    } catch (error) {
+        console.error('Error loading dog pic:', error);
+        pupPicsIntervalId = setTimeout(loadNextPupPic, 2000);
+    }
 }
 
 function saveWidgetLayout() {
@@ -1699,36 +1777,45 @@ function saveWidgetLayout() {
                 left: el.style.left,
                 top: el.style.top,
                 width: el.style.width,
-                height: el.style.height
+                height: el.style.height,
+                zIndex: el.style.zIndex
             };
         }
     });
-    const expiryDate = new Date();
-    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-    document.cookie = `widgetLayout=${encodeURIComponent(JSON.stringify(layout))}; expires=${expiryDate.toUTCString()}; path=/`;
+    localStorage.setItem('widgetLayout', JSON.stringify(layout));
+    localStorage.setItem('widgetLayoutLocked', 'true');
+    console.log('Widget layout saved to localStorage');
 }
 
 function loadWidgetLayout() {
-    const cookieValue = document.cookie.split('; ').find(row => row.startsWith('widgetLayout='));
-    if (!cookieValue) return;
+    const savedLayout = localStorage.getItem('widgetLayout');
+    const isLocked = localStorage.getItem('widgetLayoutLocked') === 'true';
+    
+    if (!savedLayout || !isLocked) return false;
+    
     try {
-        const layout = JSON.parse(decodeURIComponent(cookieValue.split('=')[1]));
+        const layout = JSON.parse(savedLayout);
         Object.keys(layout).forEach(widgetId => {
             const el = document.getElementById(widgetId);
             if (el && layout[widgetId]) {
-                el.style.left = layout[widgetId].left;
-                el.style.top = layout[widgetId].top;
-                el.style.width = layout[widgetId].width;
-                el.style.height = layout[widgetId].height;
+                if (layout[widgetId].left) el.style.left = layout[widgetId].left;
+                if (layout[widgetId].top) el.style.top = layout[widgetId].top;
+                if (layout[widgetId].width) el.style.width = layout[widgetId].width;
+                if (layout[widgetId].height) el.style.height = layout[widgetId].height;
+                if (layout[widgetId].zIndex) el.style.zIndex = layout[widgetId].zIndex;
             }
         });
+        console.log('Widget layout restored from localStorage');
+        return true;
     } catch (error) {
         console.error('Error loading widget layout:', error);
+        return false;
     }
 }
 
 function clearWidgetLayout() {
-    document.cookie = 'widgetLayout=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+    localStorage.removeItem('widgetLayoutLocked');
+    console.log('Widget layout unlocked');
 }
 
 function getWeatherInfo(code) {
@@ -1791,7 +1878,6 @@ async function fetchForecast() {
 }
 
 window.addEventListener('load', () => {
-    loadWidgetLayout();
     const padding = 20;
     const windowWidth = window.innerWidth;
     const numWidgets = 9;
@@ -1799,11 +1885,22 @@ window.addEventListener('load', () => {
     const widgetHeight = widgetWidth;
     let leftPosition = padding;
     
+    // Check if we have a saved layout to restore
+    const hasSavedLayout = localStorage.getItem('widgetLayout') && localStorage.getItem('widgetLayoutLocked') === 'true';
+    
+    // Set initial lock state based on saved preference
+    if (hasSavedLayout) {
+        isLocked = true;
+        document.getElementById('padlockBtn').textContent = '🔒';
+    }
+    
     const weatherWidget = document.getElementById('weatherWidget');
-    weatherWidget.style.left = leftPosition + "px";
-    weatherWidget.style.top = padding + "px";
-    weatherWidget.style.width = widgetWidth + "px";
-    weatherWidget.style.height = widgetHeight + "px";
+    if (!hasSavedLayout) {
+        weatherWidget.style.left = leftPosition + "px";
+        weatherWidget.style.top = padding + "px";
+        weatherWidget.style.width = widgetWidth + "px";
+        weatherWidget.style.height = widgetHeight + "px";
+    }
     weatherWidget.style.zIndex = ++zIndex;
     enableDrag(weatherWidget, weatherWidget.querySelector('.weather-grab-bar'));
     enableResize(weatherWidget, weatherWidget.querySelector('.weather-resize'));
@@ -1812,10 +1909,12 @@ window.addEventListener('load', () => {
     leftPosition += widgetWidth + padding;
     
     const forecastWidget = document.getElementById('forecastWidget');
-    forecastWidget.style.left = leftPosition + "px";
-    forecastWidget.style.top = padding + "px";
-    forecastWidget.style.width = widgetWidth + "px";
-    forecastWidget.style.height = widgetHeight + "px";
+    if (!hasSavedLayout) {
+        forecastWidget.style.left = leftPosition + "px";
+        forecastWidget.style.top = padding + "px";
+        forecastWidget.style.width = widgetWidth + "px";
+        forecastWidget.style.height = widgetHeight + "px";
+    }
     forecastWidget.style.zIndex = ++zIndex;
     enableDrag(forecastWidget, forecastWidget.querySelector('.forecast-grab-bar'));
     enableResize(forecastWidget, forecastWidget.querySelector('.forecast-resize'));
@@ -1826,17 +1925,13 @@ window.addEventListener('load', () => {
     const radarWin = document.createElement("div");
     radarWin.className = "window no-input-bar";
     radarWin.id = "radarWin";
-    radarWin.style.left = leftPosition + "px";
-    radarWin.style.top = padding + "px";
-    radarWin.style.width = widgetWidth + "px";
-    radarWin.style.height = widgetHeight + "px";
     radarWin.style.zIndex = ++zIndex;
     radarWin.innerHTML = `
         <div class="grab-bar">
             <span class="widget-name">Radar</span>
         </div>
         <div class="iframe-wrap">
-            <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
+            <iframe id="radarIframe" allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
                     credentials="include" 
                     referrerpolicy="no-referrer-when-downgrade"
                     allowfullscreen
@@ -1845,25 +1940,51 @@ window.addEventListener('load', () => {
         <div class="resize"></div>
     `;
     document.body.appendChild(radarWin);
+    
+    if (!hasSavedLayout) {
+        radarWin.style.left = leftPosition + "px";
+        radarWin.style.top = padding + "px";
+        radarWin.style.width = widgetWidth + "px";
+        radarWin.style.height = widgetHeight + "px";
+    }
+    
     bringToFront(radarWin);
     enableDrag(radarWin);
     enableResize(radarWin);
+    
+    // Refresh radar iframe every hour to prevent lockup
+    setInterval(() => {
+        const radarIframe = document.getElementById('radarIframe');
+        if (radarIframe) {
+            console.log('Refreshing radar widget...');
+            const currentSrc = radarIframe.src;
+            radarIframe.src = '';
+            setTimeout(() => {
+                radarIframe.src = currentSrc;
+            }, 100);
+        }
+    }, 3600000); // 1 hour = 3600000 ms
+    
     leftPosition += widgetWidth + padding;
     
     const scratchpadWidget = document.getElementById('scratchpadWidget');
-    scratchpadWidget.style.left = leftPosition + "px";
-    scratchpadWidget.style.top = padding + "px";
-    scratchpadWidget.style.width = widgetWidth + "px";
-    scratchpadWidget.style.height = widgetHeight + "px";
+    if (!hasSavedLayout) {
+        scratchpadWidget.style.left = leftPosition + "px";
+        scratchpadWidget.style.top = padding + "px";
+        scratchpadWidget.style.width = widgetWidth + "px";
+        scratchpadWidget.style.height = widgetHeight + "px";
+    }
     scratchpadWidget.style.zIndex = ++zIndex;
     initScratchpad();
     leftPosition += widgetWidth + padding;
     
     const clockWidget = document.getElementById('clockWidget');
-    clockWidget.style.left = leftPosition + "px";
-    clockWidget.style.top = padding + "px";
-    clockWidget.style.width = widgetWidth + "px";
-    clockWidget.style.height = widgetHeight + "px";
+    if (!hasSavedLayout) {
+        clockWidget.style.left = leftPosition + "px";
+        clockWidget.style.top = padding + "px";
+        clockWidget.style.width = widgetWidth + "px";
+        clockWidget.style.height = widgetHeight + "px";
+    }
     clockWidget.style.zIndex = ++zIndex;
     enableDrag(clockWidget, clockWidget.querySelector('.clock-widget-grab-bar'));
     enableResize(clockWidget, clockWidget.querySelector('.clock-widget-resize'));
@@ -1898,20 +2019,24 @@ window.addEventListener('load', () => {
     leftPosition += widgetWidth + padding;
     
     const internetSpeedWidget = document.getElementById('internetSpeedWidget');
-    internetSpeedWidget.style.left = leftPosition + "px";
-    internetSpeedWidget.style.top = padding + "px";
-    internetSpeedWidget.style.width = widgetWidth + "px";
-    internetSpeedWidget.style.height = widgetHeight + "px";
+    if (!hasSavedLayout) {
+        internetSpeedWidget.style.left = leftPosition + "px";
+        internetSpeedWidget.style.top = padding + "px";
+        internetSpeedWidget.style.width = widgetWidth + "px";
+        internetSpeedWidget.style.height = widgetHeight + "px";
+    }
     internetSpeedWidget.style.zIndex = ++zIndex;
     enableDrag(internetSpeedWidget, internetSpeedWidget.querySelector('.internet-speed-grab-bar'));
     enableResize(internetSpeedWidget, internetSpeedWidget.querySelector('.internet-speed-resize'));
     leftPosition += widgetWidth + padding;
     
     const pupPicsWidget = document.getElementById('pupPicsWidget');
-    pupPicsWidget.style.left = leftPosition + "px";
-    pupPicsWidget.style.top = padding + "px";
-    pupPicsWidget.style.width = widgetWidth + "px";
-    pupPicsWidget.style.height = widgetHeight + "px";
+    if (!hasSavedLayout) {
+        pupPicsWidget.style.left = leftPosition + "px";
+        pupPicsWidget.style.top = padding + "px";
+        pupPicsWidget.style.width = widgetWidth + "px";
+        pupPicsWidget.style.height = widgetHeight + "px";
+    }
     pupPicsWidget.style.zIndex = ++zIndex;
     enableDrag(pupPicsWidget, pupPicsWidget.querySelector('.pup-pics-grab-bar'));
     enableResize(pupPicsWidget, pupPicsWidget.querySelector('.pup-pics-resize'));
@@ -1919,10 +2044,12 @@ window.addEventListener('load', () => {
     leftPosition += widgetWidth + padding;
     
     const lightsWidget = document.getElementById('lightsWidget');
-    lightsWidget.style.left = leftPosition + "px";
-    lightsWidget.style.top = padding + "px";
-    lightsWidget.style.width = widgetWidth + "px";
-    lightsWidget.style.height = widgetHeight + "px";
+    if (!hasSavedLayout) {
+        lightsWidget.style.left = leftPosition + "px";
+        lightsWidget.style.top = padding + "px";
+        lightsWidget.style.width = widgetWidth + "px";
+        lightsWidget.style.height = widgetHeight + "px";
+    }
     lightsWidget.style.zIndex = ++zIndex;
     enableDrag(lightsWidget, lightsWidget.querySelector('.lights-grab-bar'));
     enableResize(lightsWidget, lightsWidget.querySelector('.lights-resize'));
@@ -1930,13 +2057,20 @@ window.addEventListener('load', () => {
     
     // Position Overseerr widget
     const overseerrWidget = document.getElementById('overseerrWidget');
-    overseerrWidget.style.left = leftPosition + "px";
-    overseerrWidget.style.top = padding + "px";
-    overseerrWidget.style.width = widgetWidth + "px";
-    overseerrWidget.style.height = widgetHeight + "px";
+    if (!hasSavedLayout) {
+        overseerrWidget.style.left = leftPosition + "px";
+        overseerrWidget.style.top = padding + "px";
+        overseerrWidget.style.width = widgetWidth + "px";
+        overseerrWidget.style.height = widgetHeight + "px";
+    }
     overseerrWidget.style.zIndex = ++zIndex;
     enableDrag(overseerrWidget, overseerrWidget.querySelector('.overseerr-grab-bar'));
     enableResize(overseerrWidget, overseerrWidget.querySelector('.overseerr-resize'));
+    
+    // Now restore saved layout if it exists (after all widgets are created)
+    if (hasSavedLayout) {
+        loadWidgetLayout();
+    }
     
     const padlockBtn = document.getElementById('padlockBtn');
     padlockBtn.addEventListener('click', () => {
