@@ -1935,7 +1935,7 @@ window.addEventListener('load', () => {
                     credentials="include" 
                     referrerpolicy="no-referrer-when-downgrade"
                     allowfullscreen
-                    src="https://radar.weather.gov/?settings=v1_eyJhZ2VuZGEiOnsiaWQiOiJsb2NhbCIsImNlbnRlciI6Wy04NS42NTcsMzAuMTU5XSwiem9vbSI6OH0sImJhc2UiOiJzdGFuZGFyZCIsImNvdW50eSI6ZmFsc2UsImN3YSI6ZmFsc2UsInN0YXRlIjpmYWxzZSwibWVudSI6dHJ1ZSwic2hvcnRGdXNlZE9ubHkiOmZhbHNlfQ%3D%3D"></iframe>
+                    src="https://www.wunderground.com/radar/us/fl/panama-city?lat=30.199&lon=-85.669&zoom=8"></iframe>
         </div>
         <div class="resize"></div>
     `;
@@ -1951,19 +1951,6 @@ window.addEventListener('load', () => {
     bringToFront(radarWin);
     enableDrag(radarWin);
     enableResize(radarWin);
-    
-    // Refresh radar iframe every hour to prevent lockup
-    setInterval(() => {
-        const radarIframe = document.getElementById('radarIframe');
-        if (radarIframe) {
-            console.log('Refreshing radar widget...');
-            const currentSrc = radarIframe.src;
-            radarIframe.src = '';
-            setTimeout(() => {
-                radarIframe.src = currentSrc;
-            }, 100);
-        }
-    }, 3600000); // 1 hour = 3600000 ms
     
     leftPosition += widgetWidth + padding;
     
