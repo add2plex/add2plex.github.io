@@ -1930,11 +1930,12 @@ window.addEventListener('load', () => {
         <div class="grab-bar">
             <span class="widget-name">Radar</span>
         </div>
-        <div class="iframe-wrap">
+        <div class="iframe-wrap" style="overflow:hidden;">
             <iframe id="radarIframe" allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
                     credentials="include" 
                     referrerpolicy="no-referrer-when-downgrade"
                     allowfullscreen
+                    style="margin-top:-56px; height:calc(100% + 56px);"
                     src="https://www.wunderground.com/radar/us/fl/panama-city?lat=30.199&lon=-85.669&zoom=8"></iframe>
         </div>
         <div class="resize"></div>
