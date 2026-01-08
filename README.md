@@ -606,8 +606,8 @@ iframe {
     touch-action: none;
 }
 
-/* Scratch Pad Widget */
-.scratchpad-widget {
+/* Cams Widget */
+.cams-widget {
     position: absolute;
     width: 400px;
     height: 500px;
@@ -621,7 +621,7 @@ iframe {
     overflow: hidden;
 }
 
-.scratchpad-grab-bar {
+.cams-grab-bar {
     height: 24px;
     background: #0f1320;
     border-bottom: 1px solid #2d3c66;
@@ -633,11 +633,11 @@ iframe {
     padding: 0 8px;
 }
 
-.scratchpad-grab-bar:active {
+.cams-grab-bar:active {
     cursor: grabbing;
 }
 
-.scratchpad-grab-bar::before {
+.cams-grab-bar::before {
     content: '⋮⋮';
     color: #8fb4ff;
     font-size: 14px;
@@ -645,117 +645,29 @@ iframe {
     opacity: 0.5;
 }
 
-.scratchpad-toolbar {
-    height: 60px;
-    background: #0f1320;
-    border-bottom: 1px solid #2d3c66;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
-    flex-wrap: wrap;
-}
-
-.scratchpad-color-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
-.scratchpad-gradient-bar {
-    width: 120px;
-    height: 24px;
-    border-radius: 4px;
-    border: 2px solid #8fb4ff;
-    background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
-    cursor: crosshair;
-}
-
-.scratchpad-color-preview {
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
-    border: 2px solid #8fb4ff;
-    background: #ff0000;
-    flex-shrink: 0;
-}
-
-.scratchpad-bw-buttons {
-    display: flex;
-    gap: 4px;
-    flex-shrink: 0;
-}
-
-.scratchpad-bw-btn {
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
-    border: 2px solid transparent;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    flex-shrink: 0;
-}
-
-.scratchpad-bw-btn.active {
-    border-color: #8fb4ff;
-}
-
-#blackBtn {
-    background: #000000;
-}
-
-#whiteBtn {
-    background: #ffffff;
-}
-
-.scratchpad-thickness-container {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-}
-
-.scratchpad-thickness-slider {
-    width: 60px;
-    height: 4px;
-    cursor: pointer;
-}
-
-.scratchpad-thickness-label {
-    font-size: 12px;
-    color: #8fb4ff;
-    width: 20px;
-    text-align: center;
-}
-
-.scratchpad-btn {
-    height: 28px;
-    padding: 0 10px;
-    border-radius: 4px;
-    border: 1px solid #2d3c66;
-    background: #2d3c66;
-    color: #8fb4ff;
-    font-size: 12px;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: background 0.2s;
-}
-
-.scratchpad-btn:hover {
-    background: #3d4c76;
-}
-
-.scratchpad-canvas-wrap {
+.cams-content {
     flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
-    background: #3a4a7a;
-    position: relative;
+    background: #0f1320;
 }
 
-#scratchpadCanvas {
-    display: block;
-    cursor: crosshair;
+.cams-content iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.cams-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
     touch-action: none;
 }
 
@@ -776,17 +688,6 @@ iframe {
 
 .padlock-btn:hover {
     opacity: 0.8;
-}
-
-.scratchpad-resize {
-    position: absolute;
-    width: 25px;
-    height: 25px;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
-    cursor: nwse-resize;
-    touch-action: none;
 }
 
 /* Clock Widget */
@@ -1311,31 +1212,14 @@ iframe {
     <div class="forecast-resize"></div>
 </div>
 
-<div class="scratchpad-widget" id="scratchpadWidget">
-    <div class="scratchpad-grab-bar">
-        <span class="widget-name">Draw</span>
+<div class="cams-widget" id="camsWidget">
+    <div class="cams-grab-bar">
+        <span class="widget-name">Cams</span>
     </div>
-    <div class="scratchpad-toolbar">
-        <div class="scratchpad-color-bar">
-            <div class="scratchpad-gradient-bar" id="gradientBar"></div>
-            <div class="scratchpad-color-preview" id="colorPreview"></div>
-            <div class="scratchpad-bw-buttons">
-                <button class="scratchpad-bw-btn" id="blackBtn"></button>
-                <button class="scratchpad-bw-btn" id="whiteBtn"></button>
-            </div>
-        </div>
-        <div class="scratchpad-thickness-container">
-            <label class="scratchpad-thickness-label">Size:</label>
-            <input type="range" class="scratchpad-thickness-slider" id="thicknessSlider" min="1" max="50" value="3">
-        </div>
-        <div class="scratchpad-brush-preview" id="brushPreview"></div>
-        <button class="scratchpad-btn" id="eraserBtn">✏️ Eraser</button>
-        <button class="scratchpad-btn" id="clearBtn">Clear</button>
+    <div class="cams-content">
+        <iframe src="https://cams.add2plex.com" allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media" credentials="include" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
     </div>
-    <div class="scratchpad-canvas-wrap">
-        <canvas id="scratchpadCanvas"></canvas>
-    </div>
-    <div class="scratchpad-resize"></div>
+    <div class="cams-resize"></div>
 </div>
 
 <div class="clock-widget" id="clockWidget">
@@ -1575,7 +1459,6 @@ async function fetchWeather() {
 
 let pupPicsIntervalId = null;
 let pupPicsObserver = null;
-let scratchpadResizeObserver = null;
 let nextPupPicsUrl = null;
 let isLoadingNextImage = false;
 let preloadRetryId = null;
@@ -1763,7 +1646,7 @@ function saveWidgetLayout() {
         { id: 'weatherWidget', type: 'standard' },
         { id: 'forecastWidget', type: 'standard' },
         { id: 'radarWin', type: 'window' },
-        { id: 'scratchpadWidget', type: 'standard' },
+        { id: 'camsWidget', type: 'standard' },
         { id: 'clockWidget', type: 'standard' },
         { id: 'internetSpeedWidget', type: 'standard' },
         { id: 'pupPicsWidget', type: 'standard' },
@@ -1955,15 +1838,16 @@ window.addEventListener('load', () => {
     
     leftPosition += widgetWidth + padding;
     
-    const scratchpadWidget = document.getElementById('scratchpadWidget');
+    const camsWidget = document.getElementById('camsWidget');
     if (!hasSavedLayout) {
-        scratchpadWidget.style.left = leftPosition + "px";
-        scratchpadWidget.style.top = padding + "px";
-        scratchpadWidget.style.width = widgetWidth + "px";
-        scratchpadWidget.style.height = widgetHeight + "px";
+        camsWidget.style.left = leftPosition + "px";
+        camsWidget.style.top = padding + "px";
+        camsWidget.style.width = widgetWidth + "px";
+        camsWidget.style.height = widgetHeight + "px";
     }
-    scratchpadWidget.style.zIndex = ++zIndex;
-    initScratchpad();
+    camsWidget.style.zIndex = ++zIndex;
+    enableDrag(camsWidget, camsWidget.querySelector('.cams-grab-bar'));
+    enableResize(camsWidget, camsWidget.querySelector('.cams-resize'));
     leftPosition += widgetWidth + padding;
     
     const clockWidget = document.getElementById('clockWidget');
@@ -2265,229 +2149,6 @@ function enableResize(win, handle) {
     };
 }
 
-function initScratchpad() {
-    const scratchpadWidget = document.getElementById('scratchpadWidget');
-    const canvas = document.getElementById('scratchpadCanvas');
-    const ctx = canvas.getContext('2d');
-    const gradientBar = document.getElementById('gradientBar');
-    const colorPreview = document.getElementById('colorPreview');
-    const blackBtn = document.getElementById('blackBtn');
-    const whiteBtn = document.getElementById('whiteBtn');
-    const thicknessSlider = document.getElementById('thicknessSlider');
-    const eraserBtn = document.getElementById('eraserBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const brushPreview = document.getElementById('brushPreview');
-    
-    let isDrawing = false;
-    let isErasing = false;
-    let currentColor = '#ff0000';
-    let currentThickness = 3;
-    
-    function updateBrushPreview() {
-        brushPreview.innerHTML = '';
-        const previewCircle = document.createElement('div');
-        previewCircle.style.width = Math.min(currentThickness, 30) + 'px';
-        previewCircle.style.height = Math.min(currentThickness, 30) + 'px';
-        previewCircle.style.borderRadius = '50%';
-        if (isErasing) {
-            previewCircle.style.border = '2px solid #8fb4ff';
-            previewCircle.style.backgroundColor = 'transparent';
-        } else {
-            previewCircle.style.backgroundColor = currentColor;
-        }
-        brushPreview.appendChild(previewCircle);
-    }
-    
-    function setColor(color) {
-        currentColor = color;
-        colorPreview.style.background = color;
-        isErasing = false;
-        eraserBtn.style.opacity = '0.7';
-        blackBtn.classList.remove('active');
-        whiteBtn.classList.remove('active');
-        if (color === '#000000') {
-            blackBtn.classList.add('active');
-        } else if (color === '#ffffff') {
-            whiteBtn.classList.add('active');
-        }
-        updateBrushPreview();
-    }
-    
-    function resizeCanvas() {
-        const wrap = scratchpadWidget.querySelector('.scratchpad-canvas-wrap');
-        canvas.width = wrap.clientWidth;
-        canvas.height = wrap.clientHeight;
-        ctx.fillStyle = '#3a4a7a';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-    
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    
-    if (scratchpadResizeObserver) {
-        scratchpadResizeObserver.disconnect();
-    }
-    scratchpadResizeObserver = new ResizeObserver(() => {
-        resizeCanvas();
-    });
-    scratchpadResizeObserver.observe(scratchpadWidget.querySelector('.scratchpad-canvas-wrap'));
-    
-    gradientBar.addEventListener('click', (e) => {
-        const rect = gradientBar.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const width = rect.width;
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = width;
-        tempCanvas.height = 1;
-        const tempCtx = tempCanvas.getContext('2d');
-        const gradient = tempCtx.createLinearGradient(0, 0, width, 0);
-        gradient.addColorStop(0, '#ff0000');
-        gradient.addColorStop(0.17, '#ffff00');
-        gradient.addColorStop(0.33, '#00ff00');
-        gradient.addColorStop(0.5, '#00ffff');
-        gradient.addColorStop(0.67, '#0000ff');
-        gradient.addColorStop(0.83, '#ff00ff');
-        gradient.addColorStop(1, '#ff0000');
-        tempCtx.fillStyle = gradient;
-        tempCtx.fillRect(0, 0, width, 1);
-        const imageData = tempCtx.getImageData(Math.floor(x), 0, 1, 1);
-        const data = imageData.data;
-        const color = `rgb(${data[0]}, ${data[1]}, ${data[2]})`;
-        setColor(color);
-    });
-    
-    blackBtn.addEventListener('click', () => { setColor('#000000'); });
-    whiteBtn.addEventListener('click', () => { setColor('#ffffff'); });
-    
-    thicknessSlider.addEventListener('input', (e) => {
-        currentThickness = e.target.value;
-        updateBrushPreview();
-    });
-    
-    eraserBtn.addEventListener('click', () => {
-        isErasing = !isErasing;
-        eraserBtn.style.opacity = isErasing ? '1' : '0.7';
-        if (!isErasing) {
-            colorPreview.style.background = currentColor;
-        } else {
-            colorPreview.style.background = '#2a3050';
-        }
-        blackBtn.classList.remove('active');
-        whiteBtn.classList.remove('active');
-        updateBrushPreview();
-    });
-    
-    clearBtn.addEventListener('click', () => {
-        ctx.fillStyle = '#3a4a7a';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    });
-    
-    function startDrawing(e) {
-        isDrawing = true;
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const cursorCircle = document.getElementById('cursorCircle');
-        cursorCircle.style.display = 'block';
-        cursorCircle.style.left = (e.clientX - currentThickness / 2) + 'px';
-        cursorCircle.style.top = (e.clientY - currentThickness / 2) + 'px';
-        cursorCircle.style.width = currentThickness + 'px';
-        cursorCircle.style.height = currentThickness + 'px';
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-    }
-    
-    function draw(e) {
-        if (!isDrawing) return;
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const cursorCircle = document.getElementById('cursorCircle');
-        cursorCircle.style.left = (e.clientX - currentThickness / 2) + 'px';
-        cursorCircle.style.top = (e.clientY - currentThickness / 2) + 'px';
-        cursorCircle.style.width = currentThickness + 'px';
-        cursorCircle.style.height = currentThickness + 'px';
-        ctx.lineWidth = currentThickness;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        if (isErasing) {
-            ctx.clearRect(x - currentThickness / 2, y - currentThickness / 2, currentThickness, currentThickness);
-        } else {
-            ctx.strokeStyle = currentColor;
-            ctx.lineTo(x, y);
-            ctx.stroke();
-        }
-    }
-    
-    function stopDrawing() {
-        isDrawing = false;
-        ctx.closePath();
-        const cursorCircle = document.getElementById('cursorCircle');
-        cursorCircle.style.display = 'none';
-    }
-    
-    function getTouchPos(touch) {
-        const rect = canvas.getBoundingClientRect();
-        return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
-    }
-    
-    function startTouchDrawing(e) {
-        e.preventDefault();
-        const touch = e.touches[0];
-        isDrawing = true;
-        const pos = getTouchPos(touch);
-        const cursorCircle = document.getElementById('cursorCircle');
-        cursorCircle.style.display = 'block';
-        cursorCircle.style.left = (touch.clientX - currentThickness / 2) + 'px';
-        cursorCircle.style.top = (touch.clientY - currentThickness / 2) + 'px';
-        cursorCircle.style.width = currentThickness + 'px';
-        cursorCircle.style.height = currentThickness + 'px';
-        ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y);
-    }
-    
-    function touchDraw(e) {
-        e.preventDefault();
-        if (!isDrawing) return;
-        const touch = e.touches[0];
-        const pos = getTouchPos(touch);
-        const cursorCircle = document.getElementById('cursorCircle');
-        cursorCircle.style.left = (touch.clientX - currentThickness / 2) + 'px';
-        cursorCircle.style.top = (touch.clientY - currentThickness / 2) + 'px';
-        cursorCircle.style.width = currentThickness + 'px';
-        cursorCircle.style.height = currentThickness + 'px';
-        ctx.lineWidth = currentThickness;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        if (isErasing) {
-            ctx.clearRect(pos.x - currentThickness / 2, pos.y - currentThickness / 2, currentThickness, currentThickness);
-        } else {
-            ctx.strokeStyle = currentColor;
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-        }
-    }
-    
-    function stopTouchDrawing(e) {
-        e.preventDefault();
-        isDrawing = false;
-        ctx.closePath();
-        const cursorCircle = document.getElementById('cursorCircle');
-        cursorCircle.style.display = 'none';
-    }
-    
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseout', stopDrawing);
-    canvas.addEventListener('touchstart', startTouchDrawing);
-    canvas.addEventListener('touchmove', touchDraw);
-    canvas.addEventListener('touchend', stopTouchDrawing);
-    
-    enableDrag(scratchpadWidget, scratchpadWidget.querySelector('.scratchpad-grab-bar'));
-    enableResize(scratchpadWidget, scratchpadWidget.querySelector('.scratchpad-resize'));
-    updateBrushPreview();
-}
 </script>
 
 </body>
