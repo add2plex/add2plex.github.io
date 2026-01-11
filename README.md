@@ -1818,8 +1818,7 @@ window.addEventListener('load', () => {
                     credentials="include" 
                     referrerpolicy="no-referrer-when-downgrade"
                     allowfullscreen
-                    style="margin-top:-100px; height:calc(100% + 100px);"
-                    src="https://www.wunderground.com/radar/us/fl/panama-city?lat=30.199&lon=-85.669&zoom=8"></iframe>
+                    src="http://localhost:3000"></iframe>
         </div>
         <div class="resize"></div>
     `;
