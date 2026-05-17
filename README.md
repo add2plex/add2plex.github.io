@@ -8,99 +8,29 @@
 <meta http-equiv="Set-Cookie" content="SameSite=None; Secure">
 <meta name="referrer" content="no-referrer-when-downgrade">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-
 <style>
-/* ============================================================
-   Design tokens — deep blue + slate grey, modern + sleek
-   ============================================================ */
-:root {
-    /* Surface palette */
-    --bg-0:           #050912;            /* deepest, body backdrop */
-    --bg-1:           #0a1224;            /* widget canvas tone */
-    --bg-2:           #0f1a30;            /* iframe + inner well */
-    --surface:        #121c32;            /* solid — iframes don't play nice with translucency */
-    --surface-solid:  #121c32;
-    --surface-bar:    #0c1426;
-
-    /* Strokes */
-    --stroke:         rgba(148, 170, 210, 0.10);
-    --stroke-strong:  rgba(148, 170, 210, 0.18);
-    --stroke-focus:   rgba(120, 170, 255, 0.55);
-
-    /* Text */
-    --text-1:         #e6ecf7;
-    --text-2:         #9aa8c4;
-    --text-3:         #6a7896;
-
-    /* Accents — deep blue family */
-    --blue-100:       #cfe0ff;
-    --blue-300:       #7da4ff;
-    --blue-500:       #4a7dff;            /* primary accent */
-    --blue-600:       #2f63e5;
-    --blue-glow:      rgba(74, 125, 255, 0.35);
-
-    /* Semantic */
-    --danger:         #ff7a85;
-    --hot:            #ff9a76;
-    --cold:           #7eb3ff;
-
-    /* Effects */
-    --radius-lg:      16px;
-    --radius-md:      12px;
-    --radius-sm:      8px;
-    --radius-pill:    999px;
-    --blur:           saturate(140%) blur(20px);
-    --shadow-1:       0 1px 0 rgba(255,255,255,0.04) inset, 0 12px 28px -12px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.35);
-    --shadow-2:       0 1px 0 rgba(255,255,255,0.05) inset, 0 24px 60px -20px rgba(0,0,0,0.85), 0 8px 24px rgba(0,0,0,0.5);
-    --ease:           cubic-bezier(.2,.7,.2,1);
-}
-
-* { box-sizing: border-box; }
-
 html, body {
     width: 100%;
     height: 100%;
     margin: 0;
-    color: var(--text-1);
-    background:
-        radial-gradient(1200px 700px at 12% -10%, rgba(74,125,255,0.10), transparent 60%),
-        radial-gradient(900px 600px at 100% 110%, rgba(40,80,180,0.10), transparent 55%),
-        linear-gradient(180deg, #060c1c 0%, #050912 100%);
+    background: #0b132b;
     overflow: hidden;
     touch-action: none;
     user-select: none;
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-feature-settings: "cv11","ss01","ss03";
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* faint dot grid wash on the desktop */
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background-image: radial-gradient(rgba(120,150,200,0.06) 1px, transparent 1px);
-    background-size: 28px 28px;
-    mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0.9), rgba(0,0,0,0.2) 70%, transparent);
-    z-index: 0;
-}
-
-/* Floating clock (legacy, hidden by default) */
+/* Clock */
 .clock {
     position: fixed;
     top: 24px;
     right: 24px;
     font-size: 48px;
-    font-weight: 600;
-    color: var(--text-1);
-    letter-spacing: -0.02em;
+    font-weight: bold;
+    color: #ffffff;
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
     z-index: 1000;
-    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
     user-select: none;
     touch-action: none;
     cursor: grab;
@@ -110,188 +40,164 @@ body::before {
     align-items: flex-end;
 }
 
-.clock-time { line-height: 1; }
-.clock-date { font-size: 0.3em; margin-top: 6px; opacity: 0.85; color: var(--text-2); }
+.clock-time {
+    line-height: 1;
+}
 
-/* ============================================================
-   Window (URL window with input bar, and frameless iframe wins)
-   ============================================================ */
+.clock-date {
+    font-size: 0.3em;
+    margin-top: 4px;
+    opacity: 0.95;
+}
+
+/* Window */
 .window {
     position: absolute;
     width: 500px;
     height: 500px;
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--stroke);
+    background: #000;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--shadow-2);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
     touch-action: none;
     overflow: hidden;
-    z-index: 1;
 }
 
-.window.no-input-bar .iframe-wrap { border-radius: var(--radius-lg); }
+.window.no-input-bar .iframe-wrap {
+    border-radius: 12px;
+}
 
 .window.split-view {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 52px 1fr;
+    grid-template-rows: 48px 1fr;
 }
-.window.split-view .input-bar { grid-column: 1 / -1; }
-.window.split-view .iframe-wrap { border-right: 1px solid var(--stroke); }
-.window.split-view .auth-iframe-wrap { display: flex; flex-direction: column; overflow: hidden; }
 
-/* Grab bar — used on every widget */
-.grab-bar,
-.weather-grab-bar,
-.forecast-grab-bar,
-.cams-grab-bar,
-.clock-widget-grab-bar,
-.internet-speed-grab-bar,
-.pup-pics-grab-bar,
-.lights-grab-bar,
-.overseerr-grab-bar {
-    height: 30px;
-    background: var(--surface-bar);
-    border-bottom: 1px solid var(--stroke);
+.window.split-view .input-bar {
+    grid-column: 1 / -1;
+}
+
+.window.split-view .iframe-wrap {
+    border-right: 1px solid #2d3c66;
+}
+
+.window.split-view .auth-iframe-wrap {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Grab bar for windows without input bar */
+.grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
     cursor: grab;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
-    padding: 0 12px;
-    position: relative;
+    padding: 0 8px;
 }
 
-.grab-bar:active,
-.weather-grab-bar:active,
-.forecast-grab-bar:active,
-.cams-grab-bar:active,
-.clock-widget-grab-bar:active,
-.internet-speed-grab-bar:active,
-.pup-pics-grab-bar:active,
-.lights-grab-bar:active,
-.overseerr-grab-bar:active { cursor: grabbing; }
-
-/* dotted drag handle on the left */
-.grab-bar::before,
-.weather-grab-bar::before,
-.forecast-grab-bar::before,
-.cams-grab-bar::before,
-.clock-widget-grab-bar::before,
-.internet-speed-grab-bar::before,
-.pup-pics-grab-bar::before,
-.lights-grab-bar::before,
-.overseerr-grab-bar::before {
-    content: '';
-    width: 18px;
-    height: 8px;
-    background-image: radial-gradient(circle, rgba(154,168,196,0.55) 1.2px, transparent 1.4px);
-    background-size: 4px 4px;
-    background-position: 0 0;
-    opacity: 0.7;
+.grab-bar:active {
+    cursor: grabbing;
 }
 
-/* ============================================================
-   Input bar (URL window)
-   ============================================================ */
+.grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+/* Input bar */
 .input-bar {
-    height: 52px;
+    height: 48px;
     display: flex;
-    padding: 8px;
-    gap: 8px;
-    background: var(--surface-bar);
-    border-bottom: 1px solid var(--stroke);
+    padding: 6px;
+    gap: 6px;
+    background: #1a1f2e;
+    border-bottom: 1px solid #2d3c66;
     align-items: center;
 }
 
-.input-bar button.icon-btn,
-.close-btn,
-.refresh-btn,
-.new-tab-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--stroke);
-    background: rgba(255,255,255,0.02);
-    color: var(--text-2);
+.close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    border: none;
+    background: #2d3c66;
+    color: #ff6b6b;
+    font-size: 18px;
     cursor: pointer;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: background 0.16s var(--ease), color 0.16s var(--ease), border-color 0.16s var(--ease), transform 0.08s var(--ease);
-    padding: 0;
 }
-.input-bar button.icon-btn:hover,
-.close-btn:hover,
-.refresh-btn:hover,
-.new-tab-btn:hover {
-    background: rgba(120,170,255,0.10);
-    color: var(--blue-100);
-    border-color: var(--stroke-strong);
+
+.refresh-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    border: none;
+    background: #2d3c66;
+    color: #8fb4ff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
-.input-bar button.icon-btn:active,
-.close-btn:active,
-.refresh-btn:active,
-.new-tab-btn:active { transform: scale(0.94); }
 
-.close-btn { color: var(--danger); }
-.close-btn:hover { background: rgba(255,122,133,0.12); color: var(--danger); border-color: rgba(255,122,133,0.35); }
-
-.new-tab-btn { margin-left: auto; }
-
-.input-bar button.icon-btn svg,
-.close-btn svg, .refresh-btn svg, .new-tab-btn svg {
-    width: 16px; height: 16px; stroke-width: 2;
+.new-tab-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    border: none;
+    background: #2d3c66;
+    color: #8fb4ff;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 .input-bar input {
     flex: 1;
-    height: 36px;
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--stroke);
-    padding: 0 16px;
+    height: 32px;
+    border-radius: 16px;
+    border: none;
+    padding: 0 12px;
     font-size: 14px;
-    font-family: inherit;
-    background: rgba(5, 10, 22, 0.6);
-    color: var(--text-1);
+    background: #0f1320;
+    color: #fff;
     outline: none;
-    transition: border-color 0.16s var(--ease), box-shadow 0.16s var(--ease), background 0.16s var(--ease);
-}
-.input-bar input::placeholder { color: var(--text-3); }
-.input-bar input:focus {
-    border-color: var(--stroke-focus);
-    background: rgba(5,10,22,0.9);
-    box-shadow: 0 0 0 3px var(--blue-glow);
 }
 
-.input-bar button.go-btn {
-    height: 36px;
-    padding: 0 18px;
-    border-radius: var(--radius-pill);
-    border: 1px solid rgba(74,125,255,0.35);
-    background: linear-gradient(180deg, rgba(74,125,255,0.22), rgba(74,125,255,0.10));
-    color: var(--blue-100);
-    font-size: 13px;
-    font-weight: 600;
-    font-family: inherit;
-    letter-spacing: 0.02em;
+.input-bar button {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 16px;
+    border: none;
+    background: #2d3c66;
+    color: #8fb4ff;
+    font-size: 14px;
     cursor: pointer;
-    transition: background 0.16s var(--ease), border-color 0.16s var(--ease), transform 0.08s var(--ease);
 }
-.input-bar button.go-btn:hover {
-    background: linear-gradient(180deg, rgba(74,125,255,0.32), rgba(74,125,255,0.18));
-    border-color: rgba(120,170,255,0.55);
-}
-.input-bar button.go-btn:active { transform: scale(0.97); }
 
 /* Iframe container */
 .iframe-wrap {
     flex: 1;
     overflow: hidden;
-    background: var(--bg-2);
 }
 
 iframe {
@@ -303,151 +209,135 @@ iframe {
 /* Auth popup overlay */
 .auth-overlay {
     position: absolute;
-    inset: 0;
-    background: rgba(5, 10, 22, 0.92);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(11, 19, 43, 0.95);
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 10;
 }
-.auth-overlay.active { display: flex; }
-.auth-message { color: var(--blue-100); font-size: 14px; text-align: center; }
 
-.auth-iframe-wrap { display: none; flex-direction: column; }
-.auth-iframe-wrap.active { display: flex; }
+.auth-overlay.active {
+    display: flex;
+}
+
+.auth-message {
+    color: #8fb4ff;
+    font-size: 14px;
+    text-align: center;
+}
+
+.auth-iframe-wrap {
+    display: none;
+    flex-direction: column;
+}
+
+.auth-iframe-wrap.active {
+    display: flex;
+}
 
 .auth-header {
-    height: 40px;
-    background: var(--surface-bar);
-    border-bottom: 1px solid var(--stroke);
+    height: 36px;
+    background: #1a1f2e;
+    border-bottom: 1px solid #2d3c66;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 12px;
-    color: var(--text-2);
+    color: #8fb4ff;
     font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
 }
 
 .auth-close-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: var(--radius-pill);
-    border: 1px solid var(--stroke);
-    background: rgba(255,255,255,0.02);
-    color: var(--danger);
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    border: none;
+    background: #2d3c66;
+    color: #ff6b6b;
+    font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
-    transition: background 0.16s var(--ease);
 }
-.auth-close-btn:hover { background: rgba(255,122,133,0.12); }
 
-.auth-iframe-wrap iframe { flex: 1; width: 100%; height: 100%; border: none; }
+.auth-iframe-wrap iframe {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
 
-/* Resize handle — common shared style */
-.resize,
-.weather-resize,
-.forecast-resize,
-.cams-resize,
-.clock-widget-resize,
-.internet-speed-resize,
-.pup-pics-resize,
-.lights-resize,
-.overseerr-resize,
-.search-resize {
+/* Resize handle */
+.resize {
     position: absolute;
-    width: 22px;
-    height: 22px;
-    right: 4px;
-    bottom: 4px;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
     cursor: nwse-resize;
     touch-action: none;
-    background: transparent;
-    border-radius: 0;
-    opacity: 0.5;
-    transition: opacity 0.18s var(--ease);
-}
-.resize::before,
-.weather-resize::before,
-.forecast-resize::before,
-.cams-resize::before,
-.clock-widget-resize::before,
-.internet-speed-resize::before,
-.pup-pics-resize::before,
-.lights-resize::before,
-.overseerr-resize::before,
-.search-resize::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-        radial-gradient(circle, rgba(154,168,196,0.85) 1.2px, transparent 1.4px);
-    background-size: 5px 5px;
-    background-position: right bottom;
-    -webkit-mask-image: linear-gradient(135deg, transparent 50%, #000 55%);
-    mask-image: linear-gradient(135deg, transparent 50%, #000 55%);
-}
-.resize:hover,
-.weather-resize:hover,
-.forecast-resize:hover,
-.cams-resize:hover,
-.clock-widget-resize:hover,
-.internet-speed-resize:hover,
-.pup-pics-resize:hover,
-.lights-resize:hover,
-.overseerr-resize:hover,
-.search-resize:hover { opacity: 1; }
-
-/* ============================================================
-   Shared widget shell — all widgets share these base styles
-   ============================================================ */
-.weather-widget,
-.forecast-widget,
-.cams-widget,
-.clock-widget,
-.internet-speed-widget,
-.pup-pics-widget,
-.lights-widget,
-.overseerr-widget {
-    position: absolute;
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--stroke);
-    display: flex;
-    flex-direction: column;
-    box-shadow: var(--shadow-1);
-    touch-action: none;
-    overflow: hidden;
-    z-index: 1;
+    border-radius: 0 0 12px 0;
 }
 
-.widget-name {
-    font-size: 10.5px;
-    color: var(--text-2);
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-/* ============================================================
-   Weather Widget
-   ============================================================ */
+/* Weather Widget */
 .weather-widget {
+    position: absolute;
     width: 320px;
     height: 280px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
     container-type: size;
     container-name: weather;
 }
 
+.weather-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.weather-grab-bar:active {
+    cursor: grabbing;
+}
+
+.weather-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.widget-name {
+    font-size: 11px;
+    color: #8fb4ff;
+    font-weight: 600;
+    opacity: 0.8;
+    letter-spacing: 0.5px;
+}
+
 .weather-content {
     flex: 1;
-    padding: 6px;
-    padding-top: 4px;
+    padding: 4px 4px 4px 4px;
+    padding-top: 2px;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -466,33 +356,29 @@ iframe {
 
 .weather-temp {
     font-size: clamp(22px, 15cqw, 72px);
-    font-weight: 700;
-    color: var(--text-1);
+    font-weight: bold;
+    color: #8fb4ff;
     line-height: 1;
-    letter-spacing: -0.03em;
-    font-variant-numeric: tabular-nums;
 }
 
 .weather-icon {
     font-size: clamp(50px, 35cqw, 200px);
     animation: float 3s ease-in-out infinite;
     line-height: 1;
-    filter: drop-shadow(0 4px 18px rgba(74,125,255,0.25));
 }
 
 @keyframes float {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-8px); }
+    50% { transform: translateY(-10px); }
 }
 
 .weather-description {
     font-size: clamp(13px, 5.5cqw, 26px);
-    color: var(--text-1);
+    color: #ffffff;
     text-transform: capitalize;
     flex-shrink: 0;
     line-height: 1.2;
     text-align: center;
-    font-weight: 500;
 }
 
 .weather-details {
@@ -513,66 +399,115 @@ iframe {
 }
 
 .weather-detail-label {
-    font-size: clamp(9px, 3.5cqw, 14px);
-    color: var(--text-3);
+    font-size: clamp(9px, 3.5cqw, 16px);
+    color: #8fb4ff;
+    opacity: 0.7;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
     line-height: 1.2;
-    font-weight: 600;
 }
 
 .weather-detail-value {
     font-size: clamp(16px, 6cqw, 28px);
-    color: var(--text-1);
-    font-weight: 600;
+    color: #ffffff;
+    font-weight: bold;
     line-height: 1.2;
-    font-variant-numeric: tabular-nums;
 }
 
 .weather-location {
-    font-size: clamp(10px, 4cqw, 16px);
-    color: var(--text-2);
+    font-size: clamp(10px, 4cqw, 17px);
+    color: #8fb4ff;
+    opacity: 0.9;
     text-align: center;
     font-weight: 500;
-    letter-spacing: 0.04em;
-    padding: 6px 0;
-    border-top: 1px solid var(--stroke);
-    border-bottom: 1px solid var(--stroke);
+    padding: 4px 0;
+    border-top: 1px solid #2d3c66;
+    border-bottom: 1px solid #2d3c66;
     line-height: 1.2;
     width: 100%;
 }
 
 .weather-clock {
     font-size: clamp(11px, 4.5cqw, 18px);
-    color: var(--text-1);
+    color: #ffffff;
+    opacity: 0.95;
     text-align: center;
     font-weight: 500;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--stroke);
+    padding-bottom: 4px;
+    border-bottom: 1px solid #2d3c66;
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
-.weather-clock-time { font-size: clamp(22px, 15cqw, 72px); font-weight: 700; letter-spacing: -0.03em; }
-.weather-clock-date { font-size: clamp(12px, 5cqw, 20px); color: var(--text-2); }
 
-/* ============================================================
-   5-Day Forecast Widget
-   ============================================================ */
+.weather-clock-time {
+    font-size: clamp(22px, 15cqw, 72px);
+    font-weight: bold;
+}
+
+.weather-clock-date {
+    font-size: clamp(12px, 5cqw, 20px);
+    opacity: 0.85;
+}
+
+.weather-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+}
+
+/* 5-Day Forecast Widget */
 .forecast-widget {
+    position: absolute;
     width: 307.2px;
     height: 98.304px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
     container-type: size;
     container-name: forecast;
     font-size: 0.512;
 }
 
+.forecast-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.forecast-grab-bar:active {
+    cursor: grabbing;
+}
+
+.forecast-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
 .forecast-content {
     flex: 1;
-    padding: 6px;
+    padding: 5.12px;
     display: flex;
-    gap: 5px;
+    gap: 3.84px;
     overflow: hidden;
     container-type: size;
 }
@@ -581,14 +516,17 @@ iframe {
     .forecast-day {
         padding: 4px 8px;
     }
-    .forecast-icon { flex-shrink: 0; }
+    
+    .forecast-icon {
+        flex-shrink: 0;
+    }
 }
 
 .forecast-day {
     flex: 1;
-    background: rgba(5,10,22,0.45);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--stroke);
+    background: #0f1320;
+    border-radius: 5.12px;
+    border: 1px solid #2d3c66;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -607,12 +545,12 @@ iframe {
 
 .forecast-day-label {
     position: absolute;
-    top: 6px;
-    left: 8px;
-    font-size: clamp(11px, 4.8cqw, 18px);
-    font-weight: 700;
-    color: var(--text-2);
-    letter-spacing: 0.04em;
+    top: 4px;
+    left: 6px;
+    font-size: clamp(14px, 5.8cqw, 23px);
+    font-weight: bold;
+    color: #8fb4ff;
+    opacity: 0.8;
 }
 
 .forecast-icon {
@@ -620,7 +558,6 @@ iframe {
     animation: float 3s ease-in-out infinite;
     line-height: 1;
     flex-shrink: 0;
-    filter: drop-shadow(0 2px 10px rgba(74,125,255,0.2));
 }
 
 .forecast-temps {
@@ -631,139 +568,502 @@ iframe {
 }
 
 .forecast-high {
-    font-size: clamp(18px, 8cqw, 32px);
-    font-weight: 700;
-    color: var(--hot);
+    font-size: clamp(20px, 8.6cqw, 35px);
+    font-weight: bold;
+    color: #ff8080;
     line-height: 1;
-    font-variant-numeric: tabular-nums;
 }
 
 .forecast-low {
-    font-size: clamp(15px, 6.8cqw, 26px);
-    font-weight: 600;
-    color: var(--cold);
+    font-size: clamp(17px, 7.2cqw, 29px);
+    font-weight: bold;
+    color: #80b3ff;
     line-height: 1;
-    font-variant-numeric: tabular-nums;
 }
 
 .forecast-precip {
-    font-size: clamp(12px, 5.4cqw, 20px);
-    color: var(--text-2);
+    font-size: clamp(14px, 5.8cqw, 23px);
+    color: #8fb4ff;
     line-height: 1;
     display: flex;
     align-items: center;
     gap: 2px;
-    font-variant-numeric: tabular-nums;
 }
 
 .forecast-precip::before {
     content: '💧';
-    font-size: clamp(10px, 4.5cqw, 18px);
-    filter: drop-shadow(0 1px 4px rgba(126,179,255,0.4));
+    font-size: clamp(12px, 5cqw, 20px);
 }
 
-/* ============================================================
-   Cams Widget
-   ============================================================ */
+.forecast-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+}
+
+/* Cams Widget */
 .cams-widget {
+    position: absolute;
     width: 400px;
     height: 500px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
 }
+
+.cams-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.cams-grab-bar:active {
+    cursor: grabbing;
+}
+
+.cams-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
 .cams-content {
     flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
-    background: var(--bg-2);
+    background: #0f1320;
 }
-.cams-content iframe { width: 100%; height: 100%; border: none; display: block; }
 
-/* ============================================================
-   Padlock — bottom-left lock toggle
-   ============================================================ */
+.cams-content iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.cams-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+}
+
+/* Padlock Icon */
 .padlock-btn {
     position: fixed;
     bottom: 20px;
     left: 20px;
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    background: rgba(18, 28, 50, 0.92);
-    border: 1px solid var(--stroke);
-    color: var(--text-2);
+    background: none;
+    border: none;
+    font-size: 22.4px;
     cursor: pointer;
     z-index: 999;
-    transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    filter: grayscale(1) brightness(0.7);
 }
-.padlock-btn:hover { background: rgba(30,42,68,0.85); color: var(--blue-100); border-color: var(--stroke-strong); }
-.padlock-btn.locked { color: var(--blue-300); border-color: rgba(120,170,255,0.35); background: rgba(74,125,255,0.10); }
-.padlock-btn svg { width: 18px; height: 18px; }
 
-/* ============================================================
-   Clock Widget
-   ============================================================ */
+.padlock-btn:hover {
+    opacity: 0.8;
+}
+
+/* Clock Widget */
 .clock-widget {
+    position: absolute;
     width: 300px;
     height: 200px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
 }
+
+.clock-widget-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.clock-widget-grab-bar:active {
+    cursor: grabbing;
+}
+
+.clock-widget-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
 .clock-widget-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
 }
+
 .clock-widget-time {
     font-size: clamp(36px, 10vw, 72px);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    color: var(--text-1);
+    font-weight: bold;
+    color: #ffffff;
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
     line-height: 1;
-    font-variant-numeric: tabular-nums;
 }
+
 .clock-widget-date {
     font-size: clamp(12px, 3vw, 18px);
-    color: var(--text-2);
+    color: #8fb4ff;
+    opacity: 0.9;
     text-align: center;
     font-weight: 500;
-    letter-spacing: 0.04em;
     line-height: 1.2;
 }
 
-/* ============================================================
-   Internet Speed / Pup Pics / Lights / Overseerr
-   ============================================================ */
-.internet-speed-widget,
-.pup-pics-widget,
-.lights-widget,
-.overseerr-widget { width: 300px; height: 200px; }
-
-.internet-speed-content,
-.lights-content,
-.overseerr-content {
-    flex: 1;
-    overflow: hidden;
-    background: var(--bg-2);
+.clock-widget-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
 }
+
+/* Internet Speed Widget */
+.internet-speed-widget {
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
+}
+
+.internet-speed-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.internet-speed-grab-bar:active {
+    cursor: grabbing;
+}
+
+.internet-speed-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.internet-speed-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.internet-speed-content iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    zoom: 0.5;
+}
+
+.internet-speed-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+    border-radius: 0 0 12px 0;
+}
+
+/* Pup Pics Widget */
+.pup-pics-widget {
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
+}
+
+.pup-pics-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.pup-pics-grab-bar:active {
+    cursor: grabbing;
+}
+
+.pup-pics-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
 .pup-pics-content {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background: var(--bg-2);
+    background: #0f1320;
 }
-.internet-speed-content iframe { width: 100%; height: 100%; border: none; display: block; zoom: 0.5; }
-.lights-content iframe,
-.overseerr-content iframe { width: 100%; height: 100%; border: none; display: block; }
 
-/* ============================================================
-   Inline size +/- controls (used on clock widget header)
-   ============================================================ */
-.clock-size-controls,
+.pup-pics-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+    border-radius: 0 0 12px 0;
+}
+
+/* Lights Widget */
+.lights-widget {
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
+}
+
+.lights-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.lights-grab-bar:active {
+    cursor: grabbing;
+}
+
+.lights-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.lights-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #0f1320;
+}
+
+.lights-content iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.lights-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+    border-radius: 0 0 12px 0;
+}
+
+/* Overseerr Widget */
+.overseerr-widget {
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    background: #1a1f2e;
+    border-radius: 12px;
+    border: 1px solid #2d3c66;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    touch-action: none;
+    overflow: hidden;
+}
+
+.overseerr-grab-bar {
+    height: 24px;
+    background: #0f1320;
+    border-bottom: 1px solid #2d3c66;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+.overseerr-grab-bar:active {
+    cursor: grabbing;
+}
+
+.overseerr-grab-bar::before {
+    content: '⋮⋮';
+    color: #8fb4ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.overseerr-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #0f1320;
+}
+
+.overseerr-content iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.overseerr-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+    border-radius: 0 0 12px 0;
+}
+
+.search-resize {
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
+    cursor: nwse-resize;
+    touch-action: none;
+    border-radius: 0 0 12px 0;
+}
+
+.clock-size-controls {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.clock-size-btn {
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 3px;
+    background: #2d3c66;
+    color: #8fb4ff;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.2s;
+}
+
+.clock-size-btn:hover {
+    background: #3d4c76;
+}
+
 .size-controls {
     display: flex;
     gap: 4px;
@@ -771,34 +1071,30 @@ iframe {
     flex-shrink: 0;
 }
 
-.clock-size-btn,
 .size-btn {
-    width: 22px;
-    height: 22px;
-    border: 1px solid var(--stroke);
-    border-radius: 6px;
-    background: rgba(255,255,255,0.02);
-    color: var(--text-2);
-    font-size: 13px;
-    font-weight: 600;
-    font-family: inherit;
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 3px;
+    background: #2d3c66;
+    color: #8fb4ff;
+    font-size: 12px;
+    font-weight: bold;
     cursor: pointer;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
-    transition: background 0.16s var(--ease), color 0.16s var(--ease), border-color 0.16s var(--ease);
+    transition: background 0.2s;
 }
-.clock-size-btn:hover,
+
 .size-btn:hover {
-    background: rgba(120,170,255,0.10);
-    color: var(--blue-100);
-    border-color: var(--stroke-strong);
+    background: #3d4c76;
 }
 
 .cursor-circle {
     position: fixed;
-    border: 2px solid var(--blue-300);
+    border: 2px solid #8fb4ff;
     border-radius: 50%;
     pointer-events: none;
     z-index: 1001;
@@ -809,281 +1105,19 @@ iframe {
 .scratchpad-brush-preview {
     width: 40px;
     height: 40px;
-    border: 1px solid var(--stroke);
-    border-radius: var(--radius-sm);
-    background: var(--bg-2);
+    border: 1px solid #2d3c66;
+    border-radius: 4px;
+    background: #0f1320;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
-
-/* ============================================================
-   Touch keyboard
-   ============================================================ */
-#touchKbd {
-    position: fixed;
-    left: 50%;
-    bottom: 16px;
-    transform: translate(-50%, 100%);
-    width: min(1000px, calc(100vw - 32px));
-    background: #0c1426;
-    border: 1px solid var(--stroke);
-    border-radius: 18px;
-    box-shadow: var(--shadow-2);
-    padding: 10px;
-    z-index: 2000;
-    opacity: 0;
-    pointer-events: none;
-    transition: transform 0.32s var(--ease), opacity 0.24s var(--ease);
-    user-select: none;
-    touch-action: none;
-}
-#touchKbd.show {
-    transform: translate(-50%, 0);
-    opacity: 1;
-    pointer-events: auto;
-}
-
-#touchKbd .kbd-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 2px 8px 8px;
-    cursor: grab;
-}
-#touchKbd .kbd-header:active { cursor: grabbing; }
-
-#touchKbd .kbd-handle {
-    width: 36px;
-    height: 4px;
-    border-radius: 2px;
-    background: rgba(154,168,196,0.35);
-    margin: 0 auto;
-}
-
-#touchKbd .kbd-title {
-    font-size: 10.5px;
-    font-weight: 600;
-    color: var(--text-3);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}
-
-#touchKbd .kbd-hide {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid var(--stroke);
-    color: var(--text-2);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-}
-#touchKbd .kbd-hide:hover { background: rgba(120,170,255,0.10); color: var(--blue-100); }
-#touchKbd .kbd-hide svg { width: 14px; height: 14px; }
-
-#touchKbd .kbd-row {
-    display: flex;
-    gap: 6px;
-    margin-top: 6px;
-    justify-content: center;
-}
-
-#touchKbd .key {
-    flex: 1 1 0;
-    height: 48px;
-    min-width: 36px;
-    border-radius: 10px;
-    border: 1px solid var(--stroke);
-    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
-    color: var(--text-1);
-    font-family: inherit;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 6px;
-    transition: background 0.08s var(--ease), border-color 0.12s var(--ease), transform 0.06s var(--ease);
-    touch-action: manipulation;
-}
-#touchKbd .key:active,
-#touchKbd .key.pressed {
-    background: linear-gradient(180deg, rgba(74,125,255,0.30), rgba(74,125,255,0.14));
-    border-color: rgba(120,170,255,0.55);
-    transform: translateY(1px);
-}
-
-#touchKbd .key.wide { flex: 1.5 1 0; font-size: 12px; color: var(--text-2); font-weight: 600; letter-spacing: 0.04em; }
-#touchKbd .key.space { flex: 6 1 0; font-size: 12px; color: var(--text-3); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
-#touchKbd .key.enter { flex: 2 1 0; color: var(--blue-100); border-color: rgba(120,170,255,0.35); background: linear-gradient(180deg, rgba(74,125,255,0.18), rgba(74,125,255,0.06)); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; }
-#touchKbd .key.shift.active { color: var(--blue-100); border-color: rgba(120,170,255,0.55); background: linear-gradient(180deg, rgba(74,125,255,0.24), rgba(74,125,255,0.10)); }
-#touchKbd .key.layer.active { color: var(--blue-100); border-color: rgba(120,170,255,0.55); background: linear-gradient(180deg, rgba(74,125,255,0.24), rgba(74,125,255,0.10)); }
-
-#touchKbd .key svg { width: 18px; height: 18px; }
-
-/* ============================================================
-   Service widget controls + fallback launcher
-   (used by cams, lights, overseerr, internet-speed)
-   ============================================================ */
-.svc-controls {
-    display: inline-flex;
-    gap: 4px;
-    align-items: center;
-}
-.svc-btn {
-    width: 22px;
-    height: 22px;
-    border: 1px solid var(--stroke);
-    border-radius: 6px;
-    background: rgba(255,255,255,0.02);
-    color: var(--text-2);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    transition: background 0.16s var(--ease), color 0.16s var(--ease), border-color 0.16s var(--ease), transform 0.08s var(--ease);
-}
-.svc-btn:hover { background: rgba(120,170,255,0.10); color: var(--blue-100); border-color: var(--stroke-strong); }
-.svc-btn:active { transform: scale(0.92); }
-.svc-btn svg { width: 12px; height: 12px; stroke-width: 2; }
-
-/* Launcher tile shown when iframe is blocked / empty */
-.svc-fallback {
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(600px 280px at 50% -10%, rgba(74,125,255,0.14), transparent 70%),
-        linear-gradient(180deg, rgba(10,18,36,0.5), rgba(10,18,36,0.85));
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    padding: 20px;
-    z-index: 1;
-    pointer-events: auto;
-}
-.svc-fallback-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 16px;
-    background: linear-gradient(180deg, rgba(74,125,255,0.20), rgba(74,125,255,0.06));
-    border: 1px solid rgba(120,170,255,0.35);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--blue-100);
-    box-shadow: 0 8px 24px -10px rgba(74,125,255,0.45);
-}
-.svc-fallback-icon svg { width: 26px; height: 26px; stroke-width: 1.75; }
-.svc-fallback-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-1);
-    letter-spacing: -0.01em;
-    text-align: center;
-}
-.svc-fallback-sub {
-    font-size: 12px;
-    color: var(--text-3);
-    text-align: center;
-    line-height: 1.5;
-    max-width: 240px;
-}
-.svc-fallback-sub code {
-    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
-    font-size: 11px;
-    color: var(--blue-300);
-    background: rgba(74,125,255,0.10);
-    padding: 1px 6px;
-    border-radius: 4px;
-}
-.svc-fallback-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-.svc-fallback-btn {
-    height: 34px;
-    padding: 0 14px;
-    border-radius: var(--radius-pill);
-    border: 1px solid rgba(74,125,255,0.35);
-    background: linear-gradient(180deg, rgba(74,125,255,0.22), rgba(74,125,255,0.10));
-    color: var(--blue-100);
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: background 0.16s var(--ease), border-color 0.16s var(--ease), transform 0.08s var(--ease);
-}
-.svc-fallback-btn:hover {
-    background: linear-gradient(180deg, rgba(74,125,255,0.32), rgba(74,125,255,0.18));
-    border-color: rgba(120,170,255,0.55);
-}
-.svc-fallback-btn:active { transform: scale(0.97); }
-.svc-fallback-btn.ghost {
-    background: rgba(255,255,255,0.02);
-    border-color: var(--stroke-strong);
-    color: var(--text-2);
-}
-.svc-fallback-btn.ghost:hover { color: var(--blue-100); background: rgba(120,170,255,0.10); }
-.svc-fallback-btn svg { width: 12px; height: 12px; stroke-width: 2; }
-
-/* Small floating "open externally" hint inside iframe area */
-.svc-corner-launch {
-    position: absolute;
-    right: 8px;
-    bottom: 8px;
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    border: 1px solid var(--stroke);
-    background: rgba(10,18,36,0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    color: var(--text-2);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    opacity: 0;
-    transform: translateY(4px);
-    transition: opacity 0.18s var(--ease), transform 0.18s var(--ease), background 0.16s var(--ease);
-    z-index: 2;
-    pointer-events: auto;
-}
-.svc-corner-launch.visible { opacity: 1; transform: translateY(0); }
-.svc-corner-launch:hover { background: rgba(74,125,255,0.18); color: var(--blue-100); border-color: var(--stroke-strong); }
-.svc-corner-launch svg { width: 13px; height: 13px; stroke-width: 2; }
-
-/* iframe wrapper needs relative for the overlay positioning */
-.cams-content,
-.lights-content,
-.overseerr-content,
-.internet-speed-content { position: relative; }
 </style>
 </head>
 <body>
 
-<button class="padlock-btn" id="padlockBtn" aria-label="Lock layout" title="Lock layout">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="4" y="11" width="16" height="10" rx="2"></rect>
-        <path d="M8 11V8a4 4 0 0 1 8 0v3"></path>
-    </svg>
-</button>
+<button class="padlock-btn" id="padlockBtn">🔓</button>
 
 <div class="cursor-circle" id="cursorCircle"></div>
 
@@ -1218,7 +1252,7 @@ iframe {
         <span class="widget-name">Pup Pics</span>
     </div>
     <div class="pup-pics-content" id="pupPicsContent">
-        <img id="pupPicsImage" alt="Cute Dog Picture" style="width: 100%; height: 100%; object-fit: cover; opacity: 0;">
+        <img id="pupPicsImage" src="" alt="Cute Dog Picture" style="width: 100%; height: 100%; object-fit: cover;">
     </div>
     <div class="pup-pics-resize"></div>
 </div>
@@ -1726,148 +1760,6 @@ async function fetchForecast() {
     }
 }
 
-/* ============================================================
-   Service widget chrome — reload + launch buttons in the
-   header, and a fallback "Open externally" launcher tile
-   for iframes that get refused by X-Frame-Options /
-   frame-ancestors (common for Overseerr et al).
-   ============================================================ */
-function setupServiceWidget(widgetId, opts) {
-    const widget = document.getElementById(widgetId);
-    if (!widget) return;
-    const iframe = widget.querySelector('iframe');
-    const grabBar = widget.querySelector('[class*="grab-bar"]');
-    const content = iframe ? iframe.parentElement : null;
-    if (!iframe || !grabBar || !content) return;
-
-    const url = opts.url || iframe.getAttribute('src');
-    const label = opts.label || 'Service';
-    const hint = opts.hint || url;
-
-    // --- Header controls ---
-    const controls = document.createElement('div');
-    controls.className = 'svc-controls';
-    controls.innerHTML = `
-        <button class="svc-btn" data-svc="reload" title="Reload" aria-label="Reload ${label}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M21 12a9 9 0 1 1-3-6.7"></path>
-                <path d="M21 4v5h-5"></path>
-            </svg>
-        </button>
-        <button class="svc-btn" data-svc="launch" title="Open in new window" aria-label="Open ${label} in new window">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M14 4h6v6"></path>
-                <path d="M20 4L10 14"></path>
-                <path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"></path>
-            </svg>
-        </button>
-    `;
-    grabBar.appendChild(controls);
-
-    function reload() {
-        clearFallback();
-        cornerBtn.classList.remove('visible');
-        // setting src to itself forces a reload while preserving the cache key
-        const cur = iframe.getAttribute('src');
-        iframe.removeAttribute('src');
-        // re-add on next tick
-        setTimeout(() => { iframe.setAttribute('src', cur || url); scheduleCheck(); }, 30);
-    }
-    function launch() { window.open(url, '_blank', 'noopener,noreferrer'); }
-
-    controls.querySelector('[data-svc="reload"]').addEventListener('click', (e) => { e.stopPropagation(); reload(); });
-    controls.querySelector('[data-svc="launch"]').addEventListener('click', (e) => { e.stopPropagation(); launch(); });
-
-    // --- Corner "open externally" hint (always available) ---
-    const cornerBtn = document.createElement('button');
-    cornerBtn.type = 'button';
-    cornerBtn.className = 'svc-corner-launch';
-    cornerBtn.setAttribute('aria-label', `Open ${label} in new window`);
-    cornerBtn.title = `Open ${label} in new window`;
-    cornerBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M14 4h6v6"></path>
-            <path d="M20 4L10 14"></path>
-            <path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"></path>
-        </svg>
-    `;
-    cornerBtn.addEventListener('click', (e) => { e.stopPropagation(); launch(); });
-    content.appendChild(cornerBtn);
-    // Reveal the corner hint after a short delay
-    setTimeout(() => cornerBtn.classList.add('visible'), 1500);
-
-    // --- Fallback tile (shown behind iframe so it's only visible if iframe is blocked/empty) ---
-    let fallbackEl = null;
-    function showFallback(reason) {
-        if (fallbackEl) return;
-        fallbackEl = document.createElement('div');
-        fallbackEl.className = 'svc-fallback';
-        fallbackEl.innerHTML = `
-            <div class="svc-fallback-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M14 4h6v6"></path>
-                    <path d="M20 4L10 14"></path>
-                    <path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"></path>
-                </svg>
-            </div>
-            <div class="svc-fallback-title">${label}</div>
-            <div class="svc-fallback-sub">
-                Can't embed this app in a frame. Open it directly to use it.<br>
-                <code>${hint}</code>
-            </div>
-            <div class="svc-fallback-actions">
-                <button class="svc-fallback-btn" data-fb="launch">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M14 4h6v6"></path><path d="M20 4L10 14"></path>
-                        <path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"></path>
-                    </svg>
-                    Launch
-                </button>
-                <button class="svc-fallback-btn ghost" data-fb="retry">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 4v5h-5"></path>
-                    </svg>
-                    Retry
-                </button>
-            </div>
-        `;
-        fallbackEl.querySelector('[data-fb="launch"]').addEventListener('click', launch);
-        fallbackEl.querySelector('[data-fb="retry"]').addEventListener('click', reload);
-        // Sit behind the iframe so a working iframe covers it
-        iframe.style.position = 'relative';
-        iframe.style.zIndex = '2';
-        content.appendChild(fallbackEl);
-    }
-    function clearFallback() {
-        if (fallbackEl) { fallbackEl.remove(); fallbackEl = null; }
-    }
-
-    // Heuristic: if iframe never fires load within 5s OR shortly after firing we
-    // can confirm the document is blocked, show the fallback. We can't reliably
-    // distinguish a cross-origin SUCCESS from an XFO BLOCK from JS, so we keep
-    // the fallback behind the iframe — a working iframe will paint over it.
-    let loadFired = false;
-    let timeoutId = null;
-    function scheduleCheck() {
-        loadFired = false;
-        clearTimeout(timeoutId);
-        // Pre-show the fallback behind the iframe — harmless if the iframe loads
-        showFallback('preempt');
-        timeoutId = setTimeout(() => {
-            if (!loadFired) {
-                // Iframe never loaded — definitely show fallback
-                showFallback('timeout');
-            }
-        }, 5000);
-    }
-    iframe.addEventListener('load', () => {
-        loadFired = true;
-    });
-    iframe.addEventListener('error', () => showFallback('error'));
-
-    scheduleCheck();
-}
-
 window.addEventListener('load', () => {
     const padding = 20;
     const windowWidth = window.innerWidth;
@@ -1882,7 +1774,7 @@ window.addEventListener('load', () => {
     // Set initial lock state based on saved preference
     if (hasSavedLayout) {
         isLocked = true;
-        document.getElementById('padlockBtn').classList.add('locked');
+        document.getElementById('padlockBtn').textContent = '🔒';
     }
     
     const weatherWidget = document.getElementById('weatherWidget');
@@ -2050,19 +1942,11 @@ window.addEventListener('load', () => {
     if (hasSavedLayout) {
         loadWidgetLayout();
     }
-
-    // Wire up service widgets — adds reload/launch buttons + fallback tile
-    // for iframes that get refused by X-Frame-Options (Overseerr, etc).
-    setupServiceWidget('camsWidget',         { label: 'Cams',       url: 'https://cams.add2plex.com',     hint: 'cams.add2plex.com' });
-    setupServiceWidget('internetSpeedWidget',{ label: 'Speed Test', url: 'https://speed.add2plex.com/',   hint: 'speed.add2plex.com' });
-    setupServiceWidget('lightsWidget',       { label: 'Lights',     url: 'http://192.168.1.168:5000/',    hint: '192.168.1.168:5000' });
-    setupServiceWidget('overseerrWidget',    { label: 'Overseerr',  url: 'http://192.168.1.168:5055',     hint: '192.168.1.168:5055' });
     
     const padlockBtn = document.getElementById('padlockBtn');
     padlockBtn.addEventListener('click', () => {
         isLocked = !isLocked;
-        padlockBtn.classList.toggle('locked', isLocked);
-        padlockBtn.setAttribute('title', isLocked ? 'Layout locked — tap to unlock' : 'Lock layout');
+        padlockBtn.textContent = isLocked ? '🔒' : '🔓';
         if (isLocked) {
             saveWidgetLayout();
         } else {
@@ -2079,26 +1963,11 @@ function createWindow() {
     win.style.zIndex = ++zIndex;
     win.innerHTML = `
         <div class="input-bar">
-            <button class="close-btn" aria-label="Close window">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M6 6l12 12M18 6L6 18"></path>
-                </svg>
-            </button>
-            <button class="refresh-btn" aria-label="Reload">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M21 12a9 9 0 1 1-3-6.7"></path>
-                    <path d="M21 4v5h-5"></path>
-                </svg>
-            </button>
+            <button class="close-btn">×</button>
+            <button class="refresh-btn">↻</button>
             <input type="text" placeholder="Enter URL or search term">
-            <button class="go-btn">Go</button>
-            <button class="new-tab-btn" aria-label="Open in new tab">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M14 4h6v6"></path>
-                    <path d="M20 4L10 14"></path>
-                    <path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"></path>
-                </svg>
-            </button>
+            <button>Go</button>
+            <button class="new-tab-btn">↗</button>
         </div>
         <div class="iframe-wrap">
             <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
@@ -2110,11 +1979,7 @@ function createWindow() {
         <div class="auth-iframe-wrap">
             <div class="auth-header">
                 <span>Login</span>
-                <button class="auth-close-btn" aria-label="Close login">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M6 6l12 12M18 6L6 18"></path>
-                    </svg>
-                </button>
+                <button class="auth-close-btn">×</button>
             </div>
             <iframe allow="autoplay; fullscreen; picture-in-picture; popups; same-origin; scripts; forms; encrypted-media; microphone; camera" 
                     credentials="include" 
@@ -2123,7 +1988,7 @@ function createWindow() {
                     src=""></iframe>
         </div>
         <div class="auth-overlay">
-            <div class="auth-message">Waiting for authentication…</div>
+            <div class="auth-message">Waiting for authentication...</div>
         </div>
         <div class="resize"></div>
     `;
@@ -2140,7 +2005,7 @@ function createWindow() {
 
 function enableInput(win) {
     const input = win.querySelector(".input-bar input");
-    const goButton = win.querySelector(".input-bar .go-btn");
+    const goButton = win.querySelector(".input-bar button:last-of-type");
     const iframe = win.querySelector("iframe");
     function navigate(e) {
         if (e) e.stopPropagation();
@@ -2283,274 +2148,6 @@ function enableResize(win, handle) {
     };
 }
 
-</script>
-
-<div id="touchKbd" aria-hidden="true">
-    <div class="kbd-header">
-        <span class="kbd-title">Keyboard</span>
-        <div class="kbd-handle"></div>
-        <button class="kbd-hide" id="kbdHide" aria-label="Hide keyboard">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M6 9l6 6 6-6"></path>
-            </svg>
-        </button>
-    </div>
-    <div class="kbd-rows" id="kbdRows"></div>
-</div>
-
-<script>
-/* ============================================================
-   Touch keyboard — auto-pops when an input/textarea is focused.
-   Writes via standard input + keydown events so existing logic
-   (e.g. Enter-to-navigate on the URL window) keeps working.
-   ============================================================ */
-(function(){
-    const root = document.getElementById('touchKbd');
-    const rowsEl = document.getElementById('kbdRows');
-    const hideBtn = document.getElementById('kbdHide');
-    if (!root || !rowsEl) return;
-
-    let targetEl = null;
-    let isShift = false;
-    let capsLock = false;
-    let layer = 'letters'; // letters | symbols
-    let lastShiftTap = 0;
-    let suppressHideUntil = 0;
-
-    const LAYOUTS = {
-        letters: [
-            ['1','2','3','4','5','6','7','8','9','0'],
-            ['q','w','e','r','t','y','u','i','o','p'],
-            ['a','s','d','f','g','h','j','k','l'],
-            ['{shift}','z','x','c','v','b','n','m','{back}'],
-            ['{sym}',',','{space}','.','/','{enter}']
-        ],
-        symbols: [
-            ['1','2','3','4','5','6','7','8','9','0'],
-            ['!','@','#','$','%','^','&','*','(',')'],
-            ['-','_','=','+','[',']','{','}','\\'],
-            ['{shift}',';',':','\'','"','<','>','?','{back}'],
-            ['{abc}',',','{space}','.','/','{enter}']
-        ]
-    };
-
-    function isEditable(el) {
-        if (!el) return false;
-        if (el.tagName === 'TEXTAREA') return true;
-        if (el.tagName !== 'INPUT') return false;
-        const t = (el.type || 'text').toLowerCase();
-        return ['text','search','url','email','tel','password','number'].includes(t);
-    }
-
-    function build() {
-        rowsEl.innerHTML = '';
-        const rows = LAYOUTS[layer];
-        rows.forEach(row => {
-            const r = document.createElement('div');
-            r.className = 'kbd-row';
-            row.forEach(k => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'key';
-                btn.dataset.key = k;
-                let label = k;
-                if (k === '{shift}') { btn.classList.add('wide','shift'); label = '⇧'; }
-                else if (k === '{back}') { btn.classList.add('wide'); label = '⌫'; }
-                else if (k === '{sym}') { btn.classList.add('wide','layer'); label = '?123'; }
-                else if (k === '{abc}') { btn.classList.add('wide','layer'); label = 'ABC'; }
-                else if (k === '{space}') { btn.classList.add('space'); label = 'space'; }
-                else if (k === '{enter}') { btn.classList.add('enter'); label = '⏎ Go'; }
-                else if (layer === 'letters' && /[a-z]/.test(k)) {
-                    label = (isShift || capsLock) ? k.toUpperCase() : k;
-                }
-                btn.textContent = label;
-                btn.addEventListener('pointerdown', (e) => {
-                    e.preventDefault();
-                    suppressHideUntil = Date.now() + 200;
-                    btn.classList.add('pressed');
-                });
-                btn.addEventListener('pointerup', (e) => {
-                    e.preventDefault();
-                    btn.classList.remove('pressed');
-                    handleKey(k);
-                });
-                btn.addEventListener('pointerleave', () => btn.classList.remove('pressed'));
-                btn.addEventListener('pointercancel', () => btn.classList.remove('pressed'));
-                r.appendChild(btn);
-            });
-            rowsEl.appendChild(r);
-        });
-        refreshShiftUI();
-    }
-
-    function refreshShiftUI() {
-        const shiftBtns = rowsEl.querySelectorAll('.key.shift');
-        shiftBtns.forEach(b => b.classList.toggle('active', isShift || capsLock));
-        if (layer === 'letters') {
-            rowsEl.querySelectorAll('.key').forEach(b => {
-                const k = b.dataset.key;
-                if (k && k.length === 1 && /[a-z]/.test(k)) {
-                    b.textContent = (isShift || capsLock) ? k.toUpperCase() : k;
-                }
-            });
-        }
-        rowsEl.querySelectorAll('.key.layer').forEach(b => {
-            b.classList.toggle('active', layer === 'symbols');
-        });
-    }
-
-    function insertText(s) {
-        if (!targetEl) return;
-        if (typeof targetEl.setRangeText === 'function') {
-            const start = targetEl.selectionStart ?? targetEl.value.length;
-            const end = targetEl.selectionEnd ?? targetEl.value.length;
-            targetEl.setRangeText(s, start, end, 'end');
-        } else {
-            targetEl.value = (targetEl.value || '') + s;
-        }
-        targetEl.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-
-    function backspace() {
-        if (!targetEl) return;
-        const start = targetEl.selectionStart ?? targetEl.value.length;
-        const end = targetEl.selectionEnd ?? targetEl.value.length;
-        if (start !== end) {
-            targetEl.setRangeText('', start, end, 'end');
-        } else if (start > 0) {
-            targetEl.setRangeText('', start - 1, end, 'end');
-        }
-        targetEl.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-
-    function pressEnter() {
-        if (!targetEl) return;
-        const ev = new KeyboardEvent('keydown', {
-            key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true
-        });
-        targetEl.dispatchEvent(ev);
-        try {
-            const form = targetEl.form;
-            if (form && !ev.defaultPrevented) form.requestSubmit?.();
-        } catch(_){}
-    }
-
-    function handleKey(k) {
-        if (!targetEl) return;
-        if (k === '{shift}') {
-            const now = Date.now();
-            if (now - lastShiftTap < 350) {
-                capsLock = !capsLock;
-                isShift = false;
-            } else {
-                isShift = !isShift;
-                capsLock = false;
-            }
-            lastShiftTap = now;
-            refreshShiftUI();
-            return;
-        }
-        if (k === '{back}') { backspace(); return; }
-        if (k === '{sym}') { layer = 'symbols'; build(); return; }
-        if (k === '{abc}') { layer = 'letters'; build(); return; }
-        if (k === '{space}') { insertText(' '); return; }
-        if (k === '{enter}') { pressEnter(); hide(); return; }
-
-        let ch = k;
-        if (layer === 'letters' && /[a-z]/.test(ch) && (isShift || capsLock)) {
-            ch = ch.toUpperCase();
-        }
-        insertText(ch);
-        if (isShift && !capsLock) {
-            isShift = false;
-            refreshShiftUI();
-        }
-    }
-
-    function show(el) {
-        targetEl = el;
-        root.classList.add('show');
-        root.setAttribute('aria-hidden', 'false');
-    }
-    function hide() {
-        root.classList.remove('show');
-        root.setAttribute('aria-hidden', 'true');
-        targetEl = null;
-        isShift = false;
-        capsLock = false;
-        layer = 'letters';
-        build();
-    }
-
-    document.addEventListener('focusin', (e) => {
-        const el = e.target;
-        if (isEditable(el)) {
-            // suppress the native virtual keyboard on touch devices that have one
-            try { el.setAttribute('inputmode', 'none'); } catch(_){}
-            show(el);
-        }
-    });
-
-    document.addEventListener('focusout', (e) => {
-        // Use a short delay so keypresses on the kbd that re-focus don't immediately hide
-        setTimeout(() => {
-            if (Date.now() < suppressHideUntil) return;
-            const active = document.activeElement;
-            if (!isEditable(active)) hide();
-        }, 80);
-    });
-
-    // Re-show if the user taps a focused input again
-    document.addEventListener('pointerdown', (e) => {
-        const el = e.target;
-        if (isEditable(el)) {
-            // ensure we reopen if previously hidden
-            if (!root.classList.contains('show')) {
-                setTimeout(() => show(el), 0);
-            } else {
-                targetEl = el;
-            }
-        }
-    });
-
-    hideBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        hide();
-    });
-
-    // Drag the keyboard by its header
-    (function enableKbdDrag(){
-        const header = root.querySelector('.kbd-header');
-        let sx = 0, sy = 0, sl = 0, st = 0, dragging = false;
-        header.addEventListener('pointerdown', (e) => {
-            if (e.target.closest('#kbdHide')) return;
-            dragging = true;
-            header.setPointerCapture(e.pointerId);
-            const rect = root.getBoundingClientRect();
-            sx = e.clientX; sy = e.clientY;
-            sl = rect.left; st = rect.top;
-            root.style.transition = 'none';
-            root.style.left = sl + 'px';
-            root.style.top = st + 'px';
-            root.style.bottom = 'auto';
-            root.style.transform = 'none';
-        });
-        header.addEventListener('pointermove', (e) => {
-            if (!dragging) return;
-            const nl = sl + (e.clientX - sx);
-            const nt = st + (e.clientY - sy);
-            root.style.left = Math.max(8, Math.min(window.innerWidth - root.offsetWidth - 8, nl)) + 'px';
-            root.style.top  = Math.max(8, Math.min(window.innerHeight - root.offsetHeight - 8, nt)) + 'px';
-        });
-        const stop = () => { dragging = false; root.style.transition = ''; };
-        header.addEventListener('pointerup', stop);
-        header.addEventListener('pointercancel', stop);
-    })();
-
-    // initial build
-    build();
-})();
 </script>
 
 </body>
