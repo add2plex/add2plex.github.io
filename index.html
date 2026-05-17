@@ -21,9 +21,9 @@
     --bg-0:           #050912;            /* deepest, body backdrop */
     --bg-1:           #0a1224;            /* widget canvas tone */
     --bg-2:           #0f1a30;            /* iframe + inner well */
-    --surface:        rgba(18, 28, 50, 0.78);
+    --surface:        #121c32;            /* solid — iframes don't play nice with translucency */
     --surface-solid:  #121c32;
-    --surface-bar:    rgba(10, 18, 36, 0.75);
+    --surface-bar:    #0c1426;
 
     /* Strokes */
     --stroke:         rgba(148, 170, 210, 0.10);
@@ -121,8 +121,6 @@ body::before {
     width: 500px;
     height: 500px;
     background: var(--surface);
-    backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur);
     border-radius: var(--radius-lg);
     border: 1px solid var(--stroke);
     display: flex;
@@ -306,9 +304,7 @@ iframe {
 .auth-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(5, 10, 22, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(5, 10, 22, 0.92);
     display: none;
     align-items: center;
     justify-content: center;
@@ -420,8 +416,6 @@ iframe {
 .overseerr-widget {
     position: absolute;
     background: var(--surface);
-    backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur);
     border-radius: var(--radius-lg);
     border: 1px solid var(--stroke);
     display: flex;
@@ -677,13 +671,10 @@ iframe {
 }
 .cams-content {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
     background: var(--bg-2);
 }
-.cams-content iframe { width: 100%; height: 100%; border: none; }
+.cams-content iframe { width: 100%; height: 100%; border: none; display: block; }
 
 /* ============================================================
    Padlock — bottom-left lock toggle
@@ -695,9 +686,7 @@ iframe {
     width: 44px;
     height: 44px;
     border-radius: 14px;
-    background: rgba(18, 28, 50, 0.7);
-    backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur);
+    background: rgba(18, 28, 50, 0.92);
     border: 1px solid var(--stroke);
     color: var(--text-2);
     cursor: pointer;
@@ -753,9 +742,13 @@ iframe {
 .overseerr-widget { width: 300px; height: 200px; }
 
 .internet-speed-content,
-.pup-pics-content,
 .lights-content,
 .overseerr-content {
+    flex: 1;
+    overflow: hidden;
+    background: var(--bg-2);
+}
+.pup-pics-content {
     flex: 1;
     display: flex;
     align-items: center;
@@ -763,9 +756,9 @@ iframe {
     overflow: hidden;
     background: var(--bg-2);
 }
-.internet-speed-content iframe { width: 100%; height: 100%; border: none; zoom: 0.5; }
+.internet-speed-content iframe { width: 100%; height: 100%; border: none; display: block; zoom: 0.5; }
 .lights-content iframe,
-.overseerr-content iframe { width: 100%; height: 100%; border: none; }
+.overseerr-content iframe { width: 100%; height: 100%; border: none; display: block; }
 
 /* ============================================================
    Inline size +/- controls (used on clock widget header)
@@ -834,9 +827,7 @@ iframe {
     bottom: 16px;
     transform: translate(-50%, 100%);
     width: min(1000px, calc(100vw - 32px));
-    background: rgba(10, 18, 36, 0.78);
-    backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur);
+    background: #0c1426;
     border: 1px solid var(--stroke);
     border-radius: 18px;
     box-shadow: var(--shadow-2);
@@ -936,9 +927,153 @@ iframe {
 
 #touchKbd .key svg { width: 18px; height: 18px; }
 
-@media (max-width: 720px) {
-    #touchKbd .key { height: 44px; font-size: 14px; }
+/* ============================================================
+   Service widget controls + fallback launcher
+   (used by cams, lights, overseerr, internet-speed)
+   ============================================================ */
+.svc-controls {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
 }
+.svc-btn {
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--stroke);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.02);
+    color: var(--text-2);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.16s var(--ease), color 0.16s var(--ease), border-color 0.16s var(--ease), transform 0.08s var(--ease);
+}
+.svc-btn:hover { background: rgba(120,170,255,0.10); color: var(--blue-100); border-color: var(--stroke-strong); }
+.svc-btn:active { transform: scale(0.92); }
+.svc-btn svg { width: 12px; height: 12px; stroke-width: 2; }
+
+/* Launcher tile shown when iframe is blocked / empty */
+.svc-fallback {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(600px 280px at 50% -10%, rgba(74,125,255,0.14), transparent 70%),
+        linear-gradient(180deg, rgba(10,18,36,0.5), rgba(10,18,36,0.85));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px;
+    z-index: 1;
+    pointer-events: auto;
+}
+.svc-fallback-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(74,125,255,0.20), rgba(74,125,255,0.06));
+    border: 1px solid rgba(120,170,255,0.35);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--blue-100);
+    box-shadow: 0 8px 24px -10px rgba(74,125,255,0.45);
+}
+.svc-fallback-icon svg { width: 26px; height: 26px; stroke-width: 1.75; }
+.svc-fallback-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-1);
+    letter-spacing: -0.01em;
+    text-align: center;
+}
+.svc-fallback-sub {
+    font-size: 12px;
+    color: var(--text-3);
+    text-align: center;
+    line-height: 1.5;
+    max-width: 240px;
+}
+.svc-fallback-sub code {
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    font-size: 11px;
+    color: var(--blue-300);
+    background: rgba(74,125,255,0.10);
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+.svc-fallback-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.svc-fallback-btn {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(74,125,255,0.35);
+    background: linear-gradient(180deg, rgba(74,125,255,0.22), rgba(74,125,255,0.10));
+    color: var(--blue-100);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.16s var(--ease), border-color 0.16s var(--ease), transform 0.08s var(--ease);
+}
+.svc-fallback-btn:hover {
+    background: linear-gradient(180deg, rgba(74,125,255,0.32), rgba(74,125,255,0.18));
+    border-color: rgba(120,170,255,0.55);
+}
+.svc-fallback-btn:active { transform: scale(0.97); }
+.svc-fallback-btn.ghost {
+    background: rgba(255,255,255,0.02);
+    border-color: var(--stroke-strong);
+    color: var(--text-2);
+}
+.svc-fallback-btn.ghost:hover { color: var(--blue-100); background: rgba(120,170,255,0.10); }
+.svc-fallback-btn svg { width: 12px; height: 12px; stroke-width: 2; }
+
+/* Small floating "open externally" hint inside iframe area */
+.svc-corner-launch {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1px solid var(--stroke);
+    background: rgba(10,18,36,0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--text-2);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.18s var(--ease), transform 0.18s var(--ease), background 0.16s var(--ease);
+    z-index: 2;
+    pointer-events: auto;
+}
+.svc-corner-launch.visible { opacity: 1; transform: translateY(0); }
+.svc-corner-launch:hover { background: rgba(74,125,255,0.18); color: var(--blue-100); border-color: var(--stroke-strong); }
+.svc-corner-launch svg { width: 13px; height: 13px; stroke-width: 2; }
+
+/* iframe wrapper needs relative for the overlay positioning */
+.cams-content,
+.lights-content,
+.overseerr-content,
+.internet-speed-content { position: relative; }
 </style>
 </head>
 <body>
@@ -1591,6 +1726,148 @@ async function fetchForecast() {
     }
 }
 
+/* ============================================================
+   Service widget chrome — reload + launch buttons in the
+   header, and a fallback "Open externally" launcher tile
+   for iframes that get refused by X-Frame-Options /
+   frame-ancestors (common for Overseerr et al).
+   ============================================================ */
+function setupServiceWidget(widgetId, opts) {
+    const widget = document.getElementById(widgetId);
+    if (!widget) return;
+    const iframe = widget.querySelector('iframe');
+    const grabBar = widget.querySelector('[class*="grab-bar"]');
+    const content = iframe ? iframe.parentElement : null;
+    if (!iframe || !grabBar || !content) return;
+
+    const url = opts.url || iframe.getAttribute('src');
+    const label = opts.label || 'Service';
+    const hint = opts.hint || url;
+
+    // --- Header controls ---
+    const controls = document.createElement('div');
+    controls.className = 'svc-controls';
+    controls.innerHTML = `
+        <button class="svc-btn" data-svc="reload" title="Reload" aria-label="Reload ${label}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 12a9 9 0 1 1-3-6.7"></path>
+                <path d="M21 4v5h-5"></path>
+            </svg>
+        </button>
+        <button class="svc-btn" data-svc="launch" title="Open in new window" aria-label="Open ${label} in new window">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14 4h6v6"></path>
+                <path d="M20 4L10 14"></path>
+                <path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"></path>
+            </svg>
+        </button>
+    `;
+    grabBar.appendChild(controls);
+
+    function reload() {
+        clearFallback();
+        cornerBtn.classList.remove('visible');
+        // setting src to itself forces a reload while preserving the cache key
+        const cur = iframe.getAttribute('src');
+        iframe.removeAttribute('src');
+        // re-add on next tick
+        setTimeout(() => { iframe.setAttribute('src', cur || url); scheduleCheck(); }, 30);
+    }
+    function launch() { window.open(url, '_blank', 'noopener,noreferrer'); }
+
+    controls.querySelector('[data-svc="reload"]').addEventListener('click', (e) => { e.stopPropagation(); reload(); });
+    controls.querySelector('[data-svc="launch"]').addEventListener('click', (e) => { e.stopPropagation(); launch(); });
+
+    // --- Corner "open externally" hint (always available) ---
+    const cornerBtn = document.createElement('button');
+    cornerBtn.type = 'button';
+    cornerBtn.className = 'svc-corner-launch';
+    cornerBtn.setAttribute('aria-label', `Open ${label} in new window`);
+    cornerBtn.title = `Open ${label} in new window`;
+    cornerBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 4h6v6"></path>
+            <path d="M20 4L10 14"></path>
+            <path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"></path>
+        </svg>
+    `;
+    cornerBtn.addEventListener('click', (e) => { e.stopPropagation(); launch(); });
+    content.appendChild(cornerBtn);
+    // Reveal the corner hint after a short delay
+    setTimeout(() => cornerBtn.classList.add('visible'), 1500);
+
+    // --- Fallback tile (shown behind iframe so it's only visible if iframe is blocked/empty) ---
+    let fallbackEl = null;
+    function showFallback(reason) {
+        if (fallbackEl) return;
+        fallbackEl = document.createElement('div');
+        fallbackEl.className = 'svc-fallback';
+        fallbackEl.innerHTML = `
+            <div class="svc-fallback-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 4h6v6"></path>
+                    <path d="M20 4L10 14"></path>
+                    <path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"></path>
+                </svg>
+            </div>
+            <div class="svc-fallback-title">${label}</div>
+            <div class="svc-fallback-sub">
+                Can't embed this app in a frame. Open it directly to use it.<br>
+                <code>${hint}</code>
+            </div>
+            <div class="svc-fallback-actions">
+                <button class="svc-fallback-btn" data-fb="launch">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M14 4h6v6"></path><path d="M20 4L10 14"></path>
+                        <path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"></path>
+                    </svg>
+                    Launch
+                </button>
+                <button class="svc-fallback-btn ghost" data-fb="retry">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 12a9 9 0 1 1-3-6.7"></path><path d="M21 4v5h-5"></path>
+                    </svg>
+                    Retry
+                </button>
+            </div>
+        `;
+        fallbackEl.querySelector('[data-fb="launch"]').addEventListener('click', launch);
+        fallbackEl.querySelector('[data-fb="retry"]').addEventListener('click', reload);
+        // Sit behind the iframe so a working iframe covers it
+        iframe.style.position = 'relative';
+        iframe.style.zIndex = '2';
+        content.appendChild(fallbackEl);
+    }
+    function clearFallback() {
+        if (fallbackEl) { fallbackEl.remove(); fallbackEl = null; }
+    }
+
+    // Heuristic: if iframe never fires load within 5s OR shortly after firing we
+    // can confirm the document is blocked, show the fallback. We can't reliably
+    // distinguish a cross-origin SUCCESS from an XFO BLOCK from JS, so we keep
+    // the fallback behind the iframe — a working iframe will paint over it.
+    let loadFired = false;
+    let timeoutId = null;
+    function scheduleCheck() {
+        loadFired = false;
+        clearTimeout(timeoutId);
+        // Pre-show the fallback behind the iframe — harmless if the iframe loads
+        showFallback('preempt');
+        timeoutId = setTimeout(() => {
+            if (!loadFired) {
+                // Iframe never loaded — definitely show fallback
+                showFallback('timeout');
+            }
+        }, 5000);
+    }
+    iframe.addEventListener('load', () => {
+        loadFired = true;
+    });
+    iframe.addEventListener('error', () => showFallback('error'));
+
+    scheduleCheck();
+}
+
 window.addEventListener('load', () => {
     const padding = 20;
     const windowWidth = window.innerWidth;
@@ -1773,6 +2050,13 @@ window.addEventListener('load', () => {
     if (hasSavedLayout) {
         loadWidgetLayout();
     }
+
+    // Wire up service widgets — adds reload/launch buttons + fallback tile
+    // for iframes that get refused by X-Frame-Options (Overseerr, etc).
+    setupServiceWidget('camsWidget',         { label: 'Cams',       url: 'https://cams.add2plex.com',     hint: 'cams.add2plex.com' });
+    setupServiceWidget('internetSpeedWidget',{ label: 'Speed Test', url: 'https://speed.add2plex.com/',   hint: 'speed.add2plex.com' });
+    setupServiceWidget('lightsWidget',       { label: 'Lights',     url: 'http://192.168.1.168:5000/',    hint: '192.168.1.168:5000' });
+    setupServiceWidget('overseerrWidget',    { label: 'Overseerr',  url: 'http://192.168.1.168:5055',     hint: '192.168.1.168:5055' });
     
     const padlockBtn = document.getElementById('padlockBtn');
     padlockBtn.addEventListener('click', () => {
