@@ -492,7 +492,7 @@ iframe {
     font-weight: bold;
 }
 
-/* 10-Hour Forecast Section */
+/* 6-Hour Forecast Section */
 .ws-hourly-section {
     flex: 1;
     display: flex;
@@ -513,14 +513,13 @@ iframe {
     flex: 1;
     display: flex;
     gap: 4px;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: hidden;
     padding-bottom: 4px;
 }
 
 .ws-hourly-item {
-    flex: 0 0 auto;
-    min-width: clamp(40px, 8cqw, 60px);
+    flex: 1;
+    min-width: 0;
     background: #0f1320;
     border-radius: 6px;
     border: 1px solid #2d3c66;
