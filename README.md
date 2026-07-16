@@ -1049,9 +1049,9 @@ iframe {
             </div>
         </div>
         
-        <!-- 10-Hour Forecast -->
+        <!-- 6-Hour Forecast -->
         <div class="ws-hourly-section">
-            <div class="ws-hourly-title">Next 10 Hours</div>
+            <div class="ws-hourly-title">Next 6 Hours</div>
             <div class="ws-hourly-container" id="wsHourlyContainer">
                 <!-- Hourly items will be populated by JS -->
             </div>
@@ -1319,7 +1319,7 @@ async function fetchWeatherStation() {
         let startIndex = data.hourly.time.findIndex(t => t >= currentDateTime);
         if (startIndex === -1) startIndex = 0;
         
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 6; i++) {
             const hourIndex = startIndex + i;
             if (hourIndex >= data.hourly.time.length) break;
             
