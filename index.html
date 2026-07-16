@@ -285,11 +285,11 @@ iframe {
     border-radius: 0 0 12px 0;
 }
 
-/* Weather Widget */
-.weather-widget {
+/* Weather Station Widget (Combined Clock, Weather, Forecast) */
+.weather-station-widget {
     position: absolute;
-    width: 320px;
-    height: 280px;
+    width: 500px;
+    height: 600px;
     background: #1a1f2e;
     border-radius: 12px;
     border: 1px solid #2d3c66;
@@ -299,10 +299,10 @@ iframe {
     touch-action: none;
     overflow: hidden;
     container-type: size;
-    container-name: weather;
+    container-name: weatherstation;
 }
 
-.weather-grab-bar {
+.weather-station-grab-bar {
     height: 24px;
     background: #0f1320;
     border-bottom: 1px solid #2d3c66;
@@ -314,11 +314,11 @@ iframe {
     padding: 0 8px;
 }
 
-.weather-grab-bar:active {
+.weather-station-grab-bar:active {
     cursor: grabbing;
 }
 
-.weather-grab-bar::before {
+.weather-station-grab-bar::before {
     content: '⋮⋮';
     color: #8fb4ff;
     font-size: 14px;
@@ -334,37 +334,223 @@ iframe {
     letter-spacing: 0.5px;
 }
 
-.weather-content {
+.weather-station-content {
     flex: 1;
-    padding: 4px 4px 4px 4px;
-    padding-top: 2px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
     overflow: hidden;
-    align-items: center;
-    justify-content: space-evenly;
 }
 
-.weather-main {
+/* Clock Section */
+.ws-clock-section {
+    text-align: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #2d3c66;
+    flex-shrink: 0;
+}
+
+.ws-clock-time {
+    font-size: clamp(32px, 12cqw, 72px);
+    font-weight: bold;
+    color: #ffffff;
+    line-height: 1;
+}
+
+.ws-clock-date {
+    font-size: clamp(12px, 4cqw, 20px);
+    color: #8fb4ff;
+    opacity: 0.9;
+    margin-top: 4px;
+}
+
+/* 3-Day Forecast Section */
+.ws-forecast-section {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #2d3c66;
+}
+
+.ws-forecast-day {
+    flex: 1;
+    background: #0f1320;
+    border-radius: 8px;
+    border: 1px solid #2d3c66;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.ws-forecast-label {
+    font-size: clamp(11px, 3.5cqw, 16px);
+    font-weight: bold;
+    color: #8fb4ff;
+}
+
+.ws-forecast-icon {
+    font-size: clamp(24px, 8cqw, 48px);
+    animation: float 3s ease-in-out infinite;
+    line-height: 1;
+}
+
+.ws-forecast-temps {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.ws-forecast-high {
+    font-size: clamp(14px, 4.5cqw, 22px);
+    font-weight: bold;
+    color: #ff8080;
+}
+
+.ws-forecast-low {
+    font-size: clamp(12px, 4cqw, 18px);
+    font-weight: bold;
+    color: #80b3ff;
+}
+
+.ws-forecast-precip {
+    font-size: clamp(10px, 3cqw, 14px);
+    color: #8fb4ff;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.ws-forecast-precip::before {
+    content: '💧';
+    font-size: clamp(8px, 2.5cqw, 12px);
+}
+
+/* Current Weather Section */
+.ws-current-section {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid #2d3c66;
     flex-shrink: 0;
-    gap: clamp(8px, 3cqw, 20px);
 }
 
-.weather-temp {
-    font-size: clamp(22px, 15cqw, 72px);
+.ws-current-icon {
+    font-size: clamp(48px, 16cqw, 96px);
+    animation: float 3s ease-in-out infinite;
+    line-height: 1;
+}
+
+.ws-current-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.ws-current-temp {
+    font-size: clamp(36px, 12cqw, 72px);
     font-weight: bold;
     color: #8fb4ff;
     line-height: 1;
 }
 
-.weather-icon {
-    font-size: clamp(50px, 35cqw, 200px);
-    animation: float 3s ease-in-out infinite;
+.ws-current-description {
+    font-size: clamp(14px, 4.5cqw, 22px);
+    color: #ffffff;
+    text-transform: capitalize;
+}
+
+.ws-current-details {
+    display: flex;
+    gap: 16px;
+    margin-top: 4px;
+}
+
+.ws-current-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ws-current-detail-label {
+    font-size: clamp(9px, 3cqw, 12px);
+    color: #8fb4ff;
+    opacity: 0.7;
+    text-transform: uppercase;
+}
+
+.ws-current-detail-value {
+    font-size: clamp(14px, 4.5cqw, 20px);
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* 10-Hour Forecast Section */
+.ws-hourly-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.ws-hourly-title {
+    font-size: clamp(10px, 3cqw, 14px);
+    color: #8fb4ff;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    flex-shrink: 0;
+}
+
+.ws-hourly-container {
+    flex: 1;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 4px;
+}
+
+.ws-hourly-item {
+    flex: 0 0 auto;
+    min-width: clamp(40px, 8cqw, 60px);
+    background: #0f1320;
+    border-radius: 6px;
+    border: 1px solid #2d3c66;
+    padding: 6px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.ws-hourly-time {
+    font-size: clamp(9px, 2.5cqw, 12px);
+    color: #8fb4ff;
+    font-weight: 500;
+}
+
+.ws-hourly-icon {
+    font-size: clamp(18px, 5cqw, 28px);
     line-height: 1;
+}
+
+.ws-hourly-temp {
+    font-size: clamp(12px, 3.5cqw, 16px);
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.ws-hourly-precip {
+    font-size: clamp(8px, 2.5cqw, 11px);
+    color: #8fb4ff;
 }
 
 @keyframes float {
@@ -372,85 +558,7 @@ iframe {
     50% { transform: translateY(-10px); }
 }
 
-.weather-description {
-    font-size: clamp(13px, 5.5cqw, 26px);
-    color: #ffffff;
-    text-transform: capitalize;
-    flex-shrink: 0;
-    line-height: 1.2;
-    text-align: center;
-}
-
-.weather-details {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 2px;
-    flex-wrap: wrap;
-    flex-shrink: 0;
-    width: 100%;
-    text-align: center;
-}
-
-.weather-detail {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    align-items: center;
-}
-
-.weather-detail-label {
-    font-size: clamp(9px, 3.5cqw, 16px);
-    color: #8fb4ff;
-    opacity: 0.7;
-    text-transform: uppercase;
-    line-height: 1.2;
-}
-
-.weather-detail-value {
-    font-size: clamp(16px, 6cqw, 28px);
-    color: #ffffff;
-    font-weight: bold;
-    line-height: 1.2;
-}
-
-.weather-location {
-    font-size: clamp(10px, 4cqw, 17px);
-    color: #8fb4ff;
-    opacity: 0.9;
-    text-align: center;
-    font-weight: 500;
-    padding: 4px 0;
-    border-top: 1px solid #2d3c66;
-    border-bottom: 1px solid #2d3c66;
-    line-height: 1.2;
-    width: 100%;
-}
-
-.weather-clock {
-    font-size: clamp(11px, 4.5cqw, 18px);
-    color: #ffffff;
-    opacity: 0.95;
-    text-align: center;
-    font-weight: 500;
-    padding-bottom: 4px;
-    border-bottom: 1px solid #2d3c66;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.weather-clock-time {
-    font-size: clamp(22px, 15cqw, 72px);
-    font-weight: bold;
-}
-
-.weather-clock-date {
-    font-size: clamp(12px, 5cqw, 20px);
-    opacity: 0.85;
-}
-
-.weather-resize {
+.weather-station-resize {
     position: absolute;
     width: 25px;
     height: 25px;
@@ -461,150 +569,7 @@ iframe {
     touch-action: none;
 }
 
-/* 5-Day Forecast Widget */
-.forecast-widget {
-    position: absolute;
-    width: 307.2px;
-    height: 98.304px;
-    background: #1a1f2e;
-    border-radius: 12px;
-    border: 1px solid #2d3c66;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-    touch-action: none;
-    overflow: hidden;
-    container-type: size;
-    container-name: forecast;
-    font-size: 0.512;
-}
 
-.forecast-grab-bar {
-    height: 24px;
-    background: #0f1320;
-    border-bottom: 1px solid #2d3c66;
-    cursor: grab;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-    padding: 0 8px;
-}
-
-.forecast-grab-bar:active {
-    cursor: grabbing;
-}
-
-.forecast-grab-bar::before {
-    content: '⋮⋮';
-    color: #8fb4ff;
-    font-size: 14px;
-    letter-spacing: 2px;
-    opacity: 0.5;
-}
-
-.forecast-content {
-    flex: 1;
-    padding: 5.12px;
-    display: flex;
-    gap: 3.84px;
-    overflow: hidden;
-    container-type: size;
-}
-
-@container (max-height: 150px) {
-    .forecast-day {
-        padding: 4px 8px;
-    }
-    
-    .forecast-icon {
-        flex-shrink: 0;
-    }
-}
-
-.forecast-day {
-    flex: 1;
-    background: #0f1320;
-    border-radius: 5.12px;
-    border: 1px solid #2d3c66;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    padding: clamp(2.56px, 2cqw, 7.68px);
-    position: relative;
-    gap: clamp(2.56px, 2cqw, 7.68px);
-}
-
-.forecast-info {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: clamp(1.28px, 1cqw, 3.84px);
-}
-
-.forecast-day-label {
-    position: absolute;
-    top: 4px;
-    left: 6px;
-    font-size: clamp(14px, 5.8cqw, 23px);
-    font-weight: bold;
-    color: #8fb4ff;
-    opacity: 0.8;
-}
-
-.forecast-icon {
-    font-size: clamp(35px, 17.3cqw, 70px);
-    animation: float 3s ease-in-out infinite;
-    line-height: 1;
-    flex-shrink: 0;
-}
-
-.forecast-temps {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-}
-
-.forecast-high {
-    font-size: clamp(20px, 8.6cqw, 35px);
-    font-weight: bold;
-    color: #ff8080;
-    line-height: 1;
-}
-
-.forecast-low {
-    font-size: clamp(17px, 7.2cqw, 29px);
-    font-weight: bold;
-    color: #80b3ff;
-    line-height: 1;
-}
-
-.forecast-precip {
-    font-size: clamp(14px, 5.8cqw, 23px);
-    color: #8fb4ff;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-}
-
-.forecast-precip::before {
-    content: '💧';
-    font-size: clamp(12px, 5cqw, 20px);
-}
-
-.forecast-resize {
-    position: absolute;
-    width: 25px;
-    height: 25px;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
-    cursor: nwse-resize;
-    touch-action: none;
-}
 
 /* Cams Widget */
 .cams-widget {
@@ -690,81 +655,7 @@ iframe {
     opacity: 0.8;
 }
 
-/* Clock Widget */
-.clock-widget {
-    position: absolute;
-    width: 300px;
-    height: 200px;
-    background: #1a1f2e;
-    border-radius: 12px;
-    border: 1px solid #2d3c66;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-    touch-action: none;
-    overflow: hidden;
-}
 
-.clock-widget-grab-bar {
-    height: 24px;
-    background: #0f1320;
-    border-bottom: 1px solid #2d3c66;
-    cursor: grab;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-    padding: 0 8px;
-}
-
-.clock-widget-grab-bar:active {
-    cursor: grabbing;
-}
-
-.clock-widget-grab-bar::before {
-    content: '⋮⋮';
-    color: #8fb4ff;
-    font-size: 14px;
-    letter-spacing: 2px;
-    opacity: 0.5;
-}
-
-.clock-widget-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.clock-widget-time {
-    font-size: clamp(36px, 10vw, 72px);
-    font-weight: bold;
-    color: #ffffff;
-    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-    line-height: 1;
-}
-
-.clock-widget-date {
-    font-size: clamp(12px, 3vw, 18px);
-    color: #8fb4ff;
-    opacity: 0.9;
-    text-align: center;
-    font-weight: 500;
-    line-height: 1.2;
-}
-
-.clock-widget-resize {
-    position: absolute;
-    width: 25px;
-    height: 25px;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, transparent 50%, #8fb4ff 50%);
-    cursor: nwse-resize;
-    touch-action: none;
-}
 
 /* Internet Speed Widget */
 .internet-speed-widget {
@@ -1036,33 +927,7 @@ iframe {
     border-radius: 0 0 12px 0;
 }
 
-.clock-size-controls {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    flex-shrink: 0;
-}
 
-.clock-size-btn {
-    width: 18px;
-    height: 18px;
-    border: none;
-    border-radius: 3px;
-    background: #2d3c66;
-    color: #8fb4ff;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    transition: background 0.2s;
-}
-
-.clock-size-btn:hover {
-    background: #3d4c76;
-}
 
 .size-controls {
     display: flex;
@@ -1123,93 +988,76 @@ iframe {
 
 <div class="clock" id="clock"></div>
 
-<div class="weather-widget" id="weatherWidget">
-    <div class="weather-grab-bar">
-        <span class="widget-name">Weather</span>
+<div class="weather-station-widget" id="weatherStationWidget">
+    <div class="weather-station-grab-bar">
+        <span class="widget-name">Weather Station</span>
     </div>
-    <div class="weather-content">
-        <div class="weather-main">
-            <div class="weather-temp">--°F</div>
-            <div class="weather-icon">☀️</div>
+    <div class="weather-station-content">
+        <!-- Clock Section -->
+        <div class="ws-clock-section">
+            <div class="ws-clock-time" id="wsClockTime">--:-- --</div>
+            <div class="ws-clock-date" id="wsClockDate">Loading...</div>
         </div>
-        <div class="weather-description">Loading weather...</div>
-        <div class="weather-location">Panama City, FL</div>
-        <div class="weather-details">
-            <div class="weather-detail">
-                <div class="weather-detail-label">Humidity</div>
-                <div class="weather-detail-value">--%</div>
-            </div>
-            <div class="weather-detail">
-                <div class="weather-detail-label">Precipitation</div>
-                <div class="weather-detail-value">--%</div>
-            </div>
-        </div>
-    </div>
-    <div class="weather-resize"></div>
-</div>
-
-<div class="forecast-widget" id="forecastWidget">
-    <div class="forecast-grab-bar">
-        <span class="widget-name">Forecast</span>
-    </div>
-    <div class="forecast-content">
-        <div class="forecast-day">
-            <div class="forecast-day-label">T</div>
-            <div class="forecast-icon">☀️</div>
-            <div class="forecast-info">
-                <div class="forecast-temps">
-                    <div class="forecast-high">--°</div>
-                    <div class="forecast-low">--°</div>
+        
+        <!-- 3-Day Forecast -->
+        <div class="ws-forecast-section" id="wsForecastSection">
+            <div class="ws-forecast-day">
+                <div class="ws-forecast-label">Today</div>
+                <div class="ws-forecast-icon">☀️</div>
+                <div class="ws-forecast-temps">
+                    <div class="ws-forecast-high">--°</div>
+                    <div class="ws-forecast-low">--°</div>
                 </div>
-                <div class="forecast-precip">--%</div>
+                <div class="ws-forecast-precip">--%</div>
+            </div>
+            <div class="ws-forecast-day">
+                <div class="ws-forecast-label">--</div>
+                <div class="ws-forecast-icon">☀️</div>
+                <div class="ws-forecast-temps">
+                    <div class="ws-forecast-high">--°</div>
+                    <div class="ws-forecast-low">--°</div>
+                </div>
+                <div class="ws-forecast-precip">--%</div>
+            </div>
+            <div class="ws-forecast-day">
+                <div class="ws-forecast-label">--</div>
+                <div class="ws-forecast-icon">☀️</div>
+                <div class="ws-forecast-temps">
+                    <div class="ws-forecast-high">--°</div>
+                    <div class="ws-forecast-low">--°</div>
+                </div>
+                <div class="ws-forecast-precip">--%</div>
             </div>
         </div>
-        <div class="forecast-day">
-            <div class="forecast-day-label">-</div>
-            <div class="forecast-icon">☀️</div>
-            <div class="forecast-info">
-                <div class="forecast-temps">
-                    <div class="forecast-high">--°</div>
-                    <div class="forecast-low">--°</div>
+        
+        <!-- Current Weather -->
+        <div class="ws-current-section">
+            <div class="ws-current-icon" id="wsCurrentIcon">☀️</div>
+            <div class="ws-current-info">
+                <div class="ws-current-temp" id="wsCurrentTemp">--°F</div>
+                <div class="ws-current-description" id="wsCurrentDesc">Loading...</div>
+                <div class="ws-current-details">
+                    <div class="ws-current-detail">
+                        <div class="ws-current-detail-label">Humidity</div>
+                        <div class="ws-current-detail-value" id="wsHumidity">--%</div>
+                    </div>
+                    <div class="ws-current-detail">
+                        <div class="ws-current-detail-label">Precip</div>
+                        <div class="ws-current-detail-value" id="wsPrecip">--%</div>
+                    </div>
                 </div>
-                <div class="forecast-precip">--%</div>
             </div>
         </div>
-        <div class="forecast-day">
-            <div class="forecast-day-label">-</div>
-            <div class="forecast-icon">☀️</div>
-            <div class="forecast-info">
-                <div class="forecast-temps">
-                    <div class="forecast-high">--°</div>
-                    <div class="forecast-low">--°</div>
-                </div>
-                <div class="forecast-precip">--%</div>
-            </div>
-        </div>
-        <div class="forecast-day">
-            <div class="forecast-day-label">-</div>
-            <div class="forecast-icon">☀️</div>
-            <div class="forecast-info">
-                <div class="forecast-temps">
-                    <div class="forecast-high">--°</div>
-                    <div class="forecast-low">--°</div>
-                </div>
-                <div class="forecast-precip">--%</div>
-            </div>
-        </div>
-        <div class="forecast-day">
-            <div class="forecast-day-label">-</div>
-            <div class="forecast-icon">☀️</div>
-            <div class="forecast-info">
-                <div class="forecast-temps">
-                    <div class="forecast-high">--°</div>
-                    <div class="forecast-low">--°</div>
-                </div>
-                <div class="forecast-precip">--%</div>
+        
+        <!-- 10-Hour Forecast -->
+        <div class="ws-hourly-section">
+            <div class="ws-hourly-title">Next 10 Hours</div>
+            <div class="ws-hourly-container" id="wsHourlyContainer">
+                <!-- Hourly items will be populated by JS -->
             </div>
         </div>
     </div>
-    <div class="forecast-resize"></div>
+    <div class="weather-station-resize"></div>
 </div>
 
 <div class="cams-widget" id="camsWidget">
@@ -1222,20 +1070,7 @@ iframe {
     <div class="cams-resize"></div>
 </div>
 
-<div class="clock-widget" id="clockWidget">
-    <div class="clock-widget-grab-bar">
-        <span class="widget-name">Clock</span>
-        <div class="clock-size-controls">
-            <button class="clock-size-btn" id="clockMinusBtn">−</button>
-            <button class="clock-size-btn" id="clockPlusBtn">+</button>
-        </div>
-    </div>
-    <div class="clock-widget-content">
-        <div class="clock-widget-time" id="clockWidgetTime">--:-- --</div>
-        <div class="clock-widget-date" id="clockWidgetDate">Loading...</div>
-    </div>
-    <div class="clock-widget-resize"></div>
-</div>
+
 
 <div class="internet-speed-widget" id="internetSpeedWidget">
     <div class="internet-speed-grab-bar">
@@ -1292,7 +1127,7 @@ let clockStartY = 0;
 let clockOffsetX = 0;
 let clockOffsetY = 0;
 
-// Update clock
+// Update clock for Weather Station
 function updateClock() {
     const now = new Date();
     let hours = now.getHours();
@@ -1311,11 +1146,12 @@ function updateClock() {
     const date = now.getDate();
     const year = now.getFullYear();
     
-    const clockWidgetTime = document.getElementById('clockWidgetTime');
-    const clockWidgetDate = document.getElementById('clockWidgetDate');
-    if (clockWidgetTime && clockWidgetDate) {
-        clockWidgetTime.textContent = `${hours}:${minutesStr} ${ampm}`;
-        clockWidgetDate.textContent = `${dayName}, ${monthName} ${date} ${year}`;
+    // Update Weather Station clock
+    const wsClockTime = document.getElementById('wsClockTime');
+    const wsClockDate = document.getElementById('wsClockDate');
+    if (wsClockTime && wsClockDate) {
+        wsClockTime.textContent = `${hours}:${minutesStr} ${ampm}`;
+        wsClockDate.textContent = `${dayName}, ${monthName} ${date}, ${year}`;
     }
 }
 
@@ -1410,27 +1246,23 @@ clockEl.addEventListener('wheel', (e) => {
     clockEl.style.transformOrigin = 'top left';
 });
 
-async function fetchWeather() {
+async function fetchWeatherStation() {
     try {
         const lat = 30.1588;
         const lon = -85.6602;
-        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code&daily=sunrise,sunset&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago`);
-        const data = await response.json();
         
-        const temp = Math.round(data.current.temperature_2m);
-        const humidity = data.current.relative_humidity_2m;
-        const precipitation = data.current.precipitation || 0;
-        const weatherCode = data.current.weather_code;
+        // Fetch current weather, daily forecast, and hourly forecast
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&hourly=temperature_2m,weather_code,precipitation_probability&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago&forecast_days=3`);
+        const data = await response.json();
         
         const localNow = new Date();
         const currentHour = localNow.getHours();
         const currentMin = localNow.getMinutes();
-        
         const today = localNow.toISOString().split('T')[0];
         const dailyIndex = data.daily.time.indexOf(today);
         
+        // Determine if it's night time
         let isNightTime = false;
-        
         if (dailyIndex >= 0 && data.daily.sunrise && data.daily.sunset) {
             const sunriseStr = data.daily.sunrise[dailyIndex];
             const sunsetStr = data.daily.sunset[dailyIndex];
@@ -1440,20 +1272,96 @@ async function fetchWeather() {
             isNightTime = currentHourMin > sunsetHourMin || currentHourMin < sunriseHourMin;
         }
         
+        // Update current weather
+        const temp = Math.round(data.current.temperature_2m);
+        const humidity = data.current.relative_humidity_2m;
+        const precipProb = data.current.precipitation_probability || 0;
+        const weatherCode = data.current.weather_code;
         const weatherInfo = getWeatherInfo(weatherCode);
         let finalIcon = weatherInfo.icon;
-        if (isNightTime) {
+        if (isNightTime && weatherCode <= 3) {
             finalIcon = '🌙';
         }
         
-        document.querySelector('.weather-temp').textContent = `${temp}°F`;
-        document.querySelector('.weather-icon').textContent = finalIcon;
-        document.querySelector('.weather-description').textContent = weatherInfo.description;
-        document.querySelector('.weather-details .weather-detail:nth-child(1) .weather-detail-value').textContent = `${humidity}%`;
-        document.querySelector('.weather-details .weather-detail:nth-child(2) .weather-detail-value').textContent = `${(precipitation * 100).toFixed(0)}%`;
+        document.getElementById('wsCurrentTemp').textContent = `${temp}°F`;
+        document.getElementById('wsCurrentIcon').textContent = finalIcon;
+        document.getElementById('wsCurrentDesc').textContent = weatherInfo.description;
+        document.getElementById('wsHumidity').textContent = `${humidity}%`;
+        document.getElementById('wsPrecip').textContent = `${precipProb}%`;
+        
+        // Update 3-day forecast
+        const forecastDays = document.querySelectorAll('.ws-forecast-day');
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        
+        forecastDays.forEach((dayEl, index) => {
+            const date = new Date(localNow);
+            date.setDate(localNow.getDate() + index);
+            const label = index === 0 ? 'Today' : dayNames[date.getDay()];
+            const high = Math.round(data.daily.temperature_2m_max[index]);
+            const low = Math.round(data.daily.temperature_2m_min[index]);
+            const precip = data.daily.precipitation_probability_max[index] || 0;
+            const dayWeatherCode = data.daily.weather_code[index];
+            const dayWeatherInfo = getWeatherInfo(dayWeatherCode);
+            
+            dayEl.querySelector('.ws-forecast-label').textContent = label;
+            dayEl.querySelector('.ws-forecast-icon').textContent = dayWeatherInfo.icon;
+            dayEl.querySelector('.ws-forecast-high').textContent = `${high}°`;
+            dayEl.querySelector('.ws-forecast-low').textContent = `${low}°`;
+            dayEl.querySelector('.ws-forecast-precip').textContent = `${precip}%`;
+        });
+        
+        // Update 10-hour forecast
+        const hourlyContainer = document.getElementById('wsHourlyContainer');
+        hourlyContainer.innerHTML = '';
+        
+        // Find the current hour index in the hourly data
+        const currentDateTime = localNow.toISOString().slice(0, 13) + ':00';
+        let startIndex = data.hourly.time.findIndex(t => t >= currentDateTime);
+        if (startIndex === -1) startIndex = 0;
+        
+        for (let i = 0; i < 10; i++) {
+            const hourIndex = startIndex + i;
+            if (hourIndex >= data.hourly.time.length) break;
+            
+            const hourTime = new Date(data.hourly.time[hourIndex]);
+            let hourLabel = hourTime.getHours();
+            const ampm = hourLabel >= 12 ? 'PM' : 'AM';
+            hourLabel = hourLabel % 12;
+            hourLabel = hourLabel ? hourLabel : 12;
+            
+            const hourTemp = Math.round(data.hourly.temperature_2m[hourIndex]);
+            const hourWeatherCode = data.hourly.weather_code[hourIndex];
+            const hourPrecip = data.hourly.precipitation_probability[hourIndex] || 0;
+            const hourWeatherInfo = getWeatherInfo(hourWeatherCode);
+            
+            // Check if this hour is night time
+            let hourIcon = hourWeatherInfo.icon;
+            const hourNum = hourTime.getHours();
+            if (data.daily.sunrise && data.daily.sunset) {
+                const dayIdx = data.daily.time.indexOf(hourTime.toISOString().split('T')[0]);
+                if (dayIdx >= 0) {
+                    const sunriseHour = parseInt(data.daily.sunrise[dayIdx].substring(11, 13));
+                    const sunsetHour = parseInt(data.daily.sunset[dayIdx].substring(11, 13));
+                    if ((hourNum >= sunsetHour || hourNum < sunriseHour) && hourWeatherCode <= 3) {
+                        hourIcon = '🌙';
+                    }
+                }
+            }
+            
+            const hourItem = document.createElement('div');
+            hourItem.className = 'ws-hourly-item';
+            hourItem.innerHTML = `
+                <div class="ws-hourly-time">${hourLabel}${ampm}</div>
+                <div class="ws-hourly-icon">${hourIcon}</div>
+                <div class="ws-hourly-temp">${hourTemp}°</div>
+                <div class="ws-hourly-precip">💧${hourPrecip}%</div>
+            `;
+            hourlyContainer.appendChild(hourItem);
+        }
+        
     } catch (error) {
-        console.error('Error fetching weather:', error);
-        document.querySelector('.weather-description').textContent = 'Unable to load weather';
+        console.error('Error fetching weather station data:', error);
+        document.getElementById('wsCurrentDesc').textContent = 'Unable to load weather';
     }
 }
 
@@ -1643,11 +1551,9 @@ async function loadNextPupPic() {
 function saveWidgetLayout() {
     const layout = {};
     const widgets = [
-        { id: 'weatherWidget', type: 'standard' },
-        { id: 'forecastWidget', type: 'standard' },
+        { id: 'weatherStationWidget', type: 'standard' },
         { id: 'radarWin', type: 'window' },
         { id: 'camsWidget', type: 'standard' },
-        { id: 'clockWidget', type: 'standard' },
         { id: 'internetSpeedWidget', type: 'standard' },
         { id: 'pupPicsWidget', type: 'standard' },
         { id: 'lightsWidget', type: 'standard' },
@@ -1731,39 +1637,12 @@ function getWeatherInfo(code) {
     return weatherMap[code] || { description: 'Unknown', icon: '🌡️' };
 }
 
-async function fetchForecast() {
-    try {
-        const lat = 30.1588;
-        const lon = -85.6602;
-        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago&forecast_days=5`);
-        const data = await response.json();
-        const forecastDays = document.querySelectorAll('.forecast-day');
-        const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-        const today = new Date();
-        forecastDays.forEach((dayEl, index) => {
-            const date = new Date(today);
-            date.setDate(today.getDate() + index);
-            const dayLetter = days[date.getDay()];
-            const high = Math.round(data.daily.temperature_2m_max[index]);
-            const low = Math.round(data.daily.temperature_2m_min[index]);
-            const precip = data.daily.precipitation_probability_max[index] || 0;
-            const weatherCode = data.daily.weather_code[index];
-            const weatherInfo = getWeatherInfo(weatherCode);
-            dayEl.querySelector('.forecast-day-label').textContent = dayLetter;
-            dayEl.querySelector('.forecast-icon').textContent = weatherInfo.icon;
-            dayEl.querySelector('.forecast-high').textContent = `${high}°`;
-            dayEl.querySelector('.forecast-low').textContent = `${low}°`;
-            dayEl.querySelector('.forecast-precip').textContent = `${precip}%`;
-        });
-    } catch (error) {
-        console.error('Error fetching forecast:', error);
-    }
-}
+
 
 window.addEventListener('load', () => {
     const padding = 20;
     const windowWidth = window.innerWidth;
-    const numWidgets = 9;
+    const numWidgets = 7;
     const widgetWidth = (windowWidth - (padding * (numWidgets + 1))) / numWidgets;
     const widgetHeight = widgetWidth;
     let leftPosition = padding;
@@ -1777,33 +1656,20 @@ window.addEventListener('load', () => {
         document.getElementById('padlockBtn').textContent = '🔒';
     }
     
-    const weatherWidget = document.getElementById('weatherWidget');
+    // Weather Station Widget (combined clock, weather, forecast)
+    const weatherStationWidget = document.getElementById('weatherStationWidget');
     if (!hasSavedLayout) {
-        weatherWidget.style.left = leftPosition + "px";
-        weatherWidget.style.top = padding + "px";
-        weatherWidget.style.width = widgetWidth + "px";
-        weatherWidget.style.height = widgetHeight + "px";
+        weatherStationWidget.style.left = leftPosition + "px";
+        weatherStationWidget.style.top = padding + "px";
+        weatherStationWidget.style.width = (widgetWidth * 1.5) + "px";
+        weatherStationWidget.style.height = (widgetHeight * 1.8) + "px";
     }
-    weatherWidget.style.zIndex = ++zIndex;
-    enableDrag(weatherWidget, weatherWidget.querySelector('.weather-grab-bar'));
-    enableResize(weatherWidget, weatherWidget.querySelector('.weather-resize'));
-    fetchWeather();
-    setInterval(fetchWeather, 600000);
-    leftPosition += widgetWidth + padding;
-    
-    const forecastWidget = document.getElementById('forecastWidget');
-    if (!hasSavedLayout) {
-        forecastWidget.style.left = leftPosition + "px";
-        forecastWidget.style.top = padding + "px";
-        forecastWidget.style.width = widgetWidth + "px";
-        forecastWidget.style.height = widgetHeight + "px";
-    }
-    forecastWidget.style.zIndex = ++zIndex;
-    enableDrag(forecastWidget, forecastWidget.querySelector('.forecast-grab-bar'));
-    enableResize(forecastWidget, forecastWidget.querySelector('.forecast-resize'));
-    fetchForecast();
-    setInterval(fetchForecast, 600000);
-    leftPosition += widgetWidth + padding;
+    weatherStationWidget.style.zIndex = ++zIndex;
+    enableDrag(weatherStationWidget, weatherStationWidget.querySelector('.weather-station-grab-bar'));
+    enableResize(weatherStationWidget, weatherStationWidget.querySelector('.weather-station-resize'));
+    fetchWeatherStation();
+    setInterval(fetchWeatherStation, 600000);
+    leftPosition += (widgetWidth * 1.5) + padding;
     
     const radarWin = document.createElement("div");
     radarWin.className = "window no-input-bar";
@@ -1849,45 +1715,7 @@ window.addEventListener('load', () => {
     enableResize(camsWidget, camsWidget.querySelector('.cams-resize'));
     leftPosition += widgetWidth + padding;
     
-    const clockWidget = document.getElementById('clockWidget');
-    if (!hasSavedLayout) {
-        clockWidget.style.left = leftPosition + "px";
-        clockWidget.style.top = padding + "px";
-        clockWidget.style.width = widgetWidth + "px";
-        clockWidget.style.height = widgetHeight + "px";
-    }
-    clockWidget.style.zIndex = ++zIndex;
-    enableDrag(clockWidget, clockWidget.querySelector('.clock-widget-grab-bar'));
-    enableResize(clockWidget, clockWidget.querySelector('.clock-widget-resize'));
-    
-    let clockFontSizeMultiplier = 1;
-    const clockMinusBtn = document.getElementById('clockMinusBtn');
-    const clockPlusBtn = document.getElementById('clockPlusBtn');
-    const clockWidgetTime = document.getElementById('clockWidgetTime');
-    const clockWidgetDate = document.getElementById('clockWidgetDate');
-    function updateClockFontSize() {
-        clockWidgetTime.style.fontSize = `clamp(36px, ${clockFontSizeMultiplier * 10}vw, ${clockFontSizeMultiplier * 72}px)`;
-        clockWidgetDate.style.fontSize = `clamp(12px, ${clockFontSizeMultiplier * 3}vw, ${clockFontSizeMultiplier * 18}px)`;
-    }
-    if (clockMinusBtn) {
-        clockMinusBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (clockFontSizeMultiplier > 0.5) {
-                clockFontSizeMultiplier -= 0.1;
-                updateClockFontSize();
-            }
-        });
-    }
-    if (clockPlusBtn) {
-        clockPlusBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (clockFontSizeMultiplier < 2) {
-                clockFontSizeMultiplier += 0.1;
-                updateClockFontSize();
-            }
-        });
-    }
-    leftPosition += widgetWidth + padding;
+
     
     const internetSpeedWidget = document.getElementById('internetSpeedWidget');
     if (!hasSavedLayout) {
