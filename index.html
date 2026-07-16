@@ -568,6 +568,34 @@ iframe {
     touch-action: none;
 }
 
+.ws-clock-size-controls {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.ws-clock-size-btn {
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 3px;
+    background: #2d3c66;
+    color: #8fb4ff;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.2s;
+}
+
+.ws-clock-size-btn:hover {
+    background: #3d4c76;
+}
+
 
 
 /* Cams Widget */
@@ -990,6 +1018,10 @@ iframe {
 <div class="weather-station-widget" id="weatherStationWidget">
     <div class="weather-station-grab-bar">
         <span class="widget-name">Weather Station</span>
+        <div class="ws-clock-size-controls">
+            <button class="ws-clock-size-btn" id="wsClockMinusBtn">−</button>
+            <button class="ws-clock-size-btn" id="wsClockPlusBtn">+</button>
+        </div>
     </div>
     <div class="weather-station-content">
         <!-- Clock Section -->
@@ -1668,6 +1700,39 @@ window.addEventListener('load', () => {
     enableResize(weatherStationWidget, weatherStationWidget.querySelector('.weather-station-resize'));
     fetchWeatherStation();
     setInterval(fetchWeatherStation, 600000);
+    
+    // Clock size controls
+    let wsClockSizeMultiplier = 1;
+    const wsClockMinusBtn = document.getElementById('wsClockMinusBtn');
+    const wsClockPlusBtn = document.getElementById('wsClockPlusBtn');
+    const wsClockTime = document.getElementById('wsClockTime');
+    const wsClockDate = document.getElementById('wsClockDate');
+    
+    function updateWsClockSize() {
+        wsClockTime.style.fontSize = `clamp(${24 * wsClockSizeMultiplier}px, ${12 * wsClockSizeMultiplier}cqw, ${72 * wsClockSizeMultiplier}px)`;
+        wsClockDate.style.fontSize = `clamp(${10 * wsClockSizeMultiplier}px, ${4 * wsClockSizeMultiplier}cqw, ${20 * wsClockSizeMultiplier}px)`;
+    }
+    
+    if (wsClockMinusBtn) {
+        wsClockMinusBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (wsClockSizeMultiplier > 0.5) {
+                wsClockSizeMultiplier -= 0.1;
+                updateWsClockSize();
+            }
+        });
+    }
+    
+    if (wsClockPlusBtn) {
+        wsClockPlusBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (wsClockSizeMultiplier < 2.5) {
+                wsClockSizeMultiplier += 0.1;
+                updateWsClockSize();
+            }
+        });
+    }
+    
     leftPosition += (widgetWidth * 1.5) + padding;
     
     const radarWin = document.createElement("div");
